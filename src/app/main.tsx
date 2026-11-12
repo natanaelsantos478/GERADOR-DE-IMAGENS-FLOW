@@ -1,4 +1,4 @@
-/** Browser bootstrap: load data with progress, create the Game, start the loop, expose test hooks. */
+/** Browser bootstrap: load data with progress, start the loop and expose test hooks. The Game is created by the menu (src/ui). */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { WorldStatic } from '../core/contracts';
@@ -18,9 +18,6 @@ declare global {
   }
 }
 
-/** Default player before the menu lets the user choose. */
-const DEFAULT_PLAYER = 'BRA';
-
 async function boot() {
   window.__app = appHost;
   appHost.subscribe((s: AppHostState) => {
@@ -35,9 +32,6 @@ async function boot() {
   try {
     const world = await loadWorldStatic(browserFetchJson(new URL('data/', document.baseURI)), (p) => appHost.getState().setProgress(p));
     appHost.getState().setWorld(world);
-    const player = world.countryById.has(DEFAULT_PLAYER) ? DEFAULT_PLAYER : world.countries.find((c) => c.sovereign)?.id;
-    if (!player) throw new Error('nenhum país soberano nos dados');
-    appHost.getState().newGame({ playerCountryId: player });
     startLoop();
   } catch (e) {
     console.error(e);
