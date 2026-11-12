@@ -1,0 +1,16 @@
+{
+  "name": "meridiano-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "data:geo": "node geo/build.mjs && node geo/validate.mjs && node geo/preview.mjs",
+    "data:infra": "node infra/fetch.mjs && node infra/points.mjs && node --max-old-space-size=8192 infra/roads.mjs && node --max-old-space-size=8192 infra/validate.mjs && node infra/preview.mjs",
+    "data:countries": "node countries/fetch.mjs && node countries/build.mjs && node countries/validate.mjs"
+  },
+  "dependencies": {
+    "csv-parse": "^7.0.3",
+    "flag-icons": "^7.6.0",
+    "mapshaper": "^0.7.101",
+    "pngjs": "^7.0.0"
+  }
+}
