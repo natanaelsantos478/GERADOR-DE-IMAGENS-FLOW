@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "note": "Approximate total oil production (crude + condensate + NGL), barrels per day, ~2023. Rounded; compiled from public aggregates of the Energy Institute Statistical Review of World Energy 2024 and US EIA International Energy Statistics. Key = Natural Earth ADM0_A3.",
+    "sources": ["Energy Institute Statistical Review of World Energy 2024", "US EIA International Energy Statistics"]
+  },
+  "USA": 20100000, "SAU": 11100000, "RUS": 10800000, "CAN": 5800000, "IRQ": 4300000,
+  "CHN": 4200000, "ARE": 4100000, "IRN": 4000000, "BRA": 3500000, "KWT": 2900000,
+  "NOR": 2000000, "MEX": 1900000, "KAZ": 1900000, "QAT": 1800000, "NGA": 1500000,
+  "DZA": 1400000, "LBY": 1200000, "AGO": 1100000, "OMN": 1000000, "IND": 870000,
+  "GBR": 800000, "COL": 780000, "VEN": 780000, "ARG": 750000, "AZE": 650000,
+  "IDN": 640000, "GUY": 640000, "EGY": 600000, "MYS": 560000, "ECU": 470000,
+  "THA": 450000, "AUS": 450000, "COG": 270000, "TKM": 250000, "GAB": 220000,
+  "VNM": 190000, "SDS": 150000, "GHA": 150000, "PER": 120000, "BRN": 100000,
+  "DNK": 100000, "ITA": 100000, "GNQ": 90000, "TUR": 90000, "PAK": 90000,
+  "CMR": 70000, "SDN": 70000, "YEM": 70000, "TTO": 60000, "BOL": 50000,
+  "UZB": 50000, "UKR": 50000, "SYR": 40000, "DEU": 40000, "TCD": 110000
+}
