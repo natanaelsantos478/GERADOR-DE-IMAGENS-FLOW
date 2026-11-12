@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MERIDIANO — Comando Global</title>
+    <script>
+      // Cesium loads workers/assets from here; relative to the document so any base path works.
+      window.CESIUM_BASE_URL = new URL('cesium/', document.baseURI).href;
+    </script>
+    <style>
+      html, body, #root { margin: 0; height: 100%; background: #0b1016; color: #e6edf3; font-family: system-ui, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/app/main.tsx"></script>
+  </body>
+</html>
