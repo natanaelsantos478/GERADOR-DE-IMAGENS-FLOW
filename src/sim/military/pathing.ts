@@ -57,6 +57,10 @@ function straightLand(ctx: Ctx, A: Apis3, f: Formation, a: LonLat, b: LonLat): {
   return { ok: true, relief: relief / (n + 1) };
 }
 
+/** Same-hour cache of road searches (hour-exact so reloaded saves replay identically) shared by formations of one country with the same endpoints (groups ordered together). */
+let pathDay = -1;
+const pathCache = new Map<string, ReturnType<typeof aStar>>();
+
 export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: Budget): PlanResult {
   const w = ctx.world, g = w.roads;
   const vRoad = speedOf(A, f, 'road'), vOff = speedOf(A, f, 'off');
@@ -91,7 +95,11 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
         return v;
       };
       const edgeHours = (e: number) => g.edgeKm[e] / (vRoad * Math.max(0.04, edgeSpeedFactor(ctx, e)));
-      const res = aStar(
+      const day = ctx.state.time.hours;
+      if (day !== pathDay || pathCache.size > 600) (pathDay = day), pathCache.clear();
+      const ck = `${f.c}|${na}|${nz}|${Math.round(vRoad)}|${f.reb ? 1 : 0}`;
+      const hit = pathCache.get(ck);
+      const res = hit !== undefined ? hit : aStar(
         {
           neighbors(n, visit) {
             for (let k = g.adjStart[n]; k < g.adjStart[n + 1]; k++) {
@@ -105,7 +113,10 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
         na,
         { nodeCount: g.nodeCount, maxExpanded: Math.max(2000, Math.min(250_000, budget.left)) },
       );
-      budget.left -= res ? res.expanded : 250_000;
+      if (hit === undefined) {
+        pathCache.set(ck, res);
+        budget.left -= res ? res.expanded : 250_000;
+      }
       if (res) {
         const ed: number[] = [];
         let km = 0;

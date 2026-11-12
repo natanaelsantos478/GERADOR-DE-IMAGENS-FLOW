@@ -115,7 +115,7 @@ export interface MilitaryState {
   stock: Record<CountryId, StockState>;
   flights: Flight[];
   /** Occupation progress: province → who and hours accumulated. */
-  occ: Record<ProvinceId, { by: CountryId; h: number }>;
+  occ: Record<ProvinceId, { by: CountryId; h: number; t?: number }>;
   /** Fuel / ammo supply ratios by country (0..1). */
   sh: Record<CountryId, [number, number]>;
   /** Radiation zones. */
@@ -123,6 +123,8 @@ export interface MilitaryState {
   /** Blockaded port indices → until hours (refreshed hourly). */
   blk: Record<number, number>;
   /** Per-country spending on tacticalSuspend etc. not needed; counters: */
+  /** Upkeep calibration per country (real defense budget ≈ 2× scaled upkeep), fixed at world creation. */
+  upk: Record<CountryId, number>;
   nextF: number;
   nextB: number;
   nextQ: number;
@@ -182,7 +184,7 @@ declare module '../../core/contracts' {
       intercepted: boolean; damage: number;
     };
     'mil.missileLaunched': { flight: number; attacker: CountryId; weapon: 'cruise' | 'ballistic' | 'nuke'; from: LonLat; to: LonLat; eta: number };
-    'mil.nukeDetonated': { attacker: CountryId; defender: CountryId | null; pos: LonLat; province: ProvinceId | null; killedEstimate: number };
+    'mil.nukeDetonated': { attacker: CountryId; defender: CountryId | null; country: CountryId; targetCountry: CountryId | null; pos: LonLat; province: ProvinceId | null; killedEstimate: number };
     'mil.rebelsSpawned': { province: ProvinceId; country: CountryId; formation: FormationId };
     'mil.rebelsDefeated': { province: ProvinceId; country: CountryId };
     'mil.rebelsHold': { province: ProvinceId; country: CountryId };

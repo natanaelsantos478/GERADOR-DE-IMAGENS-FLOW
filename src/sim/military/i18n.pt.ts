@@ -13,6 +13,7 @@ export const milPt: Record<string, string> = {
   ...Object.fromEntries(UNIT_LIST.map((u) => [`mil.unit.${u.id}`, NAMES[u.id]])),
   'mil.news.noPath': '{name}: sem caminho possível ({reason}).',
   'mil.news.halted': '{name} parou na fronteira: sem acesso militar.',
+  'mil.news.casualties': 'Baixas em combate.',
   'mil.news.battleStarted': 'Batalha entre {a} e {d}.',
   'mil.news.occupied': 'Província {province} ocupada por {by}.',
   'mil.news.strike': 'Ataque de {a} contra {d} ({kind}).',

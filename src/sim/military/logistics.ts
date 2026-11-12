@@ -5,7 +5,7 @@ import { type Apis3, clamp, dist, envOf, mod, r3 } from './env';
 import { allForms, createFormation, formationsOf, removeFormation, S, stockOf, strengthOf } from './forces';
 import type { Formation } from './types';
 
-const STRIDE = 3;
+const STRIDE = 5;
 const dayOf = (ctx: Ctx) => Math.floor(ctx.state.time.hours / 24);
 
 /** Friendly = own, or allied (shares depots). */
@@ -130,8 +130,7 @@ function blockadeDay(ctx: Ctx, A: Apis3): void {
   const st = S(ctx), now = ctx.state.time.hours;
   for (const k in st.blk) if (st.blk[k] < now) delete st.blk[k];
   const hit = new Map<CountryId, Set<CountryId>>();
-  for (const id in st.forms) {
-    const f = st.forms[id];
+  for (const f of allForms(ctx)) {
     if (f.od.k !== 'blockade' || f.rt || f.d !== 'naval' || f.o < 0.3) continue;
     const port = ctx.world.ports[f.od.port];
     if (!port || dist(f.p, [port.lon, port.lat]) > 120) continue;
@@ -167,7 +166,7 @@ export function upkeepPerDay(ctx: Ctx, A: Apis3, c: CountryId): Cost {
   for (const f of formationsOf(ctx, c)) for (const s of f.u) money += UNITS[s.t].upkeep * s.k * (0.4 + 0.6 * s.s);
   const sk = stockOf(ctx, c);
   money += sk.cruise * UNITS.cruise_missile.upkeep + sk.ballistic * UNITS.ballistic_missile.upkeep + sk.nuke * UNITS.nuke.upkeep;
-  return { money: r3(money * mod(A, c, 'mil.upkeep')) };
+  return { money: r3(money * (S(ctx).upk?.[c] ?? 0.1) * mod(A, c, 'mil.upkeep')) };
 }
 
 export function powerOfCountry(ctx: Ctx, c: CountryId): number {

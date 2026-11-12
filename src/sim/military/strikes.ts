@@ -243,7 +243,7 @@ export function detonate(ctx: Ctx, A: Apis3, attacker: CountryId, def: CountryId
   st.rad.push({ p: [r4(pos[0]), r4(pos[1])], until: ctx.state.time.hours + 24 * 30 });
   if (st.rad.length > 40) st.rad.shift();
   const province = w.locateProvince(pos[0], pos[1]);
-  ctx.bus.emit({ type: 'mil.nukeDetonated', attacker, defender: def, pos, province, killedEstimate: Math.round(killed) });
+  ctx.bus.emit({ type: 'mil.nukeDetonated', attacker, defender: def, country: attacker, targetCountry: def, pos, province, killedEstimate: Math.round(killed) });
   ctx.news('military', 'mil.news.nuke', { a: attacker, d: def ?? '' }, { lon: pos[0], lat: pos[1] }, { countries: def ? [attacker, def] : [attacker], importance: 2 });
   if (def && A.eco) A.eco.addUnrest({ country: def }, 25, 'mil.news.nuke', 60);
 }

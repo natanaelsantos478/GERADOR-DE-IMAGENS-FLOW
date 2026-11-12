@@ -41,7 +41,8 @@ export interface Env {
   stateRef: MilitaryState | null;
   byCountry: Map<CountryId, Formation[]>;
   all: Formation[];
-  warring: { until: number; set: Set<CountryId> };
+  /** `set` = countries in a war; `cands` = formations that may make contact (war countries + rebels + formations near rebels). */
+  warring: { until: number; ver: number; set: Set<CountryId>; cands: Formation[] };
   byCountryVer: number;
   ver: number;
   powerCache: Map<CountryId, { day: number; v: number; ref: object }>;
@@ -55,7 +56,7 @@ export function envOf(world: WorldStatic): Env {
     world.provinces.forEach((p, i) => provIndex.set(p.id, i));
     e = {
       comp: null, nodeProv: new Int32Array(world.roads.nodeCount).fill(-2), provIndex, seaCache: new Map(), legs: new Map(),
-      stateRef: null, byCountry: new Map(), all: [], warring: { until: -1, set: new Set() }, byCountryVer: -1, ver: 0, powerCache: new Map(),
+      stateRef: null, byCountry: new Map(), all: [], warring: { until: -1, ver: -1, set: new Set(), cands: [] }, byCountryVer: -1, ver: 0, powerCache: new Map(),
     };
     envs.set(world, e);
   }

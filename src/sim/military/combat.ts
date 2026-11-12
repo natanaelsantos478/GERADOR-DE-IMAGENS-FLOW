@@ -2,13 +2,13 @@
 import type { BattleId, BattleView, CountryId, Ctx, LonLat } from '../../core/contracts';
 import { bearingDeg, destination } from '../../core/geo';
 import { UNITS } from './catalog';
-import { type Apis3, clamp, dist, envOf, hostile, mod, r3, r4 } from './env';
-import { allForms, formationsOf, removeFormation, S, strengthOf } from './forces';
+import { type Apis3, clamp, apisOf, dist, envOf, hostile, mod, r3, r4 } from './env';
+import { allForms, formationsOf, reindexIfNeeded, removeFormation, S, strengthOf } from './forces';
 import { orderMove } from './movement';
 import type { Battle, Formation, Slot } from './types';
 
 const CONTACT_KM = { land: 12, naval: 45 };
-const K_LOSS = 0.025;
+const K_LOSS = 0.014;
 
 // ------------------------------------------------------------------ strength model
 
@@ -148,6 +148,14 @@ export function finishBattle(ctx: Ctx, b: Battle, winner: 'attackers' | 'defende
   for (const c of b.ac) ca += b.cas[c] ?? 0;
   for (const c of b.dc) cd += b.cas[c] ?? 0;
   delete st.battles[b.id];
+  const eco = apisOf(ctx).eco;
+  if (eco) {
+    for (const [c, n] of Object.entries(b.cas)) {
+      if (n < 1) continue;
+      eco.killPopulation({ country: c }, n, 'mil.news.casualties');
+      eco.addUnrest({ country: c }, Math.min(5, n / 4000), 'mil.news.casualties', 30);
+    }
+  }
   ctx.bus.emit({
     type: 'mil.battleEnded', battle: b.id, province: b.pr, pos: b.p, winner, attackerCountries: b.ac, defenderCountries: b.dc,
     casualties: { attackers: ca, defenders: cd, byCountry: b.cas },
@@ -291,27 +299,33 @@ export function applyOutcome(ctx: Ctx, A: Apis3, b: Battle, squads: { ref: strin
 
 // ------------------------------------------------------------------ contact detection
 
-const cell = (lon: number, lat: number) => Math.floor((lon + 180) / 0.2) * 2000 + Math.floor((lat + 90) / 0.2);
+const CELL = 0.4;
+const cell = (lon: number, lat: number) => Math.floor((lon + 180) / CELL) * 2000 + Math.floor((lat + 90) / CELL);
 let hash = new Map<number, Formation[]>();
 
 export function detectContacts(ctx: Ctx, A: Apis3): void {
-  if (!A.dip && !hasRebels(ctx)) return;
   const st = S(ctx);
   const env = envOf(ctx.world);
-  if (env.warring.until < ctx.state.time.hours || env.warring.until > ctx.state.time.hours + 3.5) {
+  reindexIfNeeded(ctx);
+  if (env.warring.until < ctx.state.time.hours || env.warring.until > ctx.state.time.hours + 3.5 || env.warring.ver !== env.ver) {
     const set = new Set<CountryId>();
     if (A.dip) for (const wv of A.dip.wars()) for (const c of [...wv.attackers, ...wv.defenders]) set.add(c);
-    env.warring = { until: ctx.state.time.hours + 3, set };
+    const cands: Formation[] = [];
+    for (const c of set) for (const f of formationsOf(ctx, c)) cands.push(f);
+    const rebs: Formation[] = [];
+    for (const f of allForms(ctx)) if (f.reb) rebs.push(f);
+    for (const r of rebs) {
+      if (!set.has(r.c)) cands.push(r);
+      // The government's formations matter only when close to the rebels.
+      if (!set.has(r.reb!)) for (const g of formationsOf(ctx, r.reb!)) if (g.d === 'land' && Math.abs(g.p[0] - r.p[0]) < 0.8 && Math.abs(g.p[1] - r.p[1]) < 0.8 && !cands.includes(g)) cands.push(g);
+    }
+    env.warring = { until: ctx.state.time.hours + 3, ver: env.ver, set, cands };
   }
-  const isWarring = (c: CountryId) => env.warring.set.has(c);
   hash = new Map();
   const act: Formation[] = [];
-  let rebels = false;
-  for (const f of allForms(ctx)) if (f.reb) { rebels = true; env.warring.set.add(f.reb); }
-  if (!rebels && env.warring.set.size === 0) return;
-  for (const f of allForms(ctx)) {
-    if (f.d === 'air' || f.cr || f.o < 0.03) continue;
-    if (!f.reb && !isWarring(f.c)) continue;
+  if (!env.warring.cands.length) return;
+  for (const f of env.warring.cands) {
+    if (st.forms[f.id] !== f || f.d === 'air' || f.cr || f.o < 0.03) continue;
     act.push(f);
     const k = cell(f.p[0], f.p[1]);
     const l = hash.get(k);
@@ -320,11 +334,18 @@ export function detectContacts(ctx: Ctx, A: Apis3): void {
   }
   for (const f of act) {
     if (f.od.k === 'move' && f.od.retreat) continue;
-    const cx = Math.floor((f.p[0] + 180) / 0.2), cy = Math.floor((f.p[1] + 90) / 0.2);
-    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+    const fx = (f.p[0] + 180) / CELL, fy = (f.p[1] + 90) / CELL;
+    const cx = Math.floor(fx), cy = Math.floor(fy);
+    // Only neighbour cells within the contact range of this formation can matter (range ≪ cell for land).
+    const rk = CONTACT_KM[f.d as 'land' | 'naval'] / (111 * CELL);
+    const rx = rk / Math.max(0.2, Math.cos((f.p[1] * Math.PI) / 180)), ry = rk;
+    const x0 = fx - cx < rx ? -1 : 0, x1 = cx + 1 - fx < rx ? 1 : 0;
+    const y0 = fy - cy < ry ? -1 : 0, y1 = cy + 1 - fy < ry ? 1 : 0;
+    for (let dx = x0; dx <= x1; dx++) for (let dy = y0; dy <= y1; dy++) {
       const l = hash.get((cx + dx) * 2000 + cy + dy);
       if (!l) continue;
       for (const g of l) {
+        if (g.c === f.c && !f.reb && !g.reb) continue;
         if (g.id <= f.id || g.d !== f.d || (g.od.k === 'move' && g.od.retreat)) continue;
         if (f.bt && f.bt === g.bt) continue;
         if (!hostile(A, f, g) || dist(f.p, g.p) > CONTACT_KM[f.d as 'land' | 'naval']) continue;
@@ -345,7 +366,6 @@ export function detectContacts(ctx: Ctx, A: Apis3): void {
   }
 }
 
-const hasRebels = (ctx: Ctx) => allForms(ctx).some((f) => f.reb);
 
 // ------------------------------------------------------------------ occupation
 
@@ -353,7 +373,9 @@ export function occupationTick(ctx: Ctx, A: Apis3, dt: number): void {
   if (!A.dip) return;
   const st = S(ctx), w = ctx.world, ctl = ctx.state.world.controller, own = ctx.state.world.owner;
   if (hash.size === 0) return;
-  for (const f of allForms(ctx)) {
+  const occupiers: Formation[] = [];
+  for (const c of envOf(ctx.world).warring.set) for (const f of formationsOf(ctx, c)) occupiers.push(f);
+  for (const f of occupiers) {
     if (f.d !== 'land' || !f.pr || f.bt || f.cr || f.reb || f.o < 0.25) continue;
     const cur = ctl[f.pr];
     if (cur === undefined || cur === f.c) continue;
@@ -367,8 +389,9 @@ export function occupationTick(ctx: Ctx, A: Apis3, dt: number): void {
       entry.h = 0;
     }
     if (contested(A, f, anchor)) continue;
-    entry.h += dt;
-    const need = 24 + Math.min(72, (mc !== null ? w.cities[mc].pop : 0) / 100_000);
+    // Several formations on the same anchor must not stack the timer.
+    if (entry.t !== ctx.state.time.hours) (entry.h += dt), (entry.t = ctx.state.time.hours);
+    const need = 240 + Math.min(800, (mc !== null ? w.cities[mc].pop : 0) / 12_000);
     if (entry.h < need) continue;
     delete st.occ[f.pr];
     const owner = own[f.pr];
@@ -389,7 +412,7 @@ export function occupationTick(ctx: Ctx, A: Apis3, dt: number): void {
 }
 
 function contested(A: Apis3, f: Formation, anchor: LonLat): boolean {
-  const cx = Math.floor((anchor[0] + 180) / 0.2), cy = Math.floor((anchor[1] + 90) / 0.2);
+  const cx = Math.floor((anchor[0] + 180) / CELL), cy = Math.floor((anchor[1] + 90) / CELL);
   for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
     const l = hash.get((cx + dx) * 2000 + cy + dy);
     if (!l) continue;

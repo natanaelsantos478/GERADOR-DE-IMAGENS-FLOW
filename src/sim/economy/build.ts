@@ -303,6 +303,7 @@ export function damageStructure(ctx: Ctx, id: StructureId, amount: number, cause
   const applied = Math.min(1 - rec.damage, amount);
   rec.damage += applied;
   cache(ctx).agg.delete(rec.country);
+  shiftServiceIndex(ctx, rec, -applied);
   if (applied > 0) ctx.bus.emit({ type: 'eco.structureDamaged', id, amount: applied, cause });
   return applied;
 }
@@ -313,7 +314,16 @@ export function repairStructure(ctx: Ctx, id: StructureId, amount: number): numb
   const done = Math.min(rec.damage, amount);
   rec.damage -= done;
   cache(ctx).agg.delete(rec.country);
+  shiftServiceIndex(ctx, rec, done);
   return done;
+}
+
+/** Keeps the per-city hospital/university index equal to what `rebuildStructures` (reload) would compute. */
+function shiftServiceIndex(ctx: Ctx, rec: { kind: string; progress: number; province: string }, delta: number): void {
+  if (rec.progress < 1 || (rec.kind !== 'hospital' && rec.kind !== 'university')) return;
+  const ch = cache(ctx);
+  const arr = rec.kind === 'hospital' ? ch.cityHosp : ch.cityUni;
+  for (const ci of ctx.world.citiesByProvince.get(rec.province) ?? []) arr[ci] += delta;
 }
 
 // ------------------------------------------------------------------ automation

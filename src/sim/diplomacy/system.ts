@@ -1,4 +1,4 @@
-import type { Command, CommandResult, CountryId, Ctx, DiplomacyApi, GameEvent } from '../../core/contracts';
+import type { Command, CommandResult, CountryId, Ctx, DiplomacyApi } from '../../core/contracts';
 import { defineSystem } from '../../core/registry';
 import { ACTION_COMMAND, applyTreaty, cancelTreaty, execute, fail, respond, type ActionId } from './actions';
 import { closeVote, onNuclearUse, proposeSanctionCmd, voteCmd } from './assembly';
@@ -12,10 +12,6 @@ import type { DiplomacyState, Pair, WarState } from './types';
 import {
   callAllies, dailyConferences, dailyWars, declareWar, endedByDeath, joinWarCmd, makePeace, onBattleResult, onCapture, peaceChoose, proposePeace,
 } from './wars';
-
-const BATTLE_END = /battle.*(end|finish|result|resolv|won|over)/i;
-const NUKE_EVENT = /nuke|nuclear|detonat/i;
-const NUKE_IGNORE = /ready|armed|built|produc|queue|research|alert|stock|train/i;
 
 function createSlice(ctx: Ctx): DiplomacyState {
   const s: DiplomacyState = {
@@ -60,22 +56,6 @@ function decay(ctx: Ctx): void {
   s.inbox = s.inbox.filter((p) => p.until > now);
 }
 
-function sniff(ctx: Ctx, e: GameEvent): void {
-  const t = e.type;
-  const isId = (x: unknown): x is CountryId => typeof x === 'string' && ctx.world.countryById.has(x);
-  if (NUKE_EVENT.test(t) && !NUKE_IGNORE.test(t)) {
-    const user = [e.country, e.by, e.attacker, e.launcher].find(isId);
-    const victim = [e.targetCountry, e.target, e.victim, e.defender].find(isId);
-    if (user) onNuclearUse(ctx, user, victim);
-    return;
-  }
-  if (BATTLE_END.test(t)) {
-    const att = Array.isArray(e.attackerCountries) ? (e.attackerCountries as unknown[]).filter(isId) : [];
-    const def = Array.isArray(e.defenderCountries) ? (e.defenderCountries as unknown[]).filter(isId) : [];
-    const winner = e.winner === 'attackers' || e.winner === 'defenders' ? e.winner : typeof e.balance === 'number' ? (e.balance > 0 ? 'attackers' : e.balance < 0 ? 'defenders' : null) : null;
-    onBattleResult(ctx, att, def, winner);
-  }
-}
 
 export const diplomacySystem = defineSystem({
   id: 'diplomacy',
@@ -83,7 +63,8 @@ export const diplomacySystem = defineSystem({
   init(ctx) {
     ctx.bus.on('world.controllerChanged', (e) => onCapture(ctx, e.province, e.from, e.to));
     ctx.bus.on('world.countryKilled', (e) => endedByDeath(ctx, e.country));
-    ctx.bus.onPrefix('mil', (e) => sniff(ctx, e as GameEvent));
+    ctx.bus.on('mil.nukeDetonated', (e) => onNuclearUse(ctx, e.country, e.targetCountry ?? undefined));
+    ctx.bus.on('mil.battleEnded', (e) => onBattleResult(ctx, e.attackerCountries, e.defenderCountries, e.winner === 'draw' ? null : e.winner));
   },
   onLoad() {
     invalidateWars();

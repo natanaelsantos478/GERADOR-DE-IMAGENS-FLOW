@@ -19,7 +19,7 @@ const slice = (ctx: Ctx, id: SystemId) => (ctx.state as unknown as Record<string
 export function counterSystem(id: SystemId, log?: string[]): AnySimSystem {
   const sys: SimSystem = {
     id,
-    createSlice: () => ({ ticks: 0, hoursSeen: 0, days: 0, weeks: 0, months: 0, rolls: [], log: [] }) satisfies CounterSlice,
+    createSlice: () => ({ ticks: 0, hoursSeen: 0, days: 0, weeks: 0, months: 0, rolls: [], log: [] }) as never,
     update(ctx, dt) {
       const s = slice(ctx, id);
       s.ticks++;

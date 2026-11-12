@@ -12,5 +12,18 @@
  *   import { aiSystem } from '../sim/ai/system';               // IA
  */
 import type { AnySimSystem } from '../core/contracts';
+import { researchSystem } from '../sim/research/system';
+import { economySystem } from '../sim/economy/system';
+import { diplomacySystem } from '../sim/diplomacy/system';
+import { militarySystem } from '../sim/military/system';
+import { tacticalSystem } from '../sim/tactical/system';
+import { aiSystem } from '../sim/ai/system';
 
-export const SYSTEMS: readonly AnySimSystem[] = [];
+export const SYSTEMS: readonly AnySimSystem[] = [
+  researchSystem,
+  economySystem,
+  diplomacySystem,
+  militarySystem,
+  tacticalSystem,
+  aiSystem,
+] as readonly AnySimSystem[];

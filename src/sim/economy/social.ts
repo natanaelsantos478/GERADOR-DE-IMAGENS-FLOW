@@ -50,7 +50,7 @@ function cityTarget(ctx: Ctx, k: K, idx: number, fill = false): number {
   const dmg = ctx.state.world.cityDamage[idx] ?? 0;
   let energy = 0;
   if (k.ratio < 1 && ch.prio[idx] > k.ratio) energy = -Math.min(25, 10 + (1 - k.ratio) * 40);
-  const hosp = Math.min(6, 3 * ch.cityHosp[idx]), uni = Math.min(4, 2 * ch.cityUni[idx]);
+  const hosp = Math.min(6, 3 * Math.round(ch.cityHosp[idx] * 1e4) / 1e4), uni = Math.min(4, 2 * Math.round(ch.cityUni[idx] * 1e4) / 1e4);
   const war = -dmg * 45 - ch.cityForeign[idx] * 10;
   let local = 0;
   if (ch.unrestCity.size || ch.unrestProv.size) {

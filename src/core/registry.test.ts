@@ -24,7 +24,7 @@ describe('registry', () => {
     const seen: string[] = [];
     game.bus.on('game.command', (e) => seen.push(`${e.command.type}:${e.result.ok}`));
     expect(game.dispatch({ type: 'eco.ping', country: 'BBB' })).toEqual({ ok: true });
-    expect((game.state.economy as { log: string[] }).log).toEqual(['ping:BBB']);
+    expect((game.state.economy as unknown as { log: string[] }).log).toEqual(['ping:BBB']);
     expect(game.dispatch({ type: 'mil.ping', country: 'AAA' }).ok).toBe(true);
     expect(game.dispatch({ type: 'dip.ping', country: 'AAA' })).toMatchObject({ ok: false, reason: 'err.command.systemMissing' });
     expect(game.dispatch({ type: 'eco.nothing', country: 'AAA' })).toMatchObject({ ok: false, reason: 'err.command.unknown' });

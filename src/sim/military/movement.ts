@@ -39,7 +39,9 @@ export function orderMove(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, opts: { 
     dest = [a.lon, a.lat];
     if (dist(f.p, dest) > 2 * airRadius(A, f)) return fail('err.mil.outOfRange');
   }
-  f.od = { k: 'move', to: [r4(dest[0]), r4(dest[1])], attack: opts.attack, retreat: opts.retreat };
+  f.od = { k: 'move', to: [r4(dest[0]), r4(dest[1])] };
+  if (opts.attack) f.od.attack = true;
+  if (opts.retreat) f.od.retreat = true;
   f.rt = null;
   f.pend = true;
   f.e = 0;

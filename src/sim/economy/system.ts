@@ -87,12 +87,16 @@ export const economySystem = defineSystem({
     });
   },
 
+  onLoad(ctx) {
+    pruneUnrest(ctx);
+  },
+
   onDay(ctx) {
     pruneUnrest(ctx);
     const s = ctx.state.economy;
     const dmg = plantDamageToday(ctx);
     const day = Math.floor(ctx.state.time.hours / 24);
-    if (day % 30 === 0) cache(ctx).agg.clear();
+    cache(ctx).agg.clear(); // daily (not monthly): a reload recomputes it, so it must never be staler than one day
     for (const c of ctx.api.worldDyn.aliveCountries()) {
       const e = s.c[c];
       if (!e) continue;
@@ -184,6 +188,8 @@ export const economySystem = defineSystem({
         const s = S(), now = ctx.state.time.hours;
         s.unrest.push({ target, delta, reasonKey, from: now, until: now + days * 24 });
         if (s.unrest.length > 400) s.unrest.splice(0, s.unrest.length - 400);
+        // Keep the derived cache identical to what a reload (which rebuilds it from `s.unrest`) would compute.
+        pruneUnrest(ctx);
       },
       manpower: (c) => S().c[c]?.manpower ?? 0,
       drawManpower(c, n) {

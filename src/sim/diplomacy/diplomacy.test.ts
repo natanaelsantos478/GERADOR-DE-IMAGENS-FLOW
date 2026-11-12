@@ -75,7 +75,7 @@ describe.skipIf(dataMissing.length > 0)('diplomacia (dados reais)', () => {
 
   it('assembleia: nuclear gera reação (reputação, evento, votação de sanção)', async () => {
     const g = await makeGame();
-    g.ctx.bus.emit({ type: 'mil.nukeDetonated', country: 'PRK', targetCountry: 'KOR' });
+    g.ctx.bus.emit({ type: 'mil.nukeDetonated', country: 'PRK', targetCountry: 'KOR', attacker: 'PRK', defender: 'KOR', pos: [127, 37], province: null, killedEstimate: 0 });
     expect(g.ctx.api.diplomacy.reputation('PRK')).toBeLessThan(-20);
     expect(g.ctx.api.diplomacy.sanctionLevel('PRK')).toBeGreaterThan(0.3);
     expect(g.state.diplomacy.vote?.target).toBe('PRK');

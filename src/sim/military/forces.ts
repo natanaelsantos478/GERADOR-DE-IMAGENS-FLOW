@@ -9,7 +9,7 @@ import type { BaseRef, Formation, MilitaryState, Slot, StockState } from './type
 export const S = (ctx: Ctx): MilitaryState => ctx.state.military;
 
 export function emptyState(): MilitaryState {
-  return { forms: {}, battles: {}, queue: {}, stock: {}, flights: [], occ: {}, sh: {}, rad: [], blk: {}, nextF: 1, nextB: 1, nextQ: 1, nextFl: 1 };
+  return { forms: {}, battles: {}, queue: {}, stock: {}, flights: [], occ: {}, sh: {}, rad: [], blk: {}, upk: {}, nextF: 1, nextB: 1, nextQ: 1, nextFl: 1 };
 }
 
 const KIND_NAME: Record<string, string> = {
@@ -55,7 +55,7 @@ export function createFormation(
     id, c, n: opts.name ?? `${(st.nextF % 47) + 1}ª ${KIND_NAME[dominant(slots)] ?? 'Formação'}`, d,
     p: [r4(p[0]), r4(p[1])], h: 0, pr: ctx.world.locateProvince(p[0], p[1]),
     u: slots, o: 1, m: r3(0.7 + ctx.rng.next() * 0.2), x: r3(opts.exp ?? ctx.rng.next() * 0.4), s: 1, e: 0,
-    od: { k: 'idle' }, rt: null, home, bt: null,
+    od: { k: 'idle' }, rt: null, home: home ? { ...home } : null, bt: null,
   };
   st.forms[id] = f;
   touch(ctx);
@@ -100,6 +100,9 @@ function reindex(ctx: Ctx): Env {
   }
   return env;
 }
+
+/** Forces the per-country index to be current (so `env.ver` is stable afterwards). */
+export const reindexIfNeeded = (ctx: Ctx): void => void reindex(ctx);
 
 /** Array of every formation (cached; rebuilt when formations are created/removed). Do not mutate. */
 export const allForms = (ctx: Ctx): Formation[] => reindex(ctx).all;
@@ -190,7 +193,7 @@ export function splitFormation(ctx: Ctx, f: Formation, idxs: number[]): Formatio
     f.u = f.u.filter((_, i) => !pick.includes(i));
   }
   const dom = f.d;
-  const n = createFormation(ctx, f.c, dom, f.p, moved, f.home, { exp: f.x });
+  const n = createFormation(ctx, f.c, dom, f.p, moved, f.home ? { ...f.home } : null, { exp: f.x });
   n.o = f.o;
   n.m = f.m;
   n.s = f.s;
@@ -314,6 +317,16 @@ export function initForces(ctx: Ctx): void {
     const cruise = Math.round(num(inv.destroyers) * 8 + num(inv.frigates) * 4 + num(inv.subs) * 3 + num(inv.bombers) * 2);
     const ballistic = nukes > 0 ? Math.round(nukes * 0.6) : Math.round(num(inv.mlrs) * 0.3);
     if (cruise + ballistic + nukes > 0) st.stock[c] = { cruise, ballistic, nuke: nukes };
+  }
+  // Calibrate upkeep so the raw unit cost sums to ~50% of the real defense budget (the rest is procurement, pay, R&D).
+  for (const country of w.countries) {
+    const c = country.id;
+    let raw = 0;
+    for (const f of formationsOf(ctx, c)) for (const s of f.u) raw += UNITS[s.t].upkeep * s.k * (0.4 + 0.6 * s.s);
+    const sk = stockOf(ctx, c);
+    raw += sk.cruise * UNITS.cruise_missile.upkeep + sk.ballistic * UNITS.ballistic_missile.upkeep + sk.nuke * UNITS.nuke.upkeep;
+    const target = (0.5 * (w.stats[c]?.milExpUsd ?? 0)) / 1e6 / 365;
+    if (raw > 0 && target > 0) st.upk[c] = r3(Math.min(6, target / raw));
   }
 }
 

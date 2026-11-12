@@ -24,7 +24,7 @@ describe('Game', () => {
     game.advanceHours(24);
     expect(log.slice(0, 6)).toEqual(SYSTEM_ORDER.map((id) => `${id}.update`));
     expect(log.filter((l) => l.endsWith('.day'))).toEqual(SYSTEM_ORDER.map((id) => `${id}.day`));
-    const eco = game.state.economy as CounterSlice;
+    const eco = game.state.economy as unknown as CounterSlice;
     expect(eco.ticks).toBe(24);
     expect(eco.hoursSeen).toBeCloseTo(24);
     game.advanceHours(24 * 365);
