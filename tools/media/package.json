@@ -1,0 +1,16 @@
+{
+  "name": "meridiano-media-tools",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "audio": "node build-audio.mjs",
+    "icons": "node build-icons.mjs",
+    "sheet": "node contact-sheet.mjs",
+    "build": "node build-icons.mjs && node contact-sheet.mjs && node build-audio.mjs"
+  },
+  "dependencies": {
+    "@tabler/icons": "^3.26.0",
+    "lucide-static": "^0.468.0"
+  }
+}

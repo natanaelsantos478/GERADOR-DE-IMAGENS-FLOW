@@ -1,0 +1,572 @@
+{
+  "money": {
+    "file": "money.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"coins\""
+  },
+  "energy": {
+    "file": "energy.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"zap\""
+  },
+  "oil": {
+    "file": "oil.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"droplet\""
+  },
+  "food": {
+    "file": "food.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"wheat\""
+  },
+  "steel": {
+    "file": "steel.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "electronics": {
+    "file": "electronics.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"cpu\""
+  },
+  "rare_earth": {
+    "file": "rare_earth.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"gem\""
+  },
+  "uranium": {
+    "file": "uranium.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"radiation\""
+  },
+  "munitions": {
+    "file": "munitions.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "consumer_goods": {
+    "file": "consumer_goods.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"shopping-bag\""
+  },
+  "manpower": {
+    "file": "manpower.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"users\""
+  },
+  "research": {
+    "file": "research.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"flask-conical\""
+  },
+  "stability": {
+    "file": "stability.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"scale\""
+  },
+  "approval": {
+    "file": "approval.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"thumbs-up\""
+  },
+  "population": {
+    "file": "population.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"users-round\""
+  },
+  "economy": {
+    "file": "economy.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"trending-up\""
+  },
+  "budget": {
+    "file": "budget.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"wallet\""
+  },
+  "construction": {
+    "file": "construction.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"hammer\""
+  },
+  "trade": {
+    "file": "trade.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"arrow-left-right\""
+  },
+  "diplomacy": {
+    "file": "diplomacy.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"handshake\""
+  },
+  "forces": {
+    "file": "forces.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"shield\""
+  },
+  "production": {
+    "file": "production.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"factory\""
+  },
+  "intelligence": {
+    "file": "intelligence.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"eye\""
+  },
+  "encyclopedia": {
+    "file": "encyclopedia.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"book-open\""
+  },
+  "settings": {
+    "file": "settings.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"settings\""
+  },
+  "save": {
+    "file": "save.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"save\""
+  },
+  "load": {
+    "file": "load.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"folder-open\""
+  },
+  "news": {
+    "file": "news.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"newspaper\""
+  },
+  "alert": {
+    "file": "alert.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"bell-ring\""
+  },
+  "coal": {
+    "file": "coal.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "gas": {
+    "file": "gas.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"flame\""
+  },
+  "oil_plant": {
+    "file": "oil_plant.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "nuclear": {
+    "file": "nuclear.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"atom\""
+  },
+  "hydro": {
+    "file": "hydro.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"waves\""
+  },
+  "wind": {
+    "file": "wind.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"wind\""
+  },
+  "solar": {
+    "file": "solar.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"sun\""
+  },
+  "biomass": {
+    "file": "biomass.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"leaf\""
+  },
+  "geothermal": {
+    "file": "geothermal.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "city": {
+    "file": "city.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"building-2\""
+  },
+  "capital": {
+    "file": "capital.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"landmark\""
+  },
+  "airport": {
+    "file": "airport.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"plane-takeoff\""
+  },
+  "port": {
+    "file": "port.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"anchor\""
+  },
+  "road": {
+    "file": "road.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"route\""
+  },
+  "rail": {
+    "file": "rail.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"train-front\""
+  },
+  "factory": {
+    "file": "factory.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"factory\""
+  },
+  "mil_factory": {
+    "file": "mil_factory.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"cog\" + hand-drawn addition"
+  },
+  "refinery": {
+    "file": "refinery.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "mine": {
+    "file": "mine.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"pickaxe\""
+  },
+  "farm": {
+    "file": "farm.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"tractor\""
+  },
+  "hospital": {
+    "file": "hospital.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"hospital\""
+  },
+  "university": {
+    "file": "university.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"graduation-cap\""
+  },
+  "base": {
+    "file": "base.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "sam_site": {
+    "file": "sam_site.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "radar": {
+    "file": "radar.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"radar\""
+  },
+  "silo": {
+    "file": "silo.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "bunker": {
+    "file": "bunker.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "infantry": {
+    "file": "infantry.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "mechanized": {
+    "file": "mechanized.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "armor": {
+    "file": "armor.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "recon": {
+    "file": "recon.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "artillery": {
+    "file": "artillery.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "mlrs": {
+    "file": "mlrs.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "air_defense": {
+    "file": "air_defense.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "engineer": {
+    "file": "engineer.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "logistics": {
+    "file": "logistics.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "special_forces": {
+    "file": "special_forces.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "attack_heli": {
+    "file": "attack_heli.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "transport_heli": {
+    "file": "transport_heli.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "fighter": {
+    "file": "fighter.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "bomber": {
+    "file": "bomber.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "air_transport": {
+    "file": "air_transport.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "drone": {
+    "file": "drone.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "destroyer": {
+    "file": "destroyer.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "frigate": {
+    "file": "frigate.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "submarine": {
+    "file": "submarine.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "carrier": {
+    "file": "carrier.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "landing_ship": {
+    "file": "landing_ship.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "cruise_missile": {
+    "file": "cruise_missile.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "ballistic_missile": {
+    "file": "ballistic_missile.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "nuke": {
+    "file": "nuke.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "move": {
+    "file": "move.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"navigation\""
+  },
+  "attack": {
+    "file": "attack.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"crosshair\""
+  },
+  "attack_move": {
+    "file": "attack_move.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "hold": {
+    "file": "hold.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"hand\""
+  },
+  "retreat": {
+    "file": "retreat.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"undo-2\""
+  },
+  "entrench": {
+    "file": "entrench.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "smoke": {
+    "file": "smoke.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"cloud-fog\""
+  },
+  "call_artillery": {
+    "file": "call_artillery.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "call_airstrike": {
+    "file": "call_airstrike.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "formation_line": {
+    "file": "formation_line.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "formation_column": {
+    "file": "formation_column.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "formation_wedge": {
+    "file": "formation_wedge.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "formation_spread": {
+    "file": "formation_spread.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "cease_fire": {
+    "file": "cease_fire.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "fire_at_will": {
+    "file": "fire_at_will.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "pause": {
+    "file": "pause.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"pause\""
+  },
+  "play": {
+    "file": "play.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"play\""
+  },
+  "speed_1": {
+    "file": "speed_1.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "speed_2": {
+    "file": "speed_2.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "speed_3": {
+    "file": "speed_3.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "speed_4": {
+    "file": "speed_4.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "speed_5": {
+    "file": "speed_5.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "zoom_in": {
+    "file": "zoom_in.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"zoom-in\""
+  },
+  "zoom_out": {
+    "file": "zoom_out.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"zoom-out\""
+  },
+  "locate": {
+    "file": "locate.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"locate\""
+  },
+  "close": {
+    "file": "close.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"x\""
+  },
+  "check": {
+    "file": "check.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"check\""
+  },
+  "warning": {
+    "file": "warning.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"triangle-alert\""
+  },
+  "lock": {
+    "file": "lock.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"lock\""
+  },
+  "peace": {
+    "file": "peace.svg",
+    "license": "MIT (project original)",
+    "origin": "hand-drawn for Meridiano"
+  },
+  "war": {
+    "file": "war.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"swords\""
+  },
+  "alliance": {
+    "file": "alliance.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"handshake\""
+  },
+  "embargo": {
+    "file": "embargo.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"package-x\""
+  },
+  "treaty": {
+    "file": "treaty.svg",
+    "license": "ISC",
+    "origin": "Lucide (lucide-static) \"scroll-text\""
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "air_raid_siren": {
+    "file": "air_raid_siren.ogg",
+    "license": "Public domain",
+    "author": "Techtonic",
+    "source": "https://commons.wikimedia.org/wiki/File:Civil-defense-siren-waver.ogg",
+    "durationS": 18.5,
+    "bytes": 140079,
+    "loop": true,
+    "processing": "civil defense siren (waver), 14-34 s with 1.5 s crossfade loop"
+  },
+  "ambient_wind_loop": {
+    "file": "ambient_wind_loop.ogg",
+    "license": "CC0",
+    "author": "SketchMan3",
+    "source": "https://opengameart.org/content/wind-whoosh-loop",
+    "durationS": 5.55,
+    "bytes": 36602,
+    "loop": true,
+    "processing": "wind recording with 0.4 s crossfade loop"
+  },
+  "artillery_fire": {
+    "file": "artillery_fire.ogg",
+    "license": "Public domain",
+    "author": "Unknown authorUnknown author",
+    "source": "https://commons.wikimedia.org/wiki/File:01_Salute_Cannon_Reveille.ogg",
+    "durationS": 3.65,
+    "bytes": 27965,
+    "processing": "US Army salute cannon, first shot 0.3-3.4 s, pitched down 15% and low-passed for weight"
+  },
+  "build_complete": {
+    "file": "build_complete.ogg",
+    "license": "CC0",
+    "author": "FacadeGaikan",
+    "source": "https://opengameart.org/content/residue-sfx",
+    "durationS": 0.96,
+    "bytes": 7510,
+    "processing": "whole clip (Residue SFX \"healthpack\")"
+  },
+  "engine_tank_loop": {
+    "file": "engine_tank_loop.ogg",
+    "license": "CC0",
+    "author": "pauliuw",
+    "source": "https://opengameart.org/content/engine-sounds2",
+    "durationS": 13.2,
+    "bytes": 80151,
+    "loop": true,
+    "processing": "engine recording 3-17 s, pitched down 20% for a heavy diesel, 0.8 s crossfade loop"
+  },
+  "explosion_large": {
+    "file": "explosion_large.ogg",
+    "license": "CC0",
+    "author": "Kenney (Sci-fi Sounds) (via untamedpixels \"150 Combat Sound Effects\") ; NenadSimic",
+    "source": "https://kenney.nl/assets/sci-fi-sounds ; https://opengameart.org/content/150-combat-sound-effects ; https://opengameart.org/content/muffled-distant-explosion",
+    "durationS": 5.39,
+    "bytes": 43672,
+    "processing": "layered: low-frequency blast + crunch + delayed muffled distant explosion"
+  },
+  "explosion_small": {
+    "file": "explosion_small.ogg",
+    "license": "Public domain",
+    "author": "tcpp",
+    "source": "https://commons.wikimedia.org/wiki/File:Explosion_10.ogg",
+    "durationS": 2.72,
+    "bytes": 22928,
+    "processing": "whole clip"
+  },
+  "heli_loop": {
+    "file": "heli_loop.ogg",
+    "license": "CC0",
+    "author": "aquinn",
+    "source": "https://opengameart.org/content/helicopter-sounds",
+    "durationS": 15,
+    "bytes": 125938,
+    "loop": true,
+    "processing": "helicopter recording, 8-24 s with 1 s equal-power crossfade loop"
+  },
+  "jet_flyby": {
+    "file": "jet_flyby.ogg",
+    "license": "CC-BY 3.0",
+    "author": "dklon",
+    "source": "https://opengameart.org/content/fighter-engine-flyby",
+    "durationS": 1.97,
+    "bytes": 21492,
+    "processing": "fighter engine flyby, whole clip"
+  },
+  "mg_burst": {
+    "file": "mg_burst.ogg",
+    "license": "CC0",
+    "author": "Ben Jaszczak et al. (bart)",
+    "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+    "durationS": 1.88,
+    "bytes": 21765,
+    "processing": "PPSh submachine gun long burst, 0.62-2.5 s excerpt"
+  },
+  "missile_launch": {
+    "file": "missile_launch.ogg",
+    "license": "CC0",
+    "author": "qubodup",
+    "source": "https://opengameart.org/content/rocket-launch",
+    "durationS": 5.96,
+    "bytes": 57044,
+    "processing": "rocket launch, whole clip"
+  },
+  "mlrs_salvo": {
+    "file": "mlrs_salvo.ogg",
+    "license": "CC0",
+    "author": "qubodup",
+    "source": "https://opengameart.org/content/rocket-launch",
+    "durationS": 6.76,
+    "bytes": 55829,
+    "processing": "three overlapped, pitch-shifted copies of the rocket launch recording (420/950 ms offsets) to make a salvo"
+  },
+  "music_menu": {
+    "file": "music_menu.ogg",
+    "license": "CC0",
+    "author": "isaiah658",
+    "source": "https://opengameart.org/content/heavenly-loop",
+    "durationS": 33.65,
+    "bytes": 327088,
+    "loop": true,
+    "processing": "\"Heavenly Loop\", whole track, loudness-normalised to -20 LUFS"
+  },
+  "music_peace_1": {
+    "file": "music_peace_1.ogg",
+    "license": "CC0",
+    "author": "Trex0n",
+    "source": "https://opengameart.org/content/peace-at-last-loop",
+    "durationS": 96.05,
+    "bytes": 1301421,
+    "loop": true,
+    "processing": "\"Peace at Last (loop)\", whole track, loudness-normalised"
+  },
+  "music_war_1": {
+    "file": "music_war_1.ogg",
+    "license": "CC0",
+    "author": "Spring Spring",
+    "source": "https://opengameart.org/content/war-theme",
+    "durationS": 150,
+    "bytes": 1895519,
+    "processing": "\"War Theme\", first 150 s with 6 s fade-out, loudness-normalised"
+  },
+  "notify_alert": {
+    "file": "notify_alert.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.84,
+    "bytes": 5515,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "notify_info": {
+    "file": "notify_info.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.52,
+    "bytes": 4834,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "nuke": {
+    "file": "nuke.ogg",
+    "license": "CC0",
+    "author": "NenadSimic ; Kenney (Sci-fi Sounds) (via untamedpixels \"150 Combat Sound Effects\")",
+    "source": "https://opengameart.org/content/muffled-distant-explosion ; https://kenney.nl/assets/sci-fi-sounds ; https://opengameart.org/content/150-combat-sound-effects",
+    "durationS": 8.57,
+    "bytes": 50687,
+    "processing": "same three explosion recordings slowed to 50-60% speed (deeper, longer) and low-passed"
+  },
+  "peace": {
+    "file": "peace.ogg",
+    "license": "CC0",
+    "author": "lentikula (Healing Spell Impacts) (via untamedpixels \"150 Combat Sound Effects\")",
+    "source": "https://lentikula.itch.io/healing-spell-impacts ; https://opengameart.org/content/150-combat-sound-effects",
+    "durationS": 2.5,
+    "bytes": 23756,
+    "processing": "whole clip"
+  },
+  "radio_ack_1": {
+    "file": "radio_ack_1.ogg",
+    "license": "Public domain",
+    "author": "en:User:AlexJ",
+    "source": "https://commons.wikimedia.org/wiki/File:Gts_(bbc)_pips.ogg",
+    "durationS": 0.25,
+    "bytes": 4090,
+    "processing": "single time-signal pip"
+  },
+  "radio_ack_2": {
+    "file": "radio_ack_2.ogg",
+    "license": "Public domain",
+    "author": "en:User:AlexJ",
+    "source": "https://commons.wikimedia.org/wiki/File:Gts_(bbc)_pips.ogg",
+    "durationS": 1.25,
+    "bytes": 4786,
+    "processing": "two time-signal pips"
+  },
+  "radio_ack_3": {
+    "file": "radio_ack_3.ogg",
+    "license": "Public domain",
+    "author": "NASA",
+    "source": "https://commons.wikimedia.org/wiki/File:Sputnik_beep.ogg",
+    "durationS": 0.75,
+    "bytes": 9812,
+    "processing": "Sputnik-1 beep, first 0.75 s"
+  },
+  "research_complete": {
+    "file": "research_complete.ogg",
+    "license": "CC0",
+    "author": "lentikula (Healing Spell Impacts) (via untamedpixels \"150 Combat Sound Effects\")",
+    "source": "https://lentikula.itch.io/healing-spell-impacts ; https://opengameart.org/content/150-combat-sound-effects",
+    "durationS": 1.98,
+    "bytes": 17921,
+    "processing": "whole clip"
+  },
+  "rifle_burst": {
+    "file": "rifle_burst.ogg",
+    "license": "CC0",
+    "author": "Ben Jaszczak et al. (bart)",
+    "source": "https://opengameart.org/content/the-free-firearm-sound-library",
+    "durationS": 1.6,
+    "bytes": 16504,
+    "processing": "AK-47 short burst, 1.0-2.6 s excerpt"
+  },
+  "sam_launch": {
+    "file": "sam_launch.ogg",
+    "license": "CC0",
+    "author": "theMinesAreShakin",
+    "source": "https://opengameart.org/content/rocket-engine",
+    "durationS": 3.31,
+    "bytes": 12321,
+    "processing": "rocket motor loop, 3.5 s excerpt with fade-in, pitched up 15%"
+  },
+  "ship_horn": {
+    "file": "ship_horn.ogg",
+    "license": "CC0",
+    "author": "Tvabutzku1234",
+    "source": "https://commons.wikimedia.org/wiki/File:Fog_signal_Bremerhaven.ogg",
+    "durationS": 5.5,
+    "bytes": 26030,
+    "processing": "harbour fog horn, first 5.5 s"
+  },
+  "tank_cannon": {
+    "file": "tank_cannon.ogg",
+    "license": "CC0",
+    "author": "Thimras",
+    "source": "https://opengameart.org/content/cannon-fire",
+    "durationS": 2.6,
+    "bytes": 23153,
+    "processing": "cannon shot, first 2.6 s"
+  },
+  "ui_click": {
+    "file": "ui_click.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.05,
+    "bytes": 3716,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "ui_close": {
+    "file": "ui_close.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.19,
+    "bytes": 4147,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "ui_error": {
+    "file": "ui_error.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.37,
+    "bytes": 4416,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "ui_hover": {
+    "file": "ui_hover.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.04,
+    "bytes": 3674,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "ui_open": {
+    "file": "ui_open.ogg",
+    "license": "CC0 (original synthesis)",
+    "author": "Meridiano project",
+    "source": "generated by tools/media/build-audio.mjs",
+    "durationS": 0.19,
+    "bytes": 4216,
+    "synth": true,
+    "processing": "synthesised sine tones (ffmpeg aevalsrc), original work of this project"
+  },
+  "war_declared": {
+    "file": "war_declared.ogg",
+    "license": "CC0",
+    "author": "spt3125 ; Elwood P. Dowd",
+    "source": "https://commons.wikimedia.org/wiki/File:Timpani_64-c-p5.wav ; https://commons.wikimedia.org/wiki/File:Original_foghorn_at_East_Brother_Island_Lighthouse.ogg",
+    "durationS": 4.8,
+    "bytes": 37739,
+    "processing": "timpani hit + diaphone foghorn"
+  }
+}
