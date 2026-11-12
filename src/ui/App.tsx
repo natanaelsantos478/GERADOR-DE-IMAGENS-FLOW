@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { formatDate } from '../core/clock';
 import { bootText } from '../app/bootText';
 import { useAppHost } from '../app/host';
+import GlobeView from '../render/globe/GlobeView';
 
 function useFrame(ms = 250) {
   const [, setN] = useState(0);
@@ -45,10 +46,9 @@ export default function App() {
   }
   const t = game?.state.time;
   return (
-    <div style={box} data-testid="boot-ready">
-      <div>
-        <h1 style={{ fontSize: 22 }}>{bootText('title')}</h1>
-        <p>{bootText('ready')}</p>
+    <div style={{ position: 'absolute', inset: 0 }} data-testid="boot-ready">
+      <GlobeView />
+      <div style={{ position: 'absolute', top: 8, left: 12, pointerEvents: 'none', textShadow: '0 1px 3px #000' }}>
         {t && (
           <p data-testid="game-date">
             {formatDate(t.hours, navigator.language || 'pt-BR', true)} · {t.paused ? '⏸' : `▶ ×${t.speed}`}
