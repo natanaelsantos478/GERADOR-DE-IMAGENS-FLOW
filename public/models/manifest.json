@@ -1,0 +1,619 @@
+{
+ "mbt": {
+  "file": "mbt.glb",
+  "lengthM": 9.8,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.316,
+   1.663,
+   4.388
+  ],
+  "license": "CC0-1.0",
+  "author": "Sketlux",
+  "source": "https://opengameart.org/content/abrams-tank",
+  "substitute": false,
+  "triangles": 10255,
+  "bytes": 400548,
+  "notes": "Recoloured from yellow to olive drab; removed helper \"guide\" mesh."
+ },
+ "ifv": {
+  "file": "ifv.glb",
+  "lengthM": 7,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.21,
+   1.465,
+   2.885
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 4102,
+  "bytes": 168692
+ },
+ "apc": {
+  "file": "apc.glb",
+  "lengthM": 6.5,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.3,
+   2.55,
+   6.04
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": false,
+  "triangles": 2652,
+  "bytes": 226496
+ },
+ "truck": {
+  "file": "truck.glb",
+  "lengthM": 8,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.38,
+   2.4,
+   6.145
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": false,
+  "triangles": 1924,
+  "bytes": 166988
+ },
+ "spg": {
+  "file": "spg.glb",
+  "lengthM": 9,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.799,
+   1.438,
+   3.837
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": true,
+  "triangles": 3816,
+  "bytes": 208520,
+  "notes": "Towed howitzer used as stand-in for a self-propelled gun (no free SPG model found)."
+ },
+ "mlrs": {
+  "file": "mlrs.glb",
+  "lengthM": 9.5,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.241,
+   1.69,
+   2.824
+  ],
+  "license": "CC0-1.0",
+  "author": "Sketlux",
+  "source": "https://opengameart.org/content/mobile-sam",
+  "substitute": false,
+  "triangles": 5886,
+  "bytes": 248440,
+  "notes": "Titled \"Mobile SAM\" by author but is a multi-tube rocket-launcher truck (BM-21 style); used as MLRS."
+ },
+ "sam": {
+  "file": "sam.glb",
+  "lengthM": 6,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   3,
+   3.011,
+   3
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": true,
+  "triangles": 1014,
+  "bytes": 93884,
+  "notes": "Anti-aircraft gun used as stand-in for a SAM launcher (no free SAM launcher found)."
+ },
+ "radar": {
+  "file": "radar.glb",
+  "lengthM": 12,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   3.68,
+   8,
+   3.36
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": false,
+  "triangles": 676,
+  "bytes": 68864
+ },
+ "soldier": {
+  "file": "soldier.glb",
+  "lengthM": 1.8,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.6,
+   2.7,
+   0.8
+  ],
+  "license": "CC0-1.0",
+  "author": "Kenney (kenney.nl)",
+  "source": "https://opengameart.org/content/blocky-characters",
+  "substitute": false,
+  "triangles": 72,
+  "bytes": 92348,
+  "animations": [
+   "static",
+   "idle",
+   "walk",
+   "sprint",
+   "sit",
+   "drive",
+   "die",
+   "pick-up",
+   "emote-yes",
+   "emote-no",
+   "holding-right",
+   "holding-left",
+   "holding-both",
+   "holding-right-shoot",
+   "holding-left-shoot",
+   "holding-both-shoot",
+   "attack-melee-right",
+   "attack-melee-left",
+   "attack-kick-right",
+   "attack-kick-left",
+   "interact-right",
+   "interact-left",
+   "wheelchair-sit",
+   "wheelchair-move-forward",
+   "wheelchair-move-back",
+   "wheelchair-move-left",
+   "wheelchair-move-right"
+  ],
+  "animationRoles": {
+   "idle": "idle",
+   "run": "sprint",
+   "shoot": "holding-both-shoot"
+  }
+ },
+ "attack_heli": {
+  "file": "attack_heli.glb",
+  "lengthM": 17.7,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   7.292,
+   2.881,
+   9.024
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Geibu3D (Cheese Animal Productions)",
+  "source": "https://opengameart.org/content/attack-chopper",
+  "substitute": false,
+  "triangles": 2624,
+  "bytes": 225044
+ },
+ "transport_heli": {
+  "file": "transport_heli.glb",
+  "lengthM": 19.8,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.917,
+   1.719,
+   4.298
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 12661,
+  "bytes": 297000
+ },
+ "fighter": {
+  "file": "fighter.glb",
+  "lengthM": 18.9,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.965,
+   1.015,
+   3.785
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 1768,
+  "bytes": 39368
+ },
+ "bomber": {
+  "file": "bomber.glb",
+  "lengthM": 52,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   5.145,
+   0.32,
+   3.056
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 3278,
+  "bytes": 163252,
+  "notes": "lengthM is the largest dimension (wingspan 52 m; fuselage length is ~21 m)."
+ },
+ "transport_plane": {
+  "file": "transport_plane.glb",
+  "lengthM": 29.8,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   27.39,
+   8.71,
+   27.24
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": true,
+  "triangles": 4532,
+  "bytes": 467332,
+  "notes": "Civil twin-turboprop used as stand-in for a military transport (no free military transport model found)."
+ },
+ "drone": {
+  "file": "drone.glb",
+  "lengthM": 2,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.105,
+   0.453,
+   1.105
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": false,
+  "triangles": 1162,
+  "bytes": 93528
+ },
+ "destroyer": {
+  "file": "destroyer.glb",
+  "lengthM": 155,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   0.823,
+   2.171,
+   4.93
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 1980,
+  "bytes": 81520
+ },
+ "frigate": {
+  "file": "frigate.glb",
+  "lengthM": 135,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   0.859,
+   1.612,
+   4.618
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 3165,
+  "bytes": 146056,
+  "notes": "Distinct hull from \"destroyer\" (Cimpletoon cruiser model, scaled to frigate length)."
+ },
+ "carrier": {
+  "file": "carrier.glb",
+  "lengthM": 333,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.307,
+   1.23,
+   4.343
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 840,
+  "bytes": 36796
+ },
+ "submarine": {
+  "file": "submarine.glb",
+  "lengthM": 110,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   0.752,
+   1.392,
+   4.404
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 1680,
+  "bytes": 36532
+ },
+ "cargo_ship": {
+  "file": "cargo_ship.glb",
+  "lengthM": 300,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   1.672,
+   1.868,
+   4.199
+  ],
+  "license": "CC0-1.0",
+  "author": "Sketlux",
+  "source": "https://opengameart.org/content/container-ship-full",
+  "substitute": false,
+  "triangles": 3587,
+  "bytes": 197860
+ },
+ "missile": {
+  "file": "missile.glb",
+  "lengthM": 6,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.184,
+   0.847,
+   4.023
+  ],
+  "license": "CC0-1.0",
+  "author": "yd (Cimpletoon freeciv unit set)",
+  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
+  "substitute": false,
+  "triangles": 1032,
+  "bytes": 52172
+ },
+ "wind_turbine": {
+  "file": "wind_turbine.glb",
+  "lengthM": 90,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   0.605,
+   2.314,
+   1.127
+  ],
+  "license": "CC0-1.0",
+  "author": "Kenney (kenney.nl)",
+  "source": "https://opengameart.org/content/city-kit-industrial",
+  "substitute": false,
+  "triangles": 456,
+  "bytes": 38156
+ },
+ "solar_farm": {
+  "file": "solar_farm.glb",
+  "lengthM": 120,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   56,
+   2.774,
+   45.463
+  ],
+  "license": "CC0-1.0",
+  "author": "Kenney (kenney.nl)",
+  "source": "https://opengameart.org/content/city-kit-industrial",
+  "substitute": false,
+  "triangles": 976,
+  "bytes": 71388,
+  "composite": true
+ },
+ "factory": {
+  "file": "factory.glb",
+  "lengthM": 90,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   83,
+   35.741,
+   57
+  ],
+  "license": "CC0-1.0",
+  "author": "Kenney (kenney.nl)",
+  "source": "https://opengameart.org/content/city-kit-industrial",
+  "substitute": false,
+  "triangles": 6060,
+  "bytes": 302204,
+  "composite": true
+ },
+ "plant_thermal": {
+  "file": "plant_thermal.glb",
+  "lengthM": 110,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   80.381,
+   55,
+   57.153
+  ],
+  "license": "CC-BY-4.0 / CC0-1.0",
+  "author": "Polyfork; Kenney (kenney.nl)",
+  "source": "https://polyfork.dev ; https://opengameart.org/content/city-kit-industrial",
+  "substitute": false,
+  "triangles": 5326,
+  "bytes": 389620,
+  "composite": true
+ },
+ "refinery": {
+  "file": "refinery.glb",
+  "lengthM": 110,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   84.121,
+   50,
+   43.365
+  ],
+  "license": "CC0-1.0 / CC-BY-4.0",
+  "author": "Kenney (kenney.nl); Polyfork",
+  "source": "https://opengameart.org/content/city-kit-industrial ; https://polyfork.dev",
+  "substitute": false,
+  "triangles": 2418,
+  "bytes": 222728,
+  "composite": true
+ },
+ "plant_nuclear": {
+  "file": "plant_nuclear.glb",
+  "lengthM": 140,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   120,
+   40.949,
+   79.513
+  ],
+  "license": "CC0-1.0 / CC-BY-4.0",
+  "author": "vi1e8 (cooling tower); Polyfork (reactor block)",
+  "source": "https://opengameart.org/content/cooling-tower ; https://polyfork.dev",
+  "substitute": false,
+  "triangles": 1998,
+  "bytes": 140568,
+  "composite": true
+ },
+ "plant_hydro": {
+  "file": "plant_hydro.glb",
+  "lengthM": 120,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   100,
+   22,
+   96
+  ],
+  "license": "CC0-1.0 / CC-BY-4.0",
+  "author": "Kenney (kenney.nl); Polyfork",
+  "source": "https://opengameart.org/content/city-kit-industrial ; https://polyfork.dev",
+  "substitute": true,
+  "triangles": 3063,
+  "bytes": 282332,
+  "composite": true,
+  "notes": "No free hydro-dam model found: procedural concrete dam/reservoir slabs (own work, CC0) + Kenney industrial building as power house + Polyfork pump house."
+ },
+ "airport": {
+  "file": "airport.glb",
+  "lengthM": 200,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   170,
+   24,
+   63
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 3704,
+  "bytes": 340604,
+  "composite": true,
+  "notes": "Procedural runway/apron slabs (own work, CC0)."
+ },
+ "port": {
+  "file": "port.glb",
+  "lengthM": 160,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   130,
+   34,
+   81
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 3634,
+  "bytes": 336692,
+  "composite": true,
+  "notes": "Procedural quay/water slabs (own work, CC0)."
+ },
+ "military_base": {
+  "file": "military_base.glb",
+  "lengthM": 120,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   100,
+   22.295,
+   70
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 5888,
+  "bytes": 545416,
+  "composite": true,
+  "notes": "Procedural ground slab (own work, CC0)."
+ },
+ "city_block": {
+  "file": "city_block.glb",
+  "lengthM": 140,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   100,
+   70,
+   100
+  ],
+  "license": "CC0-1.0",
+  "author": "Kenney (kenney.nl)",
+  "source": "https://opengameart.org/content/city-kit-commercial",
+  "substitute": false,
+  "triangles": 5416,
+  "bytes": 285312,
+  "composite": true,
+  "notes": "Procedural ground slab (own work, CC0)."
+ },
+ "capital_building": {
+  "file": "capital_building.glb",
+  "lengthM": 60,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   20,
+   12,
+   20
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "substitute": false,
+  "triangles": 1140,
+  "bytes": 103096
+ }
+}

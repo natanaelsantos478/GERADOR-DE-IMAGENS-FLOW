@@ -1,0 +1,63 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#dfe5ea">
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const CELL_W=400, CELL_H=300;
+window.renderSheet = async (items, cols) => {
+  const rows = Math.ceil(items.length/cols);
+  const W=cols*CELL_W, H=rows*CELL_H;
+  const r = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+  r.setPixelRatio(1); r.setSize(W,H); r.setScissorTest(true); r.setClearColor(0xdfe5ea);
+  r.outputColorSpace = THREE.SRGBColorSpace;
+  document.body.appendChild(r.domElement);
+  const labels=[];
+  const loader = new GLTFLoader();
+  for (let i=0;i<items.length;i++){
+    const it = items[i];
+    const cx=(i%cols)*CELL_W, cy=H-(Math.floor(i/cols)+1)*CELL_H;
+    const scene = new THREE.Scene();
+    scene.add(new THREE.HemisphereLight(0xffffff,0x778899,2.2));
+    const dl=new THREE.DirectionalLight(0xffffff,2.2); dl.position.set(3,6,4); scene.add(dl);
+    let status='ok', info='';
+    try {
+      const g = await loader.loadAsync(it.url);
+      const root = g.scene;
+      const holder = new THREE.Group(); holder.add(root);
+      // manifest semantics: yaw rotates model so its front points -Z; scale so longest horizontal extent = lengthM
+      holder.rotation.y = THREE.MathUtils.degToRad(it.yawOffsetDeg||0);
+      holder.updateMatrixWorld(true);
+      const bb = new THREE.Box3().setFromObject(holder);
+      const size = bb.getSize(new THREE.Vector3());
+      const L = Math.max(size.x,size.z,size.y) || 1;
+      const s = 1/L; // normalise to unit for display
+      const wrap = new THREE.Group(); wrap.add(holder); wrap.scale.setScalar(s);
+      wrap.updateMatrixWorld(true);
+      const bb2 = new THREE.Box3().setFromObject(wrap);
+      const c = bb2.getCenter(new THREE.Vector3());
+      holder.position.x -= c.x/s; holder.position.z -= c.z/s; holder.position.y -= bb2.min.y/s;
+      // front (-Z) -> screen right
+      const top = new THREE.Group(); top.add(wrap); top.rotation.y = -Math.PI/2;
+      scene.add(top);
+      const gr = new THREE.GridHelper(1.4,14,0x99a,0xbbc); scene.add(gr);
+      const h = bb2.getSize(new THREE.Vector3()).y;
+      const cam = new THREE.PerspectiveCamera(30, CELL_W/CELL_H, 0.01, 50);
+      const d = 2.3;
+      if (it.view==='side') { cam.position.set(0, h*0.5+0.12, 2.2); cam.lookAt(0, h*0.45, 0); } else if (it.view==='top') { cam.position.set(0.001, 2.4, 0.05); cam.lookAt(0,0,0); } else { cam.position.set(0.3*d, 0.38*d+h*0.3, 0.9*d); cam.lookAt(0, h*0.4, 0); }
+      r.setViewport(cx,cy,CELL_W,CELL_H); r.setScissor(cx,cy,CELL_W,CELL_H);
+      r.render(scene,cam);
+      info = `${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}`;
+      let tris=0, tex=0; root.traverse(o=>{ if(o.isMesh){ const gg=o.geometry; tris+=(gg.index?gg.index.count:gg.attributes.position.count)/3; if(o.material.map) tex++; }});
+      info += ` ${Math.round(tris)}t ${tex}tex`;
+    } catch(e){ status='ERR '+e.message; r.setViewport(cx,cy,CELL_W,CELL_H); r.setScissor(cx,cy,CELL_W,CELL_H); r.setClearColor(0xe8b4b4); r.clear(); r.setClearColor(0xdfe5ea); }
+    labels.push({x:cx,y:(Math.floor(i/cols))*CELL_H,name:it.name,info:info||status});
+  }
+  // overlay labels via 2D canvas composite
+  const c2=document.createElement('canvas'); c2.width=W; c2.height=H; const g2=c2.getContext('2d');
+  g2.drawImage(r.domElement,0,0);
+  g2.font='bold 16px sans-serif';
+  for(const l of labels){ g2.fillStyle='#111'; g2.fillText(l.name,l.x+8,l.y+20); g2.font='11px monospace'; g2.fillStyle='#345'; g2.fillText(l.info,l.x+8,l.y+36); g2.font='bold 16px sans-serif'; g2.strokeStyle='#bbc'; g2.strokeRect(l.x,l.y,CELL_W,CELL_H); }
+  return c2.toDataURL('image/png');
+};
+window.ready=true;
+</script>
