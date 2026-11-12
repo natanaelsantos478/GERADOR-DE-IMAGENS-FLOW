@@ -3,11 +3,15 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 import { useEffect, useRef } from 'react';
 import { appHost, useAppHost } from '../../app/host';
 import { createGlobe } from './createGlobe';
+import { attachTacticalLayer } from '../tactical';
+import { attachUnitsLayer } from '../units';
 import { setGlobe } from './registry';
 
 declare global {
   interface Window {
     __globe?: import('./types').Globe | null;
+    __units?: import('../units').UnitsLayer;
+    __tactical?: import('../tactical').TacticalLayer;
   }
 }
 
@@ -24,10 +28,17 @@ export default function GlobeView() {
     globeRef.current = g;
     window.__globe = g;
     setGlobe(g);
+    const getGame = () => appHost.getState().game;
+    const units = attachUnitsLayer(g, getGame);
+    const tactical = attachTacticalLayer(g, getGame);
+    window.__units = units;
+    window.__tactical = tactical;
     const el = g.minimap.element;
     Object.assign(el.style, { pointerEvents: 'auto', position: 'absolute', right: '12px', bottom: '28px', borderRadius: '4px', boxShadow: '0 2px 10px #0008' });
     minimapSlot.current?.appendChild(el);
     return () => {
+      tactical.destroy();
+      units.destroy();
       setGlobe(null);
       window.__globe = null;
       globeRef.current = null;
