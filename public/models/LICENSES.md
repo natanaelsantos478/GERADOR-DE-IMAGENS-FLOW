@@ -10,6 +10,8 @@ Procedural ground slabs (airport, port, military_base, city_block, plant_hydro d
 - **Geibu3D (Cheese Animal Productions)** - "Attack Chopper", CC BY 4.0, https://opengameart.org/content/attack-chopper (Apache camo-green texture from the same pack).
 
 ## CC0 / public domain (attribution given as courtesy)
+- **Quaternius** - Ultimate Animated Character Pack, Ultimate Gun Pack: CC0 - https://opengameart.org/content/animated-characters-pack , /low-poly-guns-pack
+- **mfonasd** (Antonov An-28) and **app4soft** (Glider Flying): CC0 - https://opengameart.org/content/antonov-an-28-3d-model , /glider-flying
 - **yd** - "Cimpletoon" freeciv unit set, CC0 (credits file: some meshes originate from public-domain Blend Swap models by Joni Vvaris, Edimar Dos Reis Silva, Praydude, anonymous): https://opengameart.org/content/blender-models-for-freeciv-units
 - **Sketlux** - Abrams tank, Mobile SAM (rocket-launcher truck), Container ship full: CC0 - https://opengameart.org/content/abrams-tank , /mobile-sam , /container-ship-full
 - **vi1e8** - Cooling Tower, CC0 (dual CC-BY 3.0/CC0 listing; used under CC0): https://opengameart.org/content/cooling-tower
@@ -22,17 +24,17 @@ Procedural ground slabs (airport, port, military_base, city_block, plant_hydro d
 | ifv | Cimpletoon mechinf (recoloured olive) | yd | CC0 |
 | apc | Armoured Half-Track | Polyfork | CC BY 4.0 |
 | truck | Military Cargo Truck | Polyfork | CC BY 4.0 |
-| spg | Cimpletoon howitzer (substitute: towed gun) | yd | CC0 |
+| spg (composite) | Tracked Crawler chassis + Towed Field Howitzer gun (olive recolour) | Polyfork | CC BY 4.0 |
 | mlrs | Mobile SAM (actually rocket launcher truck) | Sketlux | CC0 |
-| sam | Anti-Aircraft Gun (substitute) | Polyfork | CC BY 4.0 |
-| radar | Radar Aerial Mast | Polyfork | CC BY 4.0 |
-| soldier | Blocky Characters "character-a" (rigged; idle/sprint/holding-both-shoot...) | Kenney | CC0 |
+| sam (composite, substitute) | 8-Wheel Industrial Hauler (olive) + procedural launch canisters (own work, CC0) | Polyfork / own | CC BY 4.0 / CC0 |
+| radar (composite) | 8-Wheel Industrial Hauler (olive) + Sensor Dish | Polyfork | CC BY 4.0 |
+| soldier | Soldier_Male (Ultimate Animated Character Pack; idle/run/walk/shoot...) + AssaultRifle_1 (Ultimate Gun Pack) | Quaternius | CC0 |
 | attack_heli | Attack Chopper | Geibu3D | CC BY 4.0 |
 | transport_heli | Cimpletoon helicopter02 | yd | CC0 |
 | fighter | Cimpletoon stealthfighter (recoloured) | yd | CC0 |
 | bomber | Cimpletoon stealth_bomber1 | yd | CC0 |
-| transport_plane | Regional Turboprop (substitute) | Polyfork | CC BY 4.0 |
-| drone | Survey Drone | Polyfork | CC BY 4.0 |
+| transport_plane (substitute) | Antonov An-28 (recoloured grey) | mfonasd | CC0 |
+| drone (substitute) | Glider Flying (recoloured grey, stand-in for a MALE UAV) | app4soft | CC0 |
 | destroyer | Cimpletoon destroyer1 | yd | CC0 |
 | frigate | Cimpletoon cruiser01 | yd | CC0 |
 | carrier | Cimpletoon carrier01 | yd | CC0 |
@@ -45,7 +47,7 @@ Procedural ground slabs (airport, port, military_base, city_block, plant_hydro d
 | plant_thermal | Riveted Boiler Hall, Cowled Chimney Stack x2 (Polyfork); detail-tank-large, building-a (Kenney) | Polyfork / Kenney | CC BY 4.0 / CC0 |
 | refinery | detail-tank-large x3 (Kenney); Horizontal Tank x2, Cowled Chimney Stack, Pipe Run (Polyfork) | Kenney / Polyfork | CC0 / CC BY 4.0 |
 | plant_nuclear | Cooling Tower x2 (vi1e8); Reactor Block (Polyfork) | vi1e8 / Polyfork | CC0 / CC BY 4.0 |
-| plant_hydro (substitute) | procedural dam; Kenney building-i; Polyfork Water Pump House | own / Kenney / Polyfork | CC0 / CC BY 4.0 |
+| plant_hydro (substitute) | procedural arch dam/reservoir/river (own work, CC0); Kenney building-i, building-k | own / Kenney | CC0 |
 | airport | Airfield Control Tower, Shuttle Hangar, Vehicle Depot Hangar, Landing Pad | Polyfork | CC BY 4.0 |
 | port | Dock Cargo Crane x2, Dock Warehouse, Cargo Container x5 | Polyfork | CC BY 4.0 |
 | military_base | Command Center, Nissen Hut x2, Concrete Pillbox, Sentry Box, Landing Pad, Anti-Aircraft Gun | Polyfork | CC BY 4.0 |

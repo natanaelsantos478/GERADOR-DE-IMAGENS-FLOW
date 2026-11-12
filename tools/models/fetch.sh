@@ -25,3 +25,11 @@ cp_() { "$PY" -I "$H/blend2glb.py" "$1" "$C/raw-glb/$2.glb" --no-anim; }
 cp_ "$C/abrams/abrams.blend" abrams; cp_ "$C/mobilesam/romb.blend" mobilesam; cp_ "$C/containership/cs.blend" containership
 "$PY" -I "$H/import2glb.py" "$C/attackchopper/FBX/Attack_Helicopter.fbx" "$C/raw-glb/apache.glb"
 "$PY" -I "$H/import2glb.py" "$C/cooling/cooling_tower.fbx" "$C/raw-glb/cooling.glb"
+# --- second pass sources
+get quat-chars c.zip $OGA/ultimate_animated_character_pack_by_quaternius.zip
+get quat-guns g.zip $OGA/ultimate_gun_pack_by_quaternius.zip
+get glider g.zip $OGA/FFGL_blend.zip
+get an28 a.zip $OGA/antonov_an-28.zip
+"$PY" -I "$H/blend2glb.py" "$C/quat-chars/Ultimate Animated Character Pack - Nov 2019/Blends/Soldier_Male.blend" "$C/raw-glb/q_sm.glb"
+"$PY" -I "$H/import2glb.py" "$C/quat-guns/Ultimate Gun Pack - July 2019/FBX/AssaultRifle_1.fbx" "$C/raw-glb/gun_AssaultRifle_1.glb"
+cp_ "$C/glider/FFGL.blend" glider; cp_ "$C/an28/Antonov An-28/an28.blend" an28

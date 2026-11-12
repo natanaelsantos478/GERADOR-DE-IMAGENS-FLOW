@@ -32,7 +32,9 @@ for o in bpy.data.objects:
         keep.append(o)
     elif o.type == 'ARMATURE' and anim:
         keep.append(o)
-bpy.ops.object.select_all(action='DESELECT')
+for o in bpy.data.objects:
+    try: o.select_set(False)
+    except Exception: pass
 for o in keep: o.select_set(True)
 print("KEPT", len(keep), "ANIMS", [a.name for a in bpy.data.actions])
 bpy.ops.export_scene.gltf(filepath=dst, export_format='GLB', use_selection=True, export_apply=True,

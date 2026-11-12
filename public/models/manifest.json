@@ -74,17 +74,18 @@
   "yawOffsetDeg": 180,
   "zOffsetM": 0,
   "nativeSize": [
-   1.799,
-   1.438,
-   3.837
+   3.08,
+   3.687,
+   7
   ],
-  "license": "CC0-1.0",
-  "author": "yd (Cimpletoon freeciv unit set)",
-  "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
-  "substitute": true,
-  "triangles": 3816,
-  "bytes": 208520,
-  "notes": "Towed howitzer used as stand-in for a self-propelled gun (no free SPG model found)."
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 4146,
+  "bytes": 364756,
+  "composite": true,
+  "notes": "Composite (self-propelled): Polyfork tracked crawler chassis + Polyfork field-howitzer gun mounted on the deck."
  },
  "mlrs": {
   "file": "mlrs.glb",
@@ -106,21 +107,22 @@
  },
  "sam": {
   "file": "sam.glb",
-  "lengthM": 6,
+  "lengthM": 12,
   "yawOffsetDeg": 180,
   "zOffsetM": 0,
   "nativeSize": [
-   3,
-   3.011,
-   3
+   4,
+   7.629,
+   15.203
   ],
-  "license": "CC-BY-4.0",
-  "author": "Polyfork",
-  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "license": "CC-BY-4.0 / CC0-1.0",
+  "author": "Polyfork (truck chassis); launcher canisters are procedural (own work, CC0)",
+  "source": "https://polyfork.dev",
   "substitute": true,
-  "triangles": 1014,
-  "bytes": 93884,
-  "notes": "Anti-aircraft gun used as stand-in for a SAM launcher (no free SAM launcher found)."
+  "triangles": 1580,
+  "bytes": 131688,
+  "composite": true,
+  "notes": "Composite: Polyfork 8-wheel hauler recoloured olive + procedural tilted launch canisters (Patriot/S-300 style). Not a single downloaded SAM model."
  },
  "radar": {
   "file": "radar.glb",
@@ -128,16 +130,18 @@
   "yawOffsetDeg": 180,
   "zOffsetM": 0,
   "nativeSize": [
-   3.68,
-   8,
-   3.36
+   4,
+   9.3,
+   12
   ],
   "license": "CC-BY-4.0",
   "author": "Polyfork",
-  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "source": "https://polyfork.dev",
   "substitute": false,
-  "triangles": 676,
-  "bytes": 68864
+  "triangles": 2222,
+  "bytes": 196804,
+  "composite": true,
+  "notes": "Composite: Polyfork 8-wheel hauler (recoloured olive) carrying a Polyfork radar dish on the roof."
  },
  "soldier": {
   "file": "soldier.glb",
@@ -145,49 +149,40 @@
   "yawOffsetDeg": 180,
   "zOffsetM": 0,
   "nativeSize": [
-   1.6,
-   2.7,
-   0.8
+   3.24,
+   3.284,
+   2.175
   ],
   "license": "CC0-1.0",
-  "author": "Kenney (kenney.nl)",
-  "source": "https://opengameart.org/content/blocky-characters",
+  "author": "Quaternius (Ultimate Animated Character Pack: Soldier_Male; Ultimate Gun Pack: AssaultRifle_1)",
+  "source": "https://opengameart.org/content/animated-characters-pack ; https://opengameart.org/content/low-poly-guns-pack",
   "substitute": false,
-  "triangles": 72,
-  "bytes": 92348,
+  "triangles": 4250,
+  "bytes": 648160,
   "animations": [
-   "static",
-   "idle",
-   "walk",
-   "sprint",
-   "sit",
-   "drive",
-   "die",
-   "pick-up",
-   "emote-yes",
-   "emote-no",
-   "holding-right",
-   "holding-left",
-   "holding-both",
-   "holding-right-shoot",
-   "holding-left-shoot",
-   "holding-both-shoot",
-   "attack-melee-right",
-   "attack-melee-left",
-   "attack-kick-right",
-   "attack-kick-left",
-   "interact-right",
-   "interact-left",
-   "wheelchair-sit",
-   "wheelchair-move-forward",
-   "wheelchair-move-back",
-   "wheelchair-move-left",
-   "wheelchair-move-right"
+   "Death",
+   "Defeat",
+   "Idle",
+   "Jump",
+   "PickUp",
+   "Punch",
+   "RecieveHit",
+   "Roll",
+   "Run",
+   "Run_Carry",
+   "Shoot_OneHanded",
+   "SitDown",
+   "StandUp",
+   "SwordSlash",
+   "Victory",
+   "Walk",
+   "Walk_Carry"
   ],
   "animationRoles": {
-   "idle": "idle",
-   "run": "sprint",
-   "shoot": "holding-both-shoot"
+   "idle": "Idle",
+   "run": "Run",
+   "shoot": "Shoot_OneHanded",
+   "walk": "Walk"
   }
  },
  "attack_heli": {
@@ -222,7 +217,7 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 12661,
-  "bytes": 297000
+  "bytes": 297052
  },
  "fighter": {
   "file": "fighter.glb",
@@ -256,43 +251,44 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 3278,
-  "bytes": 163252,
+  "bytes": 163304,
   "notes": "lengthM is the largest dimension (wingspan 52 m; fuselage length is ~21 m)."
  },
  "transport_plane": {
   "file": "transport_plane.glb",
-  "lengthM": 29.8,
+  "lengthM": 30,
   "yawOffsetDeg": 180,
   "zOffsetM": 0,
   "nativeSize": [
-   27.39,
-   8.71,
-   27.24
+   13.06,
+   4.614,
+   22.092
   ],
-  "license": "CC-BY-4.0",
-  "author": "Polyfork",
-  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
+  "license": "CC0-1.0",
+  "author": "mfonasd (Antonov An-28)",
+  "source": "https://opengameart.org/content/antonov-an-28-3d-model",
   "substitute": true,
-  "triangles": 4532,
-  "bytes": 467332,
-  "notes": "Civil twin-turboprop used as stand-in for a military transport (no free military transport model found)."
+  "triangles": 1237,
+  "bytes": 35100,
+  "notes": "Small twin-boom STOL transport recoloured military grey; stands in for a C-130 class airlifter."
  },
  "drone": {
   "file": "drone.glb",
-  "lengthM": 2,
+  "lengthM": 20,
   "yawOffsetDeg": 180,
   "zOffsetM": 0,
   "nativeSize": [
-   1.105,
-   0.453,
-   1.105
+   15.169,
+   1.679,
+   5.93
   ],
-  "license": "CC-BY-4.0",
-  "author": "Polyfork",
-  "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
-  "substitute": false,
-  "triangles": 1162,
-  "bytes": 93528
+  "license": "CC0-1.0",
+  "author": "app4soft (Glider Flying)",
+  "source": "https://opengameart.org/content/glider-flying",
+  "substitute": true,
+  "triangles": 2143,
+  "bytes": 48424,
+  "notes": "High-aspect-ratio glider recoloured grey as stand-in for a MALE UAV (MQ-9 class); lengthM is the wingspan (largest dimension)."
  },
  "destroyer": {
   "file": "destroyer.glb",
@@ -309,7 +305,7 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 1980,
-  "bytes": 81520
+  "bytes": 81572
  },
  "frigate": {
   "file": "frigate.glb",
@@ -326,7 +322,7 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 3165,
-  "bytes": 146056,
+  "bytes": 146108,
   "notes": "Distinct hull from \"destroyer\" (Cimpletoon cruiser model, scaled to frigate length)."
  },
  "carrier": {
@@ -344,7 +340,7 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 840,
-  "bytes": 36796
+  "bytes": 36844
  },
  "submarine": {
   "file": "submarine.glb",
@@ -361,7 +357,7 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 1680,
-  "bytes": 36532
+  "bytes": 36572
  },
  "cargo_ship": {
   "file": "cargo_ship.glb",
@@ -395,7 +391,7 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 1032,
-  "bytes": 52172
+  "bytes": 52224
  },
  "wind_turbine": {
   "file": "wind_turbine.glb",
@@ -506,22 +502,22 @@
  },
  "plant_hydro": {
   "file": "plant_hydro.glb",
-  "lengthM": 120,
+  "lengthM": 130,
   "yawOffsetDeg": 0,
   "zOffsetM": 0,
   "nativeSize": [
-   100,
-   22,
-   96
+   170,
+   21,
+   167
   ],
   "license": "CC0-1.0 / CC-BY-4.0",
-  "author": "Kenney (kenney.nl); Polyfork",
+  "author": "Kenney (kenney.nl); Polyfork; procedural dam (own work)",
   "source": "https://opengameart.org/content/city-kit-industrial ; https://polyfork.dev",
   "substitute": true,
-  "triangles": 3063,
-  "bytes": 282332,
+  "triangles": 1608,
+  "bytes": 103492,
   "composite": true,
-  "notes": "No free hydro-dam model found: procedural concrete dam/reservoir slabs (own work, CC0) + Kenney industrial building as power house + Polyfork pump house."
+  "notes": "No free hydro-dam model found: procedural stepped concrete arch dam with spillway gates, reservoir and river (own work, CC0) + Kenney industrial building as power house."
  },
  "airport": {
   "file": "airport.glb",
