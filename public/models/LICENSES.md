@@ -53,3 +53,97 @@ Procedural ground slabs (airport, port, military_base, city_block, plant_hydro d
 | military_base | Command Center, Nissen Hut x2, Concrete Pillbox, Sentry Box, Landing Pad, Anti-Aircraft Gun | Polyfork | CC BY 4.0 |
 | city_block | City Kit Commercial skyscraper-a/c/e, building-a | Kenney | CC0 |
 | capital_building | Civic Dome Pavilion | Polyfork | CC BY 4.0 |
+
+<!-- VARIANTS:BEGIN -->
+## Real-world vehicle variants (`tools/models/variants.defs.json`)
+
+Each model below is a real vehicle/aircraft/ship/person modelled by third-party artists, converted by `tools/models` (fg2glb.py, stl2glb.py, any2glb.py, variants-finish.mjs): composition of the exterior meshes, re-orientation (nose to +Z), flat painting of untextured STL models, mesh decimation, texture downscale (<=1024 px, jpg/png), scale to real metres. Those are the changes made (CC-BY "changes indicated").
+
+**Share-alike / copyleft notice.** Entries marked SA (GPL-2.0-or-later FlightGear aircraft/ships, CC-BY-SA, GPL) carry `"shareAlike": true` in manifest.json. Derived models stay under the same licence; shipping them requires publishing the converted glb and its source references (this table + `tools/models`) under that licence, and keeping the notices. FlightGear aircraft are GPL (individual authors are named in each aircraft's `-set.xml`/README inside the upstream zip linked as source). Model names/designations are descriptive only.
+
+| id | real name | origin | author | licence | SA | source |
+|---|---|---|---|---|---|---|
+| mbt_m1abrams | M1A1 Abrams | USA | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4324208 |
+| mbt_leopard2 | Leopard 2A6 | DEU | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4324199 |
+| mbt_leclerc | AMX-56 Leclerc | FRA | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4324192 |
+| mbt_challenger2 | Challenger 2 | GBR | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4324185 |
+| mbt_t72 | T-72 | RUS | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4324265 |
+| mbt_t90 | T-90 | RUS | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4334951 |
+| mbt_type99 | ZTZ-99A (Type 99A) | CHN | Wei He (Xdhsqj) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4324227 |
+| mbt_strv103 | Stridsvagn 103 (S-tank) | SWE | canisferus | CC-BY-3.0 |  | https://opengameart.org/content/stridsvagn-103 |
+| apc_btr80 | BTR-80 | RUS | Glug Glug (TenkEnthusiast) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5662670 |
+| ifv_puma | Schützenpanzer Puma | DEU | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4961768 |
+| apc_boxer | GTK Boxer | DEU | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4957830 |
+| ifv_bradley | M2 Bradley | USA | Jack Dueri (JackTheT) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5496813 |
+| apc_fennek | Fennek | DEU | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4943700 |
+| spg_m109 | M109A3G | USA | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5373940 |
+| spg_pzh2000 | Panzerhaubitze 2000 | DEU | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5022607 |
+| spg_2s1 | 2S1 Gvozdika | RUS | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4974140 |
+| spg_2s3 | 2S3 Akatsiya | RUS | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4944605 |
+| spg_rch155 | RCH 155 | DEU | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5351925 |
+| mlrs_m270 | M270 MLRS | USA | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5023390 |
+| mlrs_tos1 | TOS-1 Buratino | RUS | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5338294 |
+| mlrs_iskander | 9K720 Iskander (SS-26) | RUS | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5343360 |
+| sam_pantsir | Pantsir-S1 | RUS | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4956994 |
+| sam_tor | 9K330 Tor (SA-15) | RUS | Joachim Schwarz (Blackbird) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4968754 |
+| sam_s300 | S-300 (Favorit) | RUS | Jack Dueri (JackTheT) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5496828 |
+| sam_tunguska | 2K22 Tunguska | RUS | Sean Sikora (Scas678) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:2920050 |
+| fighter_j20 | Chengdu J-20 | CHN | Jack Dueri (JackTheT) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5496401 |
+| fighter_su35 | Sukhoi Su-35 | RUS | Diego Garcia (FoxFan) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5232643 |
+| fighter_f16 | F-16 Fighting Falcon | USA | Justin Kanarick (airplane guy) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:2385491 |
+| bomber_tu160 | Tupolev Tu-160 | RUS | Jack Dueri (JackTheT) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5496344 |
+| transport_a400m | Airbus A400M Atlas | DEU | Theta 687 | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4973174 |
+| transport_c17 | C-17 Globemaster III | USA | Jay Crispy (Hailstorm) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5167227 |
+| drone_tb2 | Bayraktar TB2 | TUR | Moon Ztar | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5519530 |
+| destroyer_arleigh_burke | Arleigh Burke-class (DDG-51) | USA | Justyn Au (Scuderia) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:4207292 |
+| carrier_nimitz | Nimitz-class carrier | USA | Jack Dueri (JackTheT) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:5494672 |
+| submarine_virginia | Virginia-class (SSN-774) | USA | Magix Stix (stix) | CC-BY-4.0 |  | https://www.thingiverse.com/thing:2163754 |
+| fighter_f35 | F-35B Lightning II | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/F-35B.zip |
+| fighter_f22 | F-22 Raptor | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Lockheed-Martin-FA-22A-Raptor.zip |
+| fighter_f18 | F/A-18 Hornet | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/f18.zip |
+| fighter_f14 | F-14B Tomcat | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/f-14b.zip |
+| fighter_f4 | F-4 Phantom II | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/McDonnell-F-4-Phantom.zip |
+| fighter_f117 | F-117 Nighthawk | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/F-117.zip |
+| fighter_a10 | A-10 Thunderbolt II | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/A-10.zip |
+| fighter_harrier | Harrier GR.3 | GBR | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/harrier.zip |
+| fighter_su37 | Sukhoi Su-37 (Su-27 family) | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/SU-37.zip |
+| fighter_su33 | Sukhoi Su-33 | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Sukhoi-Su-33.zip |
+| fighter_su25 | Sukhoi Su-25 | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Su-25.zip |
+| fighter_su57 | Sukhoi T-50 (Su-57 prototype) | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/T-50.zip |
+| fighter_mig21 | MiG-21bis | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/MiG-21bis.zip |
+| fighter_yak130 | Yakovlev Yak-130 | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Yak-130.zip |
+| fighter_eurofighter | Eurofighter Typhoon | GBR | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/eurofighter.zip |
+| fighter_gripen | Saab JAS 39 Gripen | SWE | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/JAS39-Gripen.zip |
+| fighter_viggen | Saab JA 37 Viggen | SWE | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/JA37.zip |
+| fighter_mirage2000 | Dassault Mirage 2000 | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/mirage2000.zip |
+| fighter_miragef1 | Dassault Mirage F1 | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Mirage_F1.zip |
+| fighter_jaguar | SEPECAT Jaguar | GBR | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Jaguar.zip |
+| fighter_superetendard | Dassault Super Etendard | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Super-Etendard.zip |
+| bomber_b52 | B-52 Stratofortress | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/B-52F.zip |
+| bomber_b1b | B-1B Lancer | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/B-1B.zip |
+| bomber_b2 | B-2 Spirit | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/B-2.zip |
+| bomber_tu95 | Tupolev Tu-95 Bear | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/TU-95.zip |
+| bomber_tu22 | Tupolev Tu-22 Blinder | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Tu-22-Blinder.zip |
+| transport_c130 | C-130 Hercules | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/C130.zip |
+| transport_il76 | Ilyushin Il-76 | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/IL-76.zip |
+| transport_c160 | Transall C-160 | DEU | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/C-160-Transall.zip |
+| transport_c212 | CASA C-212 Aviocar | ESP | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Casa-212.zip |
+| transport_an12 | Antonov An-12 | UKR | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Antonov-An-12.zip |
+| transport_an22 | Antonov An-22 | UKR | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Antonov-An-22.zip |
+| transport_an225 | Antonov An-225 Mriya | UKR | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/AN-225.zip |
+| transport_kc135 | Boeing KC-135 Stratotanker | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/KC135.zip |
+| attack_heli_apache | AH-64 Apache | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/apache.zip |
+| attack_heli_mi24 | Mil Mi-24 Hind | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Mil-Mi-24.zip |
+| attack_heli_ka50 | Kamov Ka-50 Black Shark | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Ka-50.zip |
+| attack_heli_tiger | Eurocopter Tiger | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Tigre.zip |
+| attack_heli_oh58 | Bell OH-58D Kiowa Warrior | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/OH-58D.zip |
+| attack_heli_oh1 | Kawasaki OH-1 | JPN | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/OH-1.zip |
+| transport_heli_uh60 | UH-60 Black Hawk | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/UH-60.zip |
+| transport_heli_ch47 | CH-47 Chinook | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/ch47.zip |
+| transport_heli_v22 | V-22 Osprey | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/V22-Osprey.zip |
+| drone_mq9 | MQ-9 Reaper | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/MQ-9.zip |
+| destroyer_cg47 | Ticonderoga-class cruiser (CG-47) | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
+| frigate_perry | Oliver Hazard Perry-class frigate | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
+| amphib_lpd17 | San Antonio-class (LPD-17) | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
+| soldier_camo | Modern camo infantryman (Elite Soldier) | - | hc | CC-BY-3.0 |  | https://opengameart.org/content/elite-soldier-model |
+<!-- VARIANTS:END -->

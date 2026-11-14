@@ -1,0 +1,2171 @@
+[
+ {
+  "id": "mbt_m1abrams",
+  "cls": "mbt",
+  "realName": "M1A1 Abrams",
+  "origin": "USA",
+  "lengthM": 9.83,
+  "ia": 4324208,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "EGY",
+   "SAU",
+   "KWT",
+   "AUS",
+   "IRQ",
+   "MAR",
+   "POL",
+   "TWN"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4324208 (archive.org mirror: https://archive.org/details/thingiverse-4324208)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "exclude": "Connect_Pivot",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.55,
+    0.47,
+    0.3
+   ]
+  }
+ },
+ {
+  "id": "mbt_leopard2",
+  "cls": "mbt",
+  "realName": "Leopard 2A6",
+  "origin": "DEU",
+  "lengthM": 10.97,
+  "ia": 4324199,
+  "front": "-y",
+  "ops": [
+   "DEU",
+   "NLD",
+   "DNK",
+   "NOR",
+   "SWE",
+   "FIN",
+   "ESP",
+   "GRC",
+   "POL",
+   "CHE",
+   "AUT",
+   "CAN",
+   "CHL",
+   "PRT",
+   "TUR",
+   "HUN",
+   "CZE",
+   "HRV",
+   "IDN",
+   "SGP",
+   "QAT",
+   "UKR",
+   "MKD",
+   "SVN",
+   "SVK",
+   "LTU"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4324199 (archive.org mirror: https://archive.org/details/thingiverse-4324199)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "exclude": "Connect_Pivot",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "mbt_leclerc",
+  "cls": "mbt",
+  "realName": "AMX-56 Leclerc",
+  "origin": "FRA",
+  "lengthM": 9.87,
+  "ia": 4324192,
+  "front": "-y",
+  "ops": [
+   "FRA",
+   "ARE"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4324192 (archive.org mirror: https://archive.org/details/thingiverse-4324192)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "exclude": "Connect_Pivot|Top-2",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.55,
+    0.47,
+    0.3
+   ]
+  }
+ },
+ {
+  "id": "mbt_challenger2",
+  "cls": "mbt",
+  "realName": "Challenger 2",
+  "origin": "GBR",
+  "lengthM": 11.55,
+  "ia": 4324185,
+  "front": "-y",
+  "ops": [
+   "GBR",
+   "OMN"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4324185 (archive.org mirror: https://archive.org/details/thingiverse-4324185)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "exclude": "Connect_Pivot",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.55,
+    0.47,
+    0.3
+   ]
+  }
+ },
+ {
+  "id": "mbt_t72",
+  "cls": "mbt",
+  "realName": "T-72",
+  "origin": "RUS",
+  "lengthM": 9.53,
+  "ia": 4324265,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "BLR",
+   "IND",
+   "IRN",
+   "SYR",
+   "IRQ",
+   "DZA",
+   "AZE",
+   "ARM",
+   "KAZ",
+   "UKR",
+   "SRB",
+   "BGR",
+   "VNM",
+   "LBY",
+   "SDN",
+   "AFG",
+   "YEM",
+   "CUB",
+   "MMR",
+   "TKM",
+   "UZB",
+   "VEN",
+   "PRK",
+   "ETH",
+   "LKA"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4324265 (archive.org mirror: https://archive.org/details/thingiverse-4324265)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "exclude": "Connect_Pivot",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "mbt_t90",
+  "cls": "mbt",
+  "realName": "T-90",
+  "origin": "RUS",
+  "lengthM": 9.63,
+  "ia": 4334951,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "IND",
+   "DZA",
+   "AZE",
+   "TKM",
+   "VNM",
+   "UGA",
+   "SYR"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4334951 (archive.org mirror: https://archive.org/details/thingiverse-4334951)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "mbt_type99",
+  "cls": "mbt",
+  "realName": "ZTZ-99A (Type 99A)",
+  "origin": "CHN",
+  "lengthM": 11.0,
+  "ia": 4324227,
+  "front": "-y",
+  "ops": [
+   "CHN"
+  ],
+  "author": "Wei He (Xdhsqj)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4324227 (archive.org mirror: https://archive.org/details/thingiverse-4324227)",
+  "src": "stl",
+  "spec": {
+   "assemble": "cad",
+   "exclude": "Connect_Pivot",
+   "dark": "track|kette|wheel|skirt",
+   "color": [
+    0.3,
+    0.34,
+    0.22
+   ]
+  }
+ },
+ {
+  "id": "mbt_strv103",
+  "cls": "mbt",
+  "realName": "Stridsvagn 103 (S-tank)",
+  "origin": "SWE",
+  "lengthM": 9.0,
+  "src": "oga",
+  "oga": "stridsvagn-103",
+  "blend": "x/stridsvagn103/stridsvagn103.blend",
+  "ops": [
+   "SWE"
+  ],
+  "author": "canisferus",
+  "license": "CC-BY-3.0",
+  "source": "https://opengameart.org/content/stridsvagn-103"
+ },
+ {
+  "id": "apc_btr80",
+  "cls": "apc",
+  "realName": "BTR-80",
+  "origin": "RUS",
+  "lengthM": 7.65,
+  "ia": 5662670,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "KAZ",
+   "UZB",
+   "IDN",
+   "EGY",
+   "IRQ",
+   "BLR",
+   "ARM",
+   "AZE",
+   "ETH",
+   "VNM"
+  ],
+  "author": "Glug Glug (TenkEnthusiast)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5662670 (archive.org mirror: https://archive.org/details/thingiverse-5662670)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "ifv_puma",
+  "cls": "ifv",
+  "realName": "Sch\u00fctzenpanzer Puma",
+  "origin": "DEU",
+  "lengthM": 7.6,
+  "ia": 4961768,
+  "front": "-y",
+  "ops": [
+   "DEU"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4961768 (archive.org mirror: https://archive.org/details/thingiverse-4961768)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ],
+   "dark": "zzz"
+  }
+ },
+ {
+  "id": "apc_boxer",
+  "cls": "apc",
+  "realName": "GTK Boxer",
+  "origin": "DEU",
+  "lengthM": 7.88,
+  "ia": 4957830,
+  "front": "-y",
+  "ops": [
+   "DEU",
+   "NLD",
+   "GBR",
+   "LTU",
+   "AUS",
+   "QAT"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4957830 (archive.org mirror: https://archive.org/details/thingiverse-4957830)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "ifv_bradley",
+  "cls": "ifv",
+  "realName": "M2 Bradley",
+  "origin": "USA",
+  "lengthM": 6.55,
+  "ia": 5496813,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "SAU",
+   "GRC",
+   "LBN"
+  ],
+  "author": "Jack Dueri (JackTheT)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5496813 (archive.org mirror: https://archive.org/details/thingiverse-5496813)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.55,
+    0.47,
+    0.3
+   ]
+  }
+ },
+ {
+  "id": "apc_fennek",
+  "cls": "apc",
+  "realName": "Fennek",
+  "origin": "DEU",
+  "lengthM": 5.71,
+  "ia": 4943700,
+  "front": "-y",
+  "ops": [
+   "DEU",
+   "NLD"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4943700 (archive.org mirror: https://archive.org/details/thingiverse-4943700)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "spg_m109",
+  "cls": "spg",
+  "realName": "M109A3G",
+  "origin": "USA",
+  "lengthM": 9.1,
+  "ia": 5373940,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "SAU",
+   "KOR",
+   "TUR",
+   "EGY",
+   "ISR",
+   "GRC",
+   "ITA",
+   "NOR",
+   "JOR",
+   "PRT",
+   "BEL",
+   "NLD",
+   "CAN",
+   "DNK"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5373940 (archive.org mirror: https://archive.org/details/thingiverse-5373940)",
+  "src": "stl",
+  "spec": {
+   "include": "^M109_A3G\\.stl",
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "spg_pzh2000",
+  "cls": "spg",
+  "realName": "Panzerhaubitze 2000",
+  "origin": "DEU",
+  "lengthM": 11.7,
+  "ia": 5022607,
+  "front": "-y",
+  "ops": [
+   "DEU",
+   "ITA",
+   "NLD",
+   "GRC",
+   "HRV",
+   "LTU",
+   "QAT",
+   "HUN",
+   "UKR"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5022607 (archive.org mirror: https://archive.org/details/thingiverse-5022607)",
+  "src": "stl",
+  "spec": {
+   "include": "complete",
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "spg_2s1",
+  "cls": "spg",
+  "realName": "2S1 Gvozdika",
+  "origin": "RUS",
+  "lengthM": 7.26,
+  "ia": 4974140,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "UKR",
+   "BLR",
+   "IRQ",
+   "SYR",
+   "POL",
+   "BGR",
+   "EGY",
+   "DZA",
+   "IND",
+   "LBY"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4974140 (archive.org mirror: https://archive.org/details/thingiverse-4974140)",
+  "src": "stl",
+  "spec": {
+   "include": "complete",
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "spg_2s3",
+  "cls": "spg",
+  "realName": "2S3 Akatsiya",
+  "origin": "RUS",
+  "lengthM": 8.4,
+  "ia": 4944605,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "UKR",
+   "BLR",
+   "SYR",
+   "IRQ",
+   "DZA",
+   "AZE",
+   "FIN"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4944605 (archive.org mirror: https://archive.org/details/thingiverse-4944605)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "spg_rch155",
+  "cls": "spg",
+  "realName": "RCH 155",
+  "origin": "DEU",
+  "lengthM": 9.5,
+  "ia": 5351925,
+  "front": "-y",
+  "ops": [
+   "DEU",
+   "GBR",
+   "UKR"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5351925 (archive.org mirror: https://archive.org/details/thingiverse-5351925)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "mlrs_m270",
+  "cls": "mlrs",
+  "realName": "M270 MLRS",
+  "origin": "USA",
+  "lengthM": 6.96,
+  "ia": 5023390,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "GBR",
+   "DEU",
+   "FRA",
+   "ITA",
+   "GRC",
+   "FIN",
+   "NLD",
+   "KOR",
+   "BHR",
+   "EGY",
+   "ISR",
+   "JPN",
+   "TUR",
+   "POL"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5023390 (archive.org mirror: https://archive.org/details/thingiverse-5023390)",
+  "src": "stl",
+  "spec": {
+   "include": "complete",
+   "color": [
+    0.22,
+    0.25,
+    0.17
+   ]
+  }
+ },
+ {
+  "id": "mlrs_tos1",
+  "cls": "mlrs",
+  "realName": "TOS-1 Buratino",
+  "origin": "RUS",
+  "lengthM": 9.5,
+  "ia": 5338294,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "KAZ",
+   "IRQ",
+   "AZE",
+   "SYR"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5338294 (archive.org mirror: https://archive.org/details/thingiverse-5338294)",
+  "src": "stl",
+  "spec": {
+   "include": "complete",
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "mlrs_iskander",
+  "cls": "mlrs",
+  "realName": "9K720 Iskander (SS-26)",
+  "origin": "RUS",
+  "lengthM": 12.0,
+  "ia": 5343360,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "BLR",
+   "ARM",
+   "DZA"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5343360 (archive.org mirror: https://archive.org/details/thingiverse-5343360)",
+  "src": "stl",
+  "spec": {
+   "include": "complete",
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ],
+   "tris": 14000
+  }
+ },
+ {
+  "id": "sam_pantsir",
+  "cls": "sam",
+  "realName": "Pantsir-S1",
+  "origin": "RUS",
+  "lengthM": 9.0,
+  "ia": 4956994,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "SYR",
+   "DZA",
+   "ARE",
+   "IRQ"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4956994 (archive.org mirror: https://archive.org/details/thingiverse-4956994)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "sam_tor",
+  "cls": "sam",
+  "realName": "9K330 Tor (SA-15)",
+  "origin": "RUS",
+  "lengthM": 7.5,
+  "ia": 4968754,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "IRN",
+   "BLR",
+   "GRC",
+   "CHN",
+   "DZA",
+   "EGY",
+   "CYP",
+   "VEN",
+   "ARM"
+  ],
+  "author": "Joachim Schwarz (Blackbird)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4968754 (archive.org mirror: https://archive.org/details/thingiverse-4968754)",
+  "src": "stl",
+  "spec": {
+   "include": "complete",
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "sam_s300",
+  "cls": "sam",
+  "realName": "S-300 (Favorit)",
+  "origin": "RUS",
+  "lengthM": 11.0,
+  "ia": 5496828,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "BLR",
+   "IRN",
+   "CHN",
+   "BGR",
+   "SVK",
+   "GRC",
+   "SYR",
+   "UKR",
+   "VNM",
+   "KAZ",
+   "AZE",
+   "ARM",
+   "DZA",
+   "EGY",
+   "IND"
+  ],
+  "author": "Jack Dueri (JackTheT)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5496828 (archive.org mirror: https://archive.org/details/thingiverse-5496828)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ],
+   "tris": 14000
+  }
+ },
+ {
+  "id": "sam_tunguska",
+  "cls": "sam",
+  "realName": "2K22 Tunguska",
+  "origin": "RUS",
+  "lengthM": 7.9,
+  "ia": 2920050,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "BLR",
+   "UKR",
+   "IND",
+   "SYR",
+   "MAR"
+  ],
+  "author": "Sean Sikora (Scas678)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:2920050 (archive.org mirror: https://archive.org/details/thingiverse-2920050)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.26,
+    0.31,
+    0.19
+   ]
+  }
+ },
+ {
+  "id": "fighter_j20",
+  "cls": "fighter",
+  "realName": "Chengdu J-20",
+  "origin": "CHN",
+  "lengthM": 20.3,
+  "ia": 5496401,
+  "front": "-y",
+  "ops": [
+   "CHN"
+  ],
+  "author": "Jack Dueri (JackTheT)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5496401 (archive.org mirror: https://archive.org/details/thingiverse-5496401)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.42,
+    0.44,
+    0.45
+   ]
+  }
+ },
+ {
+  "id": "fighter_su35",
+  "cls": "fighter",
+  "realName": "Sukhoi Su-35",
+  "origin": "RUS",
+  "lengthM": 21.9,
+  "ia": 5232643,
+  "front": "-y",
+  "ops": [
+   "RUS",
+   "CHN",
+   "DZA",
+   "EGY",
+   "IDN",
+   "IRN"
+  ],
+  "author": "Diego Garcia (FoxFan)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5232643 (archive.org mirror: https://archive.org/details/thingiverse-5232643)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.55,
+    0.58,
+    0.62
+   ]
+  }
+ },
+ {
+  "id": "fighter_f16",
+  "cls": "fighter",
+  "realName": "F-16 Fighting Falcon",
+  "origin": "USA",
+  "lengthM": 15.0,
+  "ia": 2385491,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "TUR",
+   "GRC",
+   "EGY",
+   "ISR",
+   "JOR",
+   "PAK",
+   "TWN",
+   "KOR",
+   "NLD",
+   "BEL",
+   "DNK",
+   "NOR",
+   "POL",
+   "ROU",
+   "PRT",
+   "SGP",
+   "IDN",
+   "THA",
+   "CHL",
+   "BHR",
+   "MAR",
+   "IRQ",
+   "UKR",
+   "VEN",
+   "OMN",
+   "ARE"
+  ],
+  "author": "Justin Kanarick (airplane guy)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:2385491 (archive.org mirror: https://archive.org/details/thingiverse-2385491)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.42,
+    0.44,
+    0.45
+   ]
+  }
+ },
+ {
+  "id": "bomber_tu160",
+  "cls": "bomber",
+  "realName": "Tupolev Tu-160",
+  "origin": "RUS",
+  "lengthM": 54.1,
+  "ia": 5496344,
+  "front": "-y",
+  "ops": [
+   "RUS"
+  ],
+  "author": "Jack Dueri (JackTheT)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5496344 (archive.org mirror: https://archive.org/details/thingiverse-5496344)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.8,
+    0.82,
+    0.85
+   ]
+  }
+ },
+ {
+  "id": "transport_a400m",
+  "cls": "transport_plane",
+  "realName": "Airbus A400M Atlas",
+  "origin": "DEU",
+  "lengthM": 45.1,
+  "ia": 4973174,
+  "front": "-y",
+  "ops": [
+   "DEU",
+   "FRA",
+   "ESP",
+   "GBR",
+   "BEL",
+   "LUX",
+   "TUR",
+   "MYS",
+   "KAZ",
+   "IDN"
+  ],
+  "author": "Theta 687",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4973174 (archive.org mirror: https://archive.org/details/thingiverse-4973174)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.45,
+    0.48,
+    0.5
+   ]
+  }
+ },
+ {
+  "id": "transport_c17",
+  "cls": "transport_plane",
+  "realName": "C-17 Globemaster III",
+  "origin": "USA",
+  "lengthM": 53.0,
+  "ia": 5167227,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "GBR",
+   "CAN",
+   "AUS",
+   "QAT",
+   "ARE",
+   "KWT",
+   "IND"
+  ],
+  "author": "Jay Crispy (Hailstorm)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5167227 (archive.org mirror: https://archive.org/details/thingiverse-5167227)",
+  "src": "stl",
+  "spec": {
+   "include": "^c17\\.stl",
+   "color": [
+    0.45,
+    0.48,
+    0.5
+   ]
+  }
+ },
+ {
+  "id": "drone_tb2",
+  "cls": "drone",
+  "realName": "Bayraktar TB2",
+  "origin": "TUR",
+  "lengthM": 6.5,
+  "ia": 5519530,
+  "front": "-y",
+  "ops": [
+   "TUR",
+   "UKR",
+   "AZE",
+   "QAT",
+   "POL",
+   "LTU",
+   "ALB",
+   "KWT",
+   "MAR",
+   "KGZ",
+   "TKM",
+   "NGA",
+   "ETH"
+  ],
+  "author": "Moon Ztar",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5519530 (archive.org mirror: https://archive.org/details/thingiverse-5519530)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.78,
+    0.8,
+    0.82
+   ]
+  }
+ },
+ {
+  "id": "destroyer_arleigh_burke",
+  "cls": "destroyer",
+  "realName": "Arleigh Burke-class (DDG-51)",
+  "origin": "USA",
+  "lengthM": 155.3,
+  "ia": 4207292,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "JPN",
+   "KOR",
+   "ESP"
+  ],
+  "author": "Justyn Au (Scuderia)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:4207292 (archive.org mirror: https://archive.org/details/thingiverse-4207292)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.45,
+    0.48,
+    0.52
+   ]
+  }
+ },
+ {
+  "id": "carrier_nimitz",
+  "cls": "carrier",
+  "realName": "Nimitz-class carrier",
+  "origin": "USA",
+  "lengthM": 332.8,
+  "ia": 5494672,
+  "front": "-y",
+  "ops": [
+   "USA"
+  ],
+  "author": "Jack Dueri (JackTheT)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:5494672 (archive.org mirror: https://archive.org/details/thingiverse-5494672)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.42,
+    0.45,
+    0.48
+   ]
+  }
+ },
+ {
+  "id": "submarine_virginia",
+  "cls": "submarine",
+  "realName": "Virginia-class (SSN-774)",
+  "origin": "USA",
+  "lengthM": 115.0,
+  "ia": 2163754,
+  "front": "-y",
+  "ops": [
+   "USA",
+   "GBR",
+   "AUS"
+  ],
+  "author": "Magix Stix (stix)",
+  "license": "CC-BY-4.0",
+  "source": "https://www.thingiverse.com/thing:2163754 (archive.org mirror: https://archive.org/details/thingiverse-2163754)",
+  "src": "stl",
+  "spec": {
+   "color": [
+    0.12,
+    0.13,
+    0.15
+   ],
+   "tris": 12000
+  }
+ },
+ {
+  "id": "fighter_f35",
+  "cls": "fighter",
+  "realName": "F-35B Lightning II",
+  "origin": "USA",
+  "lengthM": 15.6,
+  "fg": "F-35B",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "GBR",
+   "ITA",
+   "NLD",
+   "NOR",
+   "DNK",
+   "AUS",
+   "JPN",
+   "KOR",
+   "ISR",
+   "POL",
+   "BEL",
+   "FIN",
+   "CHE",
+   "CAN",
+   "SGP",
+   "DEU"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/F-35B.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_f22",
+  "cls": "fighter",
+  "realName": "F-22 Raptor",
+  "origin": "USA",
+  "lengthM": 18.9,
+  "fg": "Lockheed-Martin-FA-22A-Raptor",
+  "front": "-x",
+  "ops": [
+   "USA"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Lockheed-Martin-FA-22A-Raptor.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_f18",
+  "cls": "fighter",
+  "realName": "F/A-18 Hornet",
+  "origin": "USA",
+  "lengthM": 17.1,
+  "fg": "f18",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "CAN",
+   "AUS",
+   "ESP",
+   "FIN",
+   "KWT",
+   "MYS",
+   "CHE"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/f18.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_f14",
+  "cls": "fighter",
+  "realName": "F-14B Tomcat",
+  "origin": "USA",
+  "lengthM": 19.1,
+  "fg": "f-14b",
+  "front": "-x",
+  "ops": [
+   "IRN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/f-14b.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_f4",
+  "cls": "fighter",
+  "realName": "F-4 Phantom II",
+  "origin": "USA",
+  "lengthM": 19.2,
+  "fg": "McDonnell-F-4-Phantom",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "GRC",
+   "TUR",
+   "KOR",
+   "JPN",
+   "IRN",
+   "EGY"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/McDonnell-F-4-Phantom.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_f117",
+  "cls": "fighter",
+  "realName": "F-117 Nighthawk",
+  "origin": "USA",
+  "lengthM": 20.1,
+  "fg": "F-117",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/F-117.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_a10",
+  "cls": "fighter",
+  "realName": "A-10 Thunderbolt II",
+  "origin": "USA",
+  "lengthM": 16.26,
+  "fg": "A-10",
+  "front": "-x",
+  "ops": [
+   "USA"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/A-10.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_harrier",
+  "cls": "fighter",
+  "realName": "Harrier GR.3",
+  "origin": "GBR",
+  "lengthM": 14.27,
+  "fg": "harrier",
+  "front": "-x",
+  "ops": [
+   "GBR",
+   "ESP",
+   "ITA",
+   "IND",
+   "THA"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/harrier.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_su37",
+  "cls": "fighter",
+  "realName": "Sukhoi Su-37 (Su-27 family)",
+  "origin": "RUS",
+  "lengthM": 22.2,
+  "fg": "SU-37",
+  "front": "-x",
+  "ops": [
+   "RUS",
+   "BLR",
+   "KAZ",
+   "UKR",
+   "UZB",
+   "VNM",
+   "IND",
+   "CHN",
+   "IDN",
+   "ETH",
+   "AGO",
+   "VEN",
+   "ERI"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/SU-37.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_su33",
+  "cls": "fighter",
+  "realName": "Sukhoi Su-33",
+  "origin": "RUS",
+  "lengthM": 21.19,
+  "fg": "Sukhoi-Su-33",
+  "front": "-x",
+  "ops": [
+   "RUS",
+   "CHN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Sukhoi-Su-33.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_su25",
+  "cls": "fighter",
+  "realName": "Sukhoi Su-25",
+  "origin": "RUS",
+  "lengthM": 15.53,
+  "fg": "Su-25",
+  "front": "-x",
+  "ops": [
+   "RUS",
+   "BLR",
+   "UKR",
+   "GEO",
+   "BGR",
+   "PRK",
+   "IRQ",
+   "IRN",
+   "PER",
+   "SDN",
+   "AFG"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Su-25.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_su57",
+  "cls": "fighter",
+  "realName": "Sukhoi T-50 (Su-57 prototype)",
+  "origin": "RUS",
+  "lengthM": 19.8,
+  "fg": "T-50",
+  "front": "-x",
+  "ops": [
+   "RUS"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/T-50.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_mig21",
+  "cls": "fighter",
+  "realName": "MiG-21bis",
+  "origin": "RUS",
+  "lengthM": 15.76,
+  "fg": "MiG-21bis",
+  "front": "-x",
+  "ops": [
+   "ROU",
+   "HRV",
+   "IND",
+   "PRK",
+   "CUB",
+   "SYR",
+   "AGO",
+   "LBY",
+   "EGY",
+   "AFG",
+   "VNM",
+   "CHN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/MiG-21bis.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_yak130",
+  "cls": "fighter",
+  "realName": "Yakovlev Yak-130",
+  "origin": "RUS",
+  "lengthM": 11.49,
+  "fg": "Yak-130",
+  "front": "-x",
+  "ops": [
+   "RUS",
+   "BLR",
+   "DZA",
+   "BGD",
+   "VNM"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Yak-130.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_eurofighter",
+  "cls": "fighter",
+  "realName": "Eurofighter Typhoon",
+  "origin": "GBR",
+  "lengthM": 15.96,
+  "fg": "eurofighter",
+  "front": "-x",
+  "ops": [
+   "GBR",
+   "DEU",
+   "ITA",
+   "ESP",
+   "AUT",
+   "SAU",
+   "OMN",
+   "KWT",
+   "QAT",
+   "TUR"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/eurofighter.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_gripen",
+  "cls": "fighter",
+  "realName": "Saab JAS 39 Gripen",
+  "origin": "SWE",
+  "lengthM": 14.1,
+  "fg": "JAS39-Gripen",
+  "front": "-x",
+  "ops": [
+   "SWE",
+   "CZE",
+   "HUN",
+   "THA",
+   "BRA",
+   "ZAF",
+   "COL"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/JAS39-Gripen.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_viggen",
+  "cls": "fighter",
+  "realName": "Saab JA 37 Viggen",
+  "origin": "SWE",
+  "lengthM": 16.4,
+  "fg": "JA37",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/JA37.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_mirage2000",
+  "cls": "fighter",
+  "realName": "Dassault Mirage 2000",
+  "origin": "FRA",
+  "lengthM": 14.36,
+  "fg": "mirage2000",
+  "front": "-x",
+  "ops": [
+   "FRA",
+   "ARE",
+   "EGY",
+   "GRC",
+   "IND",
+   "PER",
+   "TWN",
+   "QAT",
+   "BRA"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/mirage2000.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_miragef1",
+  "cls": "fighter",
+  "realName": "Dassault Mirage F1",
+  "origin": "FRA",
+  "lengthM": 15.0,
+  "fg": "Mirage_F1",
+  "front": "-x",
+  "ops": [
+   "ESP",
+   "MAR",
+   "ECU",
+   "LBY",
+   "IRQ",
+   "GRC",
+   "ZAF"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Mirage_F1.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_jaguar",
+  "cls": "fighter",
+  "realName": "SEPECAT Jaguar",
+  "origin": "GBR",
+  "lengthM": 16.83,
+  "fg": "Jaguar",
+  "front": "-x",
+  "ops": [
+   "IND",
+   "OMN",
+   "ECU",
+   "NGA"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Jaguar.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "fighter_superetendard",
+  "cls": "fighter",
+  "realName": "Dassault Super Etendard",
+  "origin": "FRA",
+  "lengthM": 14.31,
+  "fg": "Super-Etendard",
+  "front": "-x",
+  "ops": [
+   "ARG"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Super-Etendard.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "bomber_b52",
+  "cls": "bomber",
+  "realName": "B-52 Stratofortress",
+  "origin": "USA",
+  "lengthM": 47.7,
+  "fg": "B-52F",
+  "front": "-x",
+  "ops": [
+   "USA"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/B-52F.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "bomber_b1b",
+  "cls": "bomber",
+  "realName": "B-1B Lancer",
+  "origin": "USA",
+  "lengthM": 44.5,
+  "fg": "B-1B",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/B-1B.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "bomber_b2",
+  "cls": "bomber",
+  "realName": "B-2 Spirit",
+  "origin": "USA",
+  "lengthM": 21.0,
+  "fg": "B-2",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/B-2.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "bomber_tu95",
+  "cls": "bomber",
+  "realName": "Tupolev Tu-95 Bear",
+  "origin": "RUS",
+  "lengthM": 49.5,
+  "fg": "TU-95",
+  "front": "-x",
+  "ops": [
+   "IND"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/TU-95.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "bomber_tu22",
+  "cls": "bomber",
+  "realName": "Tupolev Tu-22 Blinder",
+  "origin": "RUS",
+  "lengthM": 41.6,
+  "fg": "Tu-22-Blinder",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Tu-22-Blinder.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_c130",
+  "cls": "transport_plane",
+  "realName": "C-130 Hercules",
+  "origin": "USA",
+  "lengthM": 29.8,
+  "fg": "C130",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "GBR",
+   "CAN",
+   "AUS",
+   "BRA",
+   "ARG",
+   "CHL",
+   "COL",
+   "MEX",
+   "NOR",
+   "DNK",
+   "EGY",
+   "SAU",
+   "IRN",
+   "ISR",
+   "IND",
+   "IDN",
+   "JPN",
+   "KOR",
+   "PAK",
+   "PRT",
+   "TUR",
+   "THA",
+   "VEN",
+   "NZL",
+   "ITA",
+   "NGA",
+   "ZAF"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/C130.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_il76",
+  "cls": "transport_plane",
+  "realName": "Ilyushin Il-76",
+  "origin": "RUS",
+  "lengthM": 46.6,
+  "fg": "IL-76",
+  "front": "-x",
+  "ops": [
+   "RUS",
+   "BLR",
+   "UKR",
+   "KAZ",
+   "UZB",
+   "IND",
+   "CHN",
+   "IRN",
+   "IRQ",
+   "DZA",
+   "LBY",
+   "SYR",
+   "AZE",
+   "ARM"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/IL-76.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_c160",
+  "cls": "transport_plane",
+  "realName": "Transall C-160",
+  "origin": "DEU",
+  "lengthM": 32.4,
+  "fg": "C-160-Transall",
+  "front": "-x",
+  "ops": [
+   "DEU",
+   "FRA",
+   "TUR",
+   "ZAF"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/C-160-Transall.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_c212",
+  "cls": "transport_plane",
+  "realName": "CASA C-212 Aviocar",
+  "origin": "ESP",
+  "lengthM": 16.2,
+  "fg": "Casa-212",
+  "front": "-x",
+  "ops": [
+   "ESP",
+   "PRT",
+   "CHL",
+   "COL",
+   "IDN",
+   "MEX",
+   "VEN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Casa-212.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_an12",
+  "cls": "transport_plane",
+  "realName": "Antonov An-12",
+  "origin": "UKR",
+  "lengthM": 33.1,
+  "fg": "Antonov-An-12",
+  "front": "-x",
+  "ops": [
+   "UKR",
+   "RUS",
+   "CHN",
+   "IND",
+   "AGO",
+   "SDN",
+   "ETH"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Antonov-An-12.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_an22",
+  "cls": "transport_plane",
+  "realName": "Antonov An-22",
+  "origin": "UKR",
+  "lengthM": 57.9,
+  "fg": "Antonov-An-22",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Antonov-An-22.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_an225",
+  "cls": "transport_plane",
+  "realName": "Antonov An-225 Mriya",
+  "origin": "UKR",
+  "lengthM": 84.0,
+  "fg": "AN-225",
+  "front": "-x",
+  "ops": [],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/AN-225.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_kc135",
+  "cls": "transport_plane",
+  "realName": "Boeing KC-135 Stratotanker",
+  "origin": "USA",
+  "lengthM": 41.5,
+  "fg": "KC135",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "FRA",
+   "TUR",
+   "SGP"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/KC135.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "attack_heli_apache",
+  "cls": "attack_heli",
+  "realName": "AH-64 Apache",
+  "origin": "USA",
+  "lengthM": 17.7,
+  "fg": "apache",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "GBR",
+   "NLD",
+   "EGY",
+   "GRC",
+   "IND",
+   "ISR",
+   "JPN",
+   "KOR",
+   "SAU",
+   "ARE",
+   "KWT",
+   "SGP",
+   "TWN",
+   "IDN",
+   "QAT",
+   "POL",
+   "AUS",
+   "MAR"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/apache.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "attack_heli_mi24",
+  "cls": "attack_heli",
+  "realName": "Mil Mi-24 Hind",
+  "origin": "RUS",
+  "lengthM": 17.5,
+  "fg": "Mil-Mi-24",
+  "front": "-x",
+  "ops": [
+   "RUS",
+   "UKR",
+   "BLR",
+   "IND",
+   "IRQ",
+   "SYR",
+   "DZA",
+   "AFG",
+   "AGO",
+   "ETH",
+   "SDN",
+   "YEM",
+   "PRK",
+   "HUN",
+   "BGR",
+   "CZE",
+   "POL",
+   "SVK",
+   "PER",
+   "NIC",
+   "LBY",
+   "CUB",
+   "VNM"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Mil-Mi-24.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "attack_heli_ka50",
+  "cls": "attack_heli",
+  "realName": "Kamov Ka-50 Black Shark",
+  "origin": "RUS",
+  "lengthM": 16.0,
+  "fg": "Ka-50",
+  "front": "-x",
+  "ops": [
+   "RUS"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Ka-50.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "attack_heli_tiger",
+  "cls": "attack_heli",
+  "realName": "Eurocopter Tiger",
+  "origin": "FRA",
+  "lengthM": 14.0,
+  "fg": "Tigre",
+  "front": "-x",
+  "ops": [
+   "FRA",
+   "DEU",
+   "ESP",
+   "AUS"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Tigre.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "attack_heli_oh58",
+  "cls": "attack_heli",
+  "realName": "Bell OH-58D Kiowa Warrior",
+  "origin": "USA",
+  "lengthM": 12.8,
+  "fg": "OH-58D",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "TWN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/OH-58D.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "attack_heli_oh1",
+  "cls": "attack_heli",
+  "realName": "Kawasaki OH-1",
+  "origin": "JPN",
+  "lengthM": 12.0,
+  "fg": "OH-1",
+  "front": "-x",
+  "ops": [
+   "JPN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/OH-1.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_heli_uh60",
+  "cls": "transport_heli",
+  "realName": "UH-60 Black Hawk",
+  "origin": "USA",
+  "lengthM": 19.8,
+  "fg": "UH-60",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "AUS",
+   "BRA",
+   "COL",
+   "JPN",
+   "KOR",
+   "MEX",
+   "SAU",
+   "TUR",
+   "TWN",
+   "ISR",
+   "EGY",
+   "JOR",
+   "MAR",
+   "GRC",
+   "POL"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/UH-60.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_heli_ch47",
+  "cls": "transport_heli",
+  "realName": "CH-47 Chinook",
+  "origin": "USA",
+  "lengthM": 30.1,
+  "fg": "ch47",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "GBR",
+   "CAN",
+   "AUS",
+   "DEU",
+   "ITA",
+   "NLD",
+   "ESP",
+   "KOR",
+   "JPN",
+   "IND",
+   "EGY",
+   "GRC",
+   "SGP",
+   "TUR"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/ch47.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "transport_heli_v22",
+  "cls": "transport_heli",
+  "realName": "V-22 Osprey",
+  "origin": "USA",
+  "lengthM": 17.5,
+  "fg": "V22-Osprey",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "JPN"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/V22-Osprey.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "drone_mq9",
+  "cls": "drone",
+  "realName": "MQ-9 Reaper",
+  "origin": "USA",
+  "lengthM": 11.0,
+  "fg": "MQ-9",
+  "front": "-x",
+  "ops": [
+   "USA",
+   "GBR",
+   "FRA",
+   "ITA",
+   "NLD",
+   "ESP",
+   "IND"
+  ],
+  "author": "FlightGear FGAddon contributors",
+  "source": "https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/MQ-9.zip",
+  "license": "GPL-2.0-or-later",
+  "licenseNote": "FlightGear FGAddon aircraft (GPL, see aircraft README/-set.xml for authors)",
+  "shareAlike": true,
+  "src": "fg"
+ },
+ {
+  "id": "destroyer_cg47",
+  "cls": "destroyer",
+  "realName": "Ticonderoga-class cruiser (CG-47)",
+  "origin": "USA",
+  "lengthM": 172.8,
+  "ops": [
+   "USA"
+  ],
+  "fgd": "Models/Maritime/Military/CG47.xml",
+  "front": "-x",
+  "source": "https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/",
+  "license": "GPL-2.0-or-later",
+  "shareAlike": true,
+  "src": "fgdata",
+  "author": "FlightGear project contributors",
+  "licenseNote": "FlightGear base package (fgdata), GPL"
+ },
+ {
+  "id": "frigate_perry",
+  "cls": "frigate",
+  "realName": "Oliver Hazard Perry-class frigate",
+  "origin": "USA",
+  "lengthM": 135.6,
+  "ops": [
+   "USA",
+   "AUS",
+   "BHR",
+   "EGY",
+   "POL",
+   "ESP",
+   "TUR",
+   "TWN",
+   "PAK"
+  ],
+  "fgd": "Models/Maritime/Military/OliverPerryFFG.xml",
+  "front": "-x",
+  "source": "https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/",
+  "license": "GPL-2.0-or-later",
+  "shareAlike": true,
+  "src": "fgdata",
+  "author": "FlightGear project contributors",
+  "licenseNote": "FlightGear base package (fgdata), GPL"
+ },
+ {
+  "id": "amphib_lpd17",
+  "cls": "destroyer",
+  "realName": "San Antonio-class (LPD-17)",
+  "origin": "USA",
+  "lengthM": 208.8,
+  "ops": [],
+  "fgd": "Models/Maritime/Military/LPD17.xml",
+  "front": "-x",
+  "source": "https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/",
+  "license": "GPL-2.0-or-later",
+  "shareAlike": true,
+  "src": "fgdata",
+  "author": "FlightGear project contributors",
+  "licenseNote": "FlightGear base package (fgdata), GPL"
+ },
+ {
+  "id": "soldier_camo",
+  "cls": "soldier",
+  "realName": "Modern camo infantryman (Elite Soldier)",
+  "origin": "",
+  "lengthM": 1.8,
+  "src": "oga",
+  "oga": "elite-soldier-model",
+  "blend": "x_elite_20120307.zip/elite/elite.obj",
+  "ops": [],
+  "author": "hc",
+  "license": "CC-BY-3.0",
+  "source": "https://opengameart.org/content/elite-soldier-model",
+  "front": "-z"
+ }
+]

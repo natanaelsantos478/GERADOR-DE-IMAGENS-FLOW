@@ -1,0 +1,7041 @@
+{
+ "mbt": {
+  "default": "mbt",
+  "byCountry": {
+   "AFG": [
+    "mbt_t72"
+   ],
+   "AGO": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "ALB": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "ARE": [
+    "mbt_leclerc"
+   ],
+   "ARG": [
+    "mbt_m1abrams"
+   ],
+   "ARM": [
+    "mbt_t72"
+   ],
+   "AUS": [
+    "mbt_m1abrams"
+   ],
+   "AUT": [
+    "mbt_leopard2"
+   ],
+   "AZE": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "BEL": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "BFA": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "BGD": [
+    "mbt_type99"
+   ],
+   "BGR": [
+    "mbt_t72"
+   ],
+   "BHR": [
+    "mbt_m1abrams"
+   ],
+   "BIH": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "BLR": [
+    "mbt_t72"
+   ],
+   "BRA": [
+    "mbt_m1abrams"
+   ],
+   "CAF": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "CAN": [
+    "mbt_leopard2"
+   ],
+   "CHE": [
+    "mbt_leopard2"
+   ],
+   "CHL": [
+    "mbt_leopard2"
+   ],
+   "CHN": [
+    "mbt_type99"
+   ],
+   "CMR": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "COG": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "COL": [
+    "mbt_m1abrams"
+   ],
+   "CRI": [
+    "mbt_m1abrams"
+   ],
+   "CUB": [
+    "mbt_t72"
+   ],
+   "CYP": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "CZE": [
+    "mbt_leopard2"
+   ],
+   "DEU": [
+    "mbt_leopard2"
+   ],
+   "DNK": [
+    "mbt_leopard2"
+   ],
+   "DOM": [
+    "mbt_m1abrams"
+   ],
+   "DZA": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "ECU": [
+    "mbt_m1abrams"
+   ],
+   "EGY": [
+    "mbt_m1abrams"
+   ],
+   "ERI": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "ESP": [
+    "mbt_leopard2"
+   ],
+   "EST": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "ETH": [
+    "mbt_t72"
+   ],
+   "FIN": [
+    "mbt_leopard2"
+   ],
+   "FRA": [
+    "mbt_leclerc"
+   ],
+   "GBR": [
+    "mbt_challenger2"
+   ],
+   "GEO": [
+    "mbt_m1abrams"
+   ],
+   "GHA": [
+    "mbt_m1abrams"
+   ],
+   "GRC": [
+    "mbt_leopard2"
+   ],
+   "GTM": [
+    "mbt_m1abrams"
+   ],
+   "HND": [
+    "mbt_m1abrams"
+   ],
+   "HRV": [
+    "mbt_leopard2"
+   ],
+   "HUN": [
+    "mbt_leopard2"
+   ],
+   "IDN": [
+    "mbt_leopard2"
+   ],
+   "IND": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "IRL": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "IRN": [
+    "mbt_t72"
+   ],
+   "IRQ": [
+    "mbt_m1abrams",
+    "mbt_t72"
+   ],
+   "ISL": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "ISR": [
+    "mbt_m1abrams"
+   ],
+   "ITA": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "JOR": [
+    "mbt_m1abrams"
+   ],
+   "JPN": [
+    "mbt_m1abrams"
+   ],
+   "KAZ": [
+    "mbt_t72"
+   ],
+   "KEN": [
+    "mbt_m1abrams"
+   ],
+   "KGZ": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "KHM": [
+    "mbt_type99"
+   ],
+   "KOR": [
+    "mbt_m1abrams"
+   ],
+   "KWT": [
+    "mbt_m1abrams"
+   ],
+   "LAO": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "LBN": [
+    "mbt_m1abrams"
+   ],
+   "LBY": [
+    "mbt_t72"
+   ],
+   "LKA": [
+    "mbt_t72"
+   ],
+   "LTU": [
+    "mbt_leopard2"
+   ],
+   "LUX": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "LVA": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "MAR": [
+    "mbt_m1abrams"
+   ],
+   "MDA": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "MEX": [
+    "mbt_m1abrams"
+   ],
+   "MKD": [
+    "mbt_leopard2"
+   ],
+   "MLI": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "MLT": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "MMR": [
+    "mbt_t72"
+   ],
+   "MNE": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "MNG": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "MOZ": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "MYS": [
+    "mbt_m1abrams"
+   ],
+   "NER": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "NGA": [
+    "mbt_m1abrams"
+   ],
+   "NIC": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "NLD": [
+    "mbt_leopard2"
+   ],
+   "NOR": [
+    "mbt_leopard2"
+   ],
+   "NPL": [
+    "mbt_type99"
+   ],
+   "NZL": [
+    "mbt_m1abrams"
+   ],
+   "OMN": [
+    "mbt_challenger2"
+   ],
+   "PAK": [
+    "mbt_type99"
+   ],
+   "PAN": [
+    "mbt_m1abrams"
+   ],
+   "PER": [
+    "mbt_m1abrams"
+   ],
+   "PHL": [
+    "mbt_m1abrams"
+   ],
+   "POL": [
+    "mbt_m1abrams",
+    "mbt_leopard2"
+   ],
+   "PRK": [
+    "mbt_t72"
+   ],
+   "PRT": [
+    "mbt_leopard2"
+   ],
+   "PRY": [
+    "mbt_m1abrams"
+   ],
+   "QAT": [
+    "mbt_leopard2"
+   ],
+   "ROU": [
+    "mbt_leopard2",
+    "mbt_leclerc"
+   ],
+   "RUS": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "SAU": [
+    "mbt_m1abrams"
+   ],
+   "SDN": [
+    "mbt_t72"
+   ],
+   "SEN": [
+    "mbt_m1abrams"
+   ],
+   "SGP": [
+    "mbt_leopard2"
+   ],
+   "SLV": [
+    "mbt_m1abrams"
+   ],
+   "SRB": [
+    "mbt_t72"
+   ],
+   "SVK": [
+    "mbt_leopard2"
+   ],
+   "SVN": [
+    "mbt_leopard2"
+   ],
+   "SWE": [
+    "mbt_leopard2",
+    "mbt_strv103"
+   ],
+   "SYR": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "TCD": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "THA": [
+    "mbt_m1abrams"
+   ],
+   "TJK": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "TKM": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "TUN": [
+    "mbt_m1abrams"
+   ],
+   "TUR": [
+    "mbt_leopard2"
+   ],
+   "TWN": [
+    "mbt_m1abrams"
+   ],
+   "TZA": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "UGA": [
+    "mbt_t90"
+   ],
+   "UKR": [
+    "mbt_leopard2",
+    "mbt_t72"
+   ],
+   "URY": [
+    "mbt_m1abrams"
+   ],
+   "USA": [
+    "mbt_m1abrams"
+   ],
+   "UZB": [
+    "mbt_t72"
+   ],
+   "VEN": [
+    "mbt_t72"
+   ],
+   "VNM": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "YEM": [
+    "mbt_t72"
+   ],
+   "ZAF": [
+    "mbt_m1abrams"
+   ],
+   "ZMB": [
+    "mbt_t72",
+    "mbt_t90"
+   ],
+   "ZWE": [
+    "mbt_t72",
+    "mbt_t90"
+   ]
+  }
+ },
+ "apc": {
+  "default": "apc",
+  "byCountry": {
+   "AFG": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "AGO": [
+    "apc_btr80"
+   ],
+   "ALB": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ARE": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ARG": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ARM": [
+    "apc_btr80"
+   ],
+   "AUS": [
+    "apc_boxer"
+   ],
+   "AUT": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "AZE": [
+    "apc_btr80"
+   ],
+   "BEL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "BFA": [
+    "apc_btr80"
+   ],
+   "BGD": [
+    "apc_btr80"
+   ],
+   "BGR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "BHR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "BIH": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "BLR": [
+    "apc_btr80"
+   ],
+   "BRA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CAF": [
+    "apc_btr80"
+   ],
+   "CAN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CHE": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CHL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CHN": [
+    "apc_btr80"
+   ],
+   "CMR": [
+    "apc_btr80"
+   ],
+   "COG": [
+    "apc_btr80"
+   ],
+   "COL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CRI": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CUB": [
+    "apc_btr80"
+   ],
+   "CYP": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "CZE": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "DEU": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "DNK": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "DOM": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "DZA": [
+    "apc_btr80"
+   ],
+   "ECU": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "EGY": [
+    "apc_btr80"
+   ],
+   "ERI": [
+    "apc_btr80"
+   ],
+   "ESP": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "EST": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ETH": [
+    "apc_btr80"
+   ],
+   "FIN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "FRA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "GBR": [
+    "apc_boxer"
+   ],
+   "GEO": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "GHA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "GRC": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "GTM": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "HND": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "HRV": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "HUN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "IDN": [
+    "apc_btr80"
+   ],
+   "IND": [
+    "apc_btr80"
+   ],
+   "IRL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "IRN": [
+    "apc_btr80"
+   ],
+   "IRQ": [
+    "apc_btr80"
+   ],
+   "ISL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ISR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ITA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "JOR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "JPN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "KAZ": [
+    "apc_btr80"
+   ],
+   "KEN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "KGZ": [
+    "apc_btr80"
+   ],
+   "KHM": [
+    "apc_btr80"
+   ],
+   "KOR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "KWT": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "LAO": [
+    "apc_btr80"
+   ],
+   "LBN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "LBY": [
+    "apc_btr80"
+   ],
+   "LKA": [
+    "apc_btr80"
+   ],
+   "LTU": [
+    "apc_boxer"
+   ],
+   "LUX": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "LVA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "MAR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "MDA": [
+    "apc_btr80"
+   ],
+   "MEX": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "MKD": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "MLI": [
+    "apc_btr80"
+   ],
+   "MLT": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "MMR": [
+    "apc_btr80"
+   ],
+   "MNE": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "MNG": [
+    "apc_btr80"
+   ],
+   "MOZ": [
+    "apc_btr80"
+   ],
+   "MYS": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "NER": [
+    "apc_btr80"
+   ],
+   "NGA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "NIC": [
+    "apc_btr80"
+   ],
+   "NLD": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "NOR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "NPL": [
+    "apc_btr80"
+   ],
+   "NZL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "PAK": [
+    "apc_btr80"
+   ],
+   "PAN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "PER": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "PHL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "POL": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "PRK": [
+    "apc_btr80"
+   ],
+   "PRT": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "PRY": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "QAT": [
+    "apc_boxer"
+   ],
+   "ROU": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "RUS": [
+    "apc_btr80"
+   ],
+   "SAU": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SDN": [
+    "apc_btr80"
+   ],
+   "SEN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SGP": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SLV": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SRB": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SVK": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SVN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SWE": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "SYR": [
+    "apc_btr80"
+   ],
+   "TCD": [
+    "apc_btr80"
+   ],
+   "THA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "TJK": [
+    "apc_btr80"
+   ],
+   "TKM": [
+    "apc_btr80"
+   ],
+   "TUN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "TUR": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "TWN": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "TZA": [
+    "apc_btr80"
+   ],
+   "UGA": [
+    "apc_btr80"
+   ],
+   "URY": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "USA": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "UZB": [
+    "apc_btr80"
+   ],
+   "VEN": [
+    "apc_btr80"
+   ],
+   "VNM": [
+    "apc_btr80"
+   ],
+   "YEM": [
+    "apc_btr80"
+   ],
+   "ZAF": [
+    "apc_boxer",
+    "apc_fennek"
+   ],
+   "ZMB": [
+    "apc_btr80"
+   ],
+   "ZWE": [
+    "apc_btr80"
+   ]
+  }
+ },
+ "ifv": {
+  "default": "ifv",
+  "byCountry": {
+   "AFG": [
+    "ifv_bradley"
+   ],
+   "ALB": [
+    "ifv_puma"
+   ],
+   "ARE": [
+    "ifv_bradley"
+   ],
+   "ARG": [
+    "ifv_bradley"
+   ],
+   "AUS": [
+    "ifv_bradley"
+   ],
+   "AUT": [
+    "ifv_puma"
+   ],
+   "BEL": [
+    "ifv_puma"
+   ],
+   "BGR": [
+    "ifv_puma"
+   ],
+   "BHR": [
+    "ifv_bradley"
+   ],
+   "BIH": [
+    "ifv_puma"
+   ],
+   "BRA": [
+    "ifv_bradley"
+   ],
+   "CAN": [
+    "ifv_bradley"
+   ],
+   "CHE": [
+    "ifv_puma"
+   ],
+   "CHL": [
+    "ifv_bradley"
+   ],
+   "COL": [
+    "ifv_bradley"
+   ],
+   "CRI": [
+    "ifv_bradley"
+   ],
+   "CYP": [
+    "ifv_puma"
+   ],
+   "CZE": [
+    "ifv_puma"
+   ],
+   "DEU": [
+    "ifv_puma"
+   ],
+   "DNK": [
+    "ifv_puma"
+   ],
+   "DOM": [
+    "ifv_bradley"
+   ],
+   "ECU": [
+    "ifv_bradley"
+   ],
+   "EGY": [
+    "ifv_bradley"
+   ],
+   "ESP": [
+    "ifv_puma"
+   ],
+   "EST": [
+    "ifv_puma"
+   ],
+   "FIN": [
+    "ifv_puma"
+   ],
+   "FRA": [
+    "ifv_puma"
+   ],
+   "GBR": [
+    "ifv_puma"
+   ],
+   "GEO": [
+    "ifv_bradley"
+   ],
+   "GHA": [
+    "ifv_bradley"
+   ],
+   "GRC": [
+    "ifv_bradley"
+   ],
+   "GTM": [
+    "ifv_bradley"
+   ],
+   "HND": [
+    "ifv_bradley"
+   ],
+   "HRV": [
+    "ifv_puma"
+   ],
+   "HUN": [
+    "ifv_puma"
+   ],
+   "IDN": [
+    "ifv_bradley"
+   ],
+   "IRL": [
+    "ifv_puma"
+   ],
+   "IRQ": [
+    "ifv_bradley"
+   ],
+   "ISL": [
+    "ifv_puma"
+   ],
+   "ISR": [
+    "ifv_bradley"
+   ],
+   "ITA": [
+    "ifv_puma"
+   ],
+   "JOR": [
+    "ifv_bradley"
+   ],
+   "JPN": [
+    "ifv_bradley"
+   ],
+   "KEN": [
+    "ifv_bradley"
+   ],
+   "KOR": [
+    "ifv_bradley"
+   ],
+   "KWT": [
+    "ifv_bradley"
+   ],
+   "LBN": [
+    "ifv_bradley"
+   ],
+   "LTU": [
+    "ifv_puma"
+   ],
+   "LUX": [
+    "ifv_puma"
+   ],
+   "LVA": [
+    "ifv_puma"
+   ],
+   "MAR": [
+    "ifv_bradley"
+   ],
+   "MEX": [
+    "ifv_bradley"
+   ],
+   "MKD": [
+    "ifv_puma"
+   ],
+   "MLT": [
+    "ifv_puma"
+   ],
+   "MNE": [
+    "ifv_puma"
+   ],
+   "MYS": [
+    "ifv_bradley"
+   ],
+   "NGA": [
+    "ifv_bradley"
+   ],
+   "NLD": [
+    "ifv_puma"
+   ],
+   "NOR": [
+    "ifv_puma"
+   ],
+   "NZL": [
+    "ifv_bradley"
+   ],
+   "PAN": [
+    "ifv_bradley"
+   ],
+   "PER": [
+    "ifv_bradley"
+   ],
+   "PHL": [
+    "ifv_bradley"
+   ],
+   "POL": [
+    "ifv_puma"
+   ],
+   "PRT": [
+    "ifv_puma"
+   ],
+   "PRY": [
+    "ifv_bradley"
+   ],
+   "QAT": [
+    "ifv_bradley"
+   ],
+   "ROU": [
+    "ifv_puma"
+   ],
+   "SAU": [
+    "ifv_bradley"
+   ],
+   "SEN": [
+    "ifv_bradley"
+   ],
+   "SGP": [
+    "ifv_bradley"
+   ],
+   "SLV": [
+    "ifv_bradley"
+   ],
+   "SRB": [
+    "ifv_puma"
+   ],
+   "SVK": [
+    "ifv_puma"
+   ],
+   "SVN": [
+    "ifv_puma"
+   ],
+   "SWE": [
+    "ifv_puma"
+   ],
+   "THA": [
+    "ifv_bradley"
+   ],
+   "TUN": [
+    "ifv_bradley"
+   ],
+   "TUR": [
+    "ifv_bradley"
+   ],
+   "TWN": [
+    "ifv_bradley"
+   ],
+   "URY": [
+    "ifv_bradley"
+   ],
+   "USA": [
+    "ifv_bradley"
+   ],
+   "ZAF": [
+    "ifv_bradley"
+   ]
+  }
+ },
+ "spg": {
+  "default": "spg",
+  "byCountry": {
+   "AFG": [
+    "spg_m109"
+   ],
+   "AGO": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "ALB": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "ARE": [
+    "spg_m109"
+   ],
+   "ARG": [
+    "spg_m109"
+   ],
+   "ARM": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "AUS": [
+    "spg_m109"
+   ],
+   "AUT": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "AZE": [
+    "spg_2s3"
+   ],
+   "BEL": [
+    "spg_m109"
+   ],
+   "BFA": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "BGD": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "BGR": [
+    "spg_2s1"
+   ],
+   "BHR": [
+    "spg_m109"
+   ],
+   "BIH": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "BLR": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "BRA": [
+    "spg_m109"
+   ],
+   "CAF": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "CAN": [
+    "spg_m109"
+   ],
+   "CHE": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "CHL": [
+    "spg_m109"
+   ],
+   "CHN": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "CMR": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "COG": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "COL": [
+    "spg_m109"
+   ],
+   "CRI": [
+    "spg_m109"
+   ],
+   "CUB": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "CYP": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "CZE": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "DEU": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "DNK": [
+    "spg_m109"
+   ],
+   "DOM": [
+    "spg_m109"
+   ],
+   "DZA": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "ECU": [
+    "spg_m109"
+   ],
+   "EGY": [
+    "spg_m109",
+    "spg_2s1"
+   ],
+   "ERI": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "ESP": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "EST": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "ETH": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "FIN": [
+    "spg_2s3"
+   ],
+   "FRA": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "GBR": [
+    "spg_rch155"
+   ],
+   "GEO": [
+    "spg_m109"
+   ],
+   "GHA": [
+    "spg_m109"
+   ],
+   "GRC": [
+    "spg_m109",
+    "spg_pzh2000"
+   ],
+   "GTM": [
+    "spg_m109"
+   ],
+   "HND": [
+    "spg_m109"
+   ],
+   "HRV": [
+    "spg_pzh2000"
+   ],
+   "HUN": [
+    "spg_pzh2000"
+   ],
+   "IDN": [
+    "spg_m109"
+   ],
+   "IND": [
+    "spg_2s1"
+   ],
+   "IRL": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "IRN": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "IRQ": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "ISL": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "ISR": [
+    "spg_m109"
+   ],
+   "ITA": [
+    "spg_m109",
+    "spg_pzh2000"
+   ],
+   "JOR": [
+    "spg_m109"
+   ],
+   "JPN": [
+    "spg_m109"
+   ],
+   "KAZ": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "KEN": [
+    "spg_m109"
+   ],
+   "KGZ": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "KHM": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "KOR": [
+    "spg_m109"
+   ],
+   "KWT": [
+    "spg_m109"
+   ],
+   "LAO": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "LBN": [
+    "spg_m109"
+   ],
+   "LBY": [
+    "spg_2s1"
+   ],
+   "LKA": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "LTU": [
+    "spg_pzh2000"
+   ],
+   "LUX": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "LVA": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "MAR": [
+    "spg_m109"
+   ],
+   "MDA": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "MEX": [
+    "spg_m109"
+   ],
+   "MKD": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "MLI": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "MLT": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "MMR": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "MNE": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "MNG": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "MOZ": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "MYS": [
+    "spg_m109"
+   ],
+   "NER": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "NGA": [
+    "spg_m109"
+   ],
+   "NIC": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "NLD": [
+    "spg_m109",
+    "spg_pzh2000"
+   ],
+   "NOR": [
+    "spg_m109"
+   ],
+   "NPL": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "NZL": [
+    "spg_m109"
+   ],
+   "PAK": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "PAN": [
+    "spg_m109"
+   ],
+   "PER": [
+    "spg_m109"
+   ],
+   "PHL": [
+    "spg_m109"
+   ],
+   "POL": [
+    "spg_2s1"
+   ],
+   "PRK": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "PRT": [
+    "spg_m109"
+   ],
+   "PRY": [
+    "spg_m109"
+   ],
+   "QAT": [
+    "spg_pzh2000"
+   ],
+   "ROU": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "RUS": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "SAU": [
+    "spg_m109"
+   ],
+   "SDN": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "SEN": [
+    "spg_m109"
+   ],
+   "SGP": [
+    "spg_m109"
+   ],
+   "SLV": [
+    "spg_m109"
+   ],
+   "SRB": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "SVK": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "SVN": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "SWE": [
+    "spg_pzh2000",
+    "spg_rch155"
+   ],
+   "SYR": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "TCD": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "THA": [
+    "spg_m109"
+   ],
+   "TJK": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "TKM": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "TUN": [
+    "spg_m109"
+   ],
+   "TUR": [
+    "spg_m109"
+   ],
+   "TWN": [
+    "spg_m109"
+   ],
+   "TZA": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "UGA": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "UKR": [
+    "spg_pzh2000",
+    "spg_2s1",
+    "spg_2s3",
+    "spg_rch155"
+   ],
+   "URY": [
+    "spg_m109"
+   ],
+   "USA": [
+    "spg_m109"
+   ],
+   "UZB": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "VEN": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "VNM": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "YEM": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "ZAF": [
+    "spg_m109"
+   ],
+   "ZMB": [
+    "spg_2s1",
+    "spg_2s3"
+   ],
+   "ZWE": [
+    "spg_2s1",
+    "spg_2s3"
+   ]
+  }
+ },
+ "mlrs": {
+  "default": "mlrs",
+  "byCountry": {
+   "AFG": [
+    "mlrs_m270"
+   ],
+   "AGO": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "ALB": [
+    "mlrs_m270"
+   ],
+   "ARE": [
+    "mlrs_m270"
+   ],
+   "ARG": [
+    "mlrs_m270"
+   ],
+   "ARM": [
+    "mlrs_iskander"
+   ],
+   "AUS": [
+    "mlrs_m270"
+   ],
+   "AUT": [
+    "mlrs_m270"
+   ],
+   "AZE": [
+    "mlrs_tos1"
+   ],
+   "BEL": [
+    "mlrs_m270"
+   ],
+   "BFA": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "BGD": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "BGR": [
+    "mlrs_m270"
+   ],
+   "BHR": [
+    "mlrs_m270"
+   ],
+   "BIH": [
+    "mlrs_m270"
+   ],
+   "BLR": [
+    "mlrs_iskander"
+   ],
+   "BRA": [
+    "mlrs_m270"
+   ],
+   "CAF": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "CAN": [
+    "mlrs_m270"
+   ],
+   "CHE": [
+    "mlrs_m270"
+   ],
+   "CHL": [
+    "mlrs_m270"
+   ],
+   "CHN": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "CMR": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "COG": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "COL": [
+    "mlrs_m270"
+   ],
+   "CRI": [
+    "mlrs_m270"
+   ],
+   "CUB": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "CYP": [
+    "mlrs_m270"
+   ],
+   "CZE": [
+    "mlrs_m270"
+   ],
+   "DEU": [
+    "mlrs_m270"
+   ],
+   "DNK": [
+    "mlrs_m270"
+   ],
+   "DOM": [
+    "mlrs_m270"
+   ],
+   "DZA": [
+    "mlrs_iskander"
+   ],
+   "ECU": [
+    "mlrs_m270"
+   ],
+   "EGY": [
+    "mlrs_m270"
+   ],
+   "ERI": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "ESP": [
+    "mlrs_m270"
+   ],
+   "EST": [
+    "mlrs_m270"
+   ],
+   "ETH": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "FIN": [
+    "mlrs_m270"
+   ],
+   "FRA": [
+    "mlrs_m270"
+   ],
+   "GBR": [
+    "mlrs_m270"
+   ],
+   "GEO": [
+    "mlrs_m270"
+   ],
+   "GHA": [
+    "mlrs_m270"
+   ],
+   "GRC": [
+    "mlrs_m270"
+   ],
+   "GTM": [
+    "mlrs_m270"
+   ],
+   "HND": [
+    "mlrs_m270"
+   ],
+   "HRV": [
+    "mlrs_m270"
+   ],
+   "HUN": [
+    "mlrs_m270"
+   ],
+   "IDN": [
+    "mlrs_m270"
+   ],
+   "IND": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "IRL": [
+    "mlrs_m270"
+   ],
+   "IRN": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "IRQ": [
+    "mlrs_tos1"
+   ],
+   "ISL": [
+    "mlrs_m270"
+   ],
+   "ISR": [
+    "mlrs_m270"
+   ],
+   "ITA": [
+    "mlrs_m270"
+   ],
+   "JOR": [
+    "mlrs_m270"
+   ],
+   "JPN": [
+    "mlrs_m270"
+   ],
+   "KAZ": [
+    "mlrs_tos1"
+   ],
+   "KEN": [
+    "mlrs_m270"
+   ],
+   "KGZ": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "KHM": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "KOR": [
+    "mlrs_m270"
+   ],
+   "KWT": [
+    "mlrs_m270"
+   ],
+   "LAO": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "LBN": [
+    "mlrs_m270"
+   ],
+   "LBY": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "LKA": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "LTU": [
+    "mlrs_m270"
+   ],
+   "LUX": [
+    "mlrs_m270"
+   ],
+   "LVA": [
+    "mlrs_m270"
+   ],
+   "MAR": [
+    "mlrs_m270"
+   ],
+   "MDA": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "MEX": [
+    "mlrs_m270"
+   ],
+   "MKD": [
+    "mlrs_m270"
+   ],
+   "MLI": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "MLT": [
+    "mlrs_m270"
+   ],
+   "MMR": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "MNE": [
+    "mlrs_m270"
+   ],
+   "MNG": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "MOZ": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "MYS": [
+    "mlrs_m270"
+   ],
+   "NER": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "NGA": [
+    "mlrs_m270"
+   ],
+   "NIC": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "NLD": [
+    "mlrs_m270"
+   ],
+   "NOR": [
+    "mlrs_m270"
+   ],
+   "NPL": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "NZL": [
+    "mlrs_m270"
+   ],
+   "PAK": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "PAN": [
+    "mlrs_m270"
+   ],
+   "PER": [
+    "mlrs_m270"
+   ],
+   "PHL": [
+    "mlrs_m270"
+   ],
+   "POL": [
+    "mlrs_m270"
+   ],
+   "PRK": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "PRT": [
+    "mlrs_m270"
+   ],
+   "PRY": [
+    "mlrs_m270"
+   ],
+   "QAT": [
+    "mlrs_m270"
+   ],
+   "ROU": [
+    "mlrs_m270"
+   ],
+   "RUS": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "SAU": [
+    "mlrs_m270"
+   ],
+   "SDN": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "SEN": [
+    "mlrs_m270"
+   ],
+   "SGP": [
+    "mlrs_m270"
+   ],
+   "SLV": [
+    "mlrs_m270"
+   ],
+   "SRB": [
+    "mlrs_m270"
+   ],
+   "SVK": [
+    "mlrs_m270"
+   ],
+   "SVN": [
+    "mlrs_m270"
+   ],
+   "SWE": [
+    "mlrs_m270"
+   ],
+   "SYR": [
+    "mlrs_tos1"
+   ],
+   "TCD": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "THA": [
+    "mlrs_m270"
+   ],
+   "TJK": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "TKM": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "TUN": [
+    "mlrs_m270"
+   ],
+   "TUR": [
+    "mlrs_m270"
+   ],
+   "TWN": [
+    "mlrs_m270"
+   ],
+   "TZA": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "UGA": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "URY": [
+    "mlrs_m270"
+   ],
+   "USA": [
+    "mlrs_m270"
+   ],
+   "UZB": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "VEN": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "VNM": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "YEM": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "ZAF": [
+    "mlrs_m270"
+   ],
+   "ZMB": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ],
+   "ZWE": [
+    "mlrs_tos1",
+    "mlrs_iskander"
+   ]
+  }
+ },
+ "sam": {
+  "default": "sam",
+  "byCountry": {
+   "AGO": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "ARE": [
+    "sam_pantsir"
+   ],
+   "ARM": [
+    "sam_tor",
+    "sam_s300"
+   ],
+   "AZE": [
+    "sam_s300"
+   ],
+   "BFA": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "BGD": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "BGR": [
+    "sam_s300"
+   ],
+   "BLR": [
+    "sam_tor",
+    "sam_s300",
+    "sam_tunguska"
+   ],
+   "CAF": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "CHN": [
+    "sam_tor",
+    "sam_s300"
+   ],
+   "CMR": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "COG": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "CUB": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "CYP": [
+    "sam_tor"
+   ],
+   "DZA": [
+    "sam_pantsir",
+    "sam_tor",
+    "sam_s300"
+   ],
+   "EGY": [
+    "sam_tor",
+    "sam_s300"
+   ],
+   "ERI": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "ETH": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "GRC": [
+    "sam_tor",
+    "sam_s300"
+   ],
+   "IND": [
+    "sam_s300",
+    "sam_tunguska"
+   ],
+   "IRN": [
+    "sam_tor",
+    "sam_s300"
+   ],
+   "IRQ": [
+    "sam_pantsir"
+   ],
+   "KAZ": [
+    "sam_s300"
+   ],
+   "KGZ": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "KHM": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "LAO": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "LBY": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "LKA": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "MAR": [
+    "sam_tunguska"
+   ],
+   "MDA": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "MLI": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "MMR": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "MNG": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "MOZ": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "NER": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "NIC": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "NPL": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "PAK": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "PRK": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "RUS": [
+    "sam_pantsir",
+    "sam_tor",
+    "sam_s300",
+    "sam_tunguska"
+   ],
+   "SDN": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "SVK": [
+    "sam_s300"
+   ],
+   "SYR": [
+    "sam_pantsir",
+    "sam_s300",
+    "sam_tunguska"
+   ],
+   "TCD": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "TJK": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "TKM": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "TZA": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "UGA": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "UKR": [
+    "sam_s300",
+    "sam_tunguska"
+   ],
+   "UZB": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "VEN": [
+    "sam_tor"
+   ],
+   "VNM": [
+    "sam_s300"
+   ],
+   "YEM": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "ZMB": [
+    "sam_pantsir",
+    "sam_tor"
+   ],
+   "ZWE": [
+    "sam_pantsir",
+    "sam_tor"
+   ]
+  }
+ },
+ "fighter": {
+  "default": "fighter",
+  "byCountry": {
+   "AFG": [
+    "fighter_su25",
+    "fighter_mig21"
+   ],
+   "AGO": [
+    "fighter_su37",
+    "fighter_mig21"
+   ],
+   "ALB": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "ARE": [
+    "fighter_f16",
+    "fighter_mirage2000"
+   ],
+   "ARG": [
+    "fighter_superetendard"
+   ],
+   "ARM": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "AUS": [
+    "fighter_f35",
+    "fighter_f18"
+   ],
+   "AUT": [
+    "fighter_eurofighter"
+   ],
+   "AZE": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "BEL": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "BFA": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "BGD": [
+    "fighter_yak130"
+   ],
+   "BGR": [
+    "fighter_su25"
+   ],
+   "BHR": [
+    "fighter_f16"
+   ],
+   "BIH": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "BLR": [
+    "fighter_su37",
+    "fighter_su25",
+    "fighter_yak130"
+   ],
+   "BRA": [
+    "fighter_gripen",
+    "fighter_mirage2000"
+   ],
+   "CAF": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "CAN": [
+    "fighter_f35",
+    "fighter_f18"
+   ],
+   "CHE": [
+    "fighter_f35",
+    "fighter_f18"
+   ],
+   "CHL": [
+    "fighter_f16"
+   ],
+   "CHN": [
+    "fighter_j20",
+    "fighter_su35",
+    "fighter_su37",
+    "fighter_su33",
+    "fighter_mig21"
+   ],
+   "CMR": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "COG": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "COL": [
+    "fighter_gripen"
+   ],
+   "CRI": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "CUB": [
+    "fighter_mig21"
+   ],
+   "CYP": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "CZE": [
+    "fighter_gripen"
+   ],
+   "DEU": [
+    "fighter_f35",
+    "fighter_eurofighter"
+   ],
+   "DNK": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "DOM": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "DZA": [
+    "fighter_su35",
+    "fighter_yak130"
+   ],
+   "ECU": [
+    "fighter_miragef1",
+    "fighter_jaguar"
+   ],
+   "EGY": [
+    "fighter_su35",
+    "fighter_f16",
+    "fighter_f4",
+    "fighter_mig21",
+    "fighter_mirage2000"
+   ],
+   "ERI": [
+    "fighter_su37"
+   ],
+   "ESP": [
+    "fighter_f18",
+    "fighter_harrier",
+    "fighter_eurofighter",
+    "fighter_miragef1"
+   ],
+   "EST": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "ETH": [
+    "fighter_su37"
+   ],
+   "FIN": [
+    "fighter_f35",
+    "fighter_f18"
+   ],
+   "FRA": [
+    "fighter_mirage2000"
+   ],
+   "GBR": [
+    "fighter_f35",
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "GEO": [
+    "fighter_su25"
+   ],
+   "GHA": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "GRC": [
+    "fighter_f16",
+    "fighter_f4",
+    "fighter_mirage2000",
+    "fighter_miragef1"
+   ],
+   "GTM": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "HND": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "HRV": [
+    "fighter_mig21"
+   ],
+   "HUN": [
+    "fighter_gripen"
+   ],
+   "IDN": [
+    "fighter_su35",
+    "fighter_f16",
+    "fighter_su37"
+   ],
+   "IND": [
+    "fighter_harrier",
+    "fighter_su37",
+    "fighter_mig21",
+    "fighter_mirage2000",
+    "fighter_jaguar"
+   ],
+   "IRL": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "IRN": [
+    "fighter_su35",
+    "fighter_f14",
+    "fighter_f4",
+    "fighter_su25"
+   ],
+   "IRQ": [
+    "fighter_f16",
+    "fighter_su25",
+    "fighter_miragef1"
+   ],
+   "ISL": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "ISR": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "ITA": [
+    "fighter_f35",
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "JOR": [
+    "fighter_f16"
+   ],
+   "JPN": [
+    "fighter_f35",
+    "fighter_f4"
+   ],
+   "KAZ": [
+    "fighter_su37"
+   ],
+   "KEN": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "KGZ": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "KHM": [
+    "fighter_j20"
+   ],
+   "KOR": [
+    "fighter_f16",
+    "fighter_f35",
+    "fighter_f4"
+   ],
+   "KWT": [
+    "fighter_f18",
+    "fighter_eurofighter"
+   ],
+   "LAO": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "LBN": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "LBY": [
+    "fighter_mig21",
+    "fighter_miragef1"
+   ],
+   "LKA": [
+    "fighter_j20"
+   ],
+   "LTU": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "LUX": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "LVA": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "MAR": [
+    "fighter_f16",
+    "fighter_miragef1"
+   ],
+   "MDA": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "MEX": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "MKD": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "MLI": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "MLT": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "MMR": [
+    "fighter_j20"
+   ],
+   "MNE": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "MNG": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "MOZ": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "MYS": [
+    "fighter_f18"
+   ],
+   "NER": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "NGA": [
+    "fighter_jaguar"
+   ],
+   "NIC": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "NLD": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "NOR": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "NPL": [
+    "fighter_j20"
+   ],
+   "NZL": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "OMN": [
+    "fighter_f16",
+    "fighter_eurofighter",
+    "fighter_jaguar"
+   ],
+   "PAK": [
+    "fighter_f16"
+   ],
+   "PAN": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "PER": [
+    "fighter_su25",
+    "fighter_mirage2000"
+   ],
+   "PHL": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "POL": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "PRK": [
+    "fighter_su25",
+    "fighter_mig21"
+   ],
+   "PRT": [
+    "fighter_f16"
+   ],
+   "PRY": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "QAT": [
+    "fighter_eurofighter",
+    "fighter_mirage2000"
+   ],
+   "ROU": [
+    "fighter_f16",
+    "fighter_mig21"
+   ],
+   "RUS": [
+    "fighter_su35",
+    "fighter_su37",
+    "fighter_su33",
+    "fighter_su25",
+    "fighter_su57",
+    "fighter_yak130"
+   ],
+   "SAU": [
+    "fighter_eurofighter"
+   ],
+   "SDN": [
+    "fighter_su25"
+   ],
+   "SEN": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "SGP": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "SLV": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "SRB": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "SVK": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "SVN": [
+    "fighter_harrier",
+    "fighter_eurofighter"
+   ],
+   "SWE": [
+    "fighter_gripen"
+   ],
+   "SYR": [
+    "fighter_mig21"
+   ],
+   "TCD": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "THA": [
+    "fighter_f16",
+    "fighter_harrier",
+    "fighter_gripen"
+   ],
+   "TJK": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "TKM": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "TUN": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "TUR": [
+    "fighter_f16",
+    "fighter_f4",
+    "fighter_eurofighter"
+   ],
+   "TWN": [
+    "fighter_f16",
+    "fighter_mirage2000"
+   ],
+   "TZA": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "UGA": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "UKR": [
+    "fighter_f16",
+    "fighter_su37",
+    "fighter_su25"
+   ],
+   "URY": [
+    "fighter_f16",
+    "fighter_f35"
+   ],
+   "USA": [
+    "fighter_f16",
+    "fighter_f35",
+    "fighter_f22",
+    "fighter_f18",
+    "fighter_f4",
+    "fighter_a10"
+   ],
+   "UZB": [
+    "fighter_su37"
+   ],
+   "VEN": [
+    "fighter_f16",
+    "fighter_su37"
+   ],
+   "VNM": [
+    "fighter_su37",
+    "fighter_mig21",
+    "fighter_yak130"
+   ],
+   "YEM": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "ZAF": [
+    "fighter_gripen",
+    "fighter_miragef1"
+   ],
+   "ZMB": [
+    "fighter_su35",
+    "fighter_su37"
+   ],
+   "ZWE": [
+    "fighter_su35",
+    "fighter_su37"
+   ]
+  }
+ },
+ "bomber": {
+  "default": "bomber",
+  "byCountry": {
+   "AFG": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "AGO": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "ALB": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ARE": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ARG": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ARM": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "AUS": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "AUT": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "AZE": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "BEL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "BFA": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "BGD": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "BGR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "BHR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "BIH": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "BLR": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "BRA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CAF": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "CAN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CHE": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CHL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CHN": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "CMR": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "COG": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "COL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CRI": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CUB": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "CYP": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "CZE": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "DEU": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "DNK": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "DOM": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "DZA": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "ECU": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "EGY": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ERI": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "ESP": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "EST": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ETH": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "FIN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "FRA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "GBR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "GEO": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "GHA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "GRC": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "GTM": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "HND": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "HRV": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "HUN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "IDN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "IND": [
+    "bomber_tu95"
+   ],
+   "IRL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "IRN": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "IRQ": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ISL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ISR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ITA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "JOR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "JPN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "KAZ": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "KEN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "KGZ": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "KHM": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "KOR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "KWT": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "LAO": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "LBN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "LBY": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "LKA": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "LTU": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "LUX": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "LVA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "MAR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "MDA": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "MEX": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "MKD": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "MLI": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "MLT": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "MMR": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "MNE": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "MNG": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "MOZ": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "MYS": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "NER": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "NGA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "NIC": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "NLD": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "NOR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "NPL": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "NZL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "PAK": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "PAN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "PER": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "PHL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "POL": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "PRK": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "PRT": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "PRY": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "QAT": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ROU": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "RUS": [
+    "bomber_tu160"
+   ],
+   "SAU": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SDN": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "SEN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SGP": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SLV": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SRB": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SVK": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SVN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SWE": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "SYR": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "TCD": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "THA": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "TJK": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "TKM": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "TUN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "TUR": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "TWN": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "TZA": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "UGA": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "URY": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "USA": [
+    "bomber_b52"
+   ],
+   "UZB": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "VEN": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "VNM": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "YEM": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "ZAF": [
+    "bomber_b52",
+    "bomber_b1b"
+   ],
+   "ZMB": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ],
+   "ZWE": [
+    "bomber_tu160",
+    "bomber_tu95"
+   ]
+  }
+ },
+ "transport_plane": {
+  "default": "transport_plane",
+  "byCountry": {
+   "AFG": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "AGO": [
+    "transport_an12"
+   ],
+   "ALB": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "ARE": [
+    "transport_c17"
+   ],
+   "ARG": [
+    "transport_c130"
+   ],
+   "ARM": [
+    "transport_il76"
+   ],
+   "AUS": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "AUT": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "AZE": [
+    "transport_il76"
+   ],
+   "BEL": [
+    "transport_a400m"
+   ],
+   "BFA": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "BGD": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "BGR": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "BHR": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "BIH": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "BLR": [
+    "transport_il76"
+   ],
+   "BRA": [
+    "transport_c130"
+   ],
+   "CAF": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "CAN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "CHE": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "CHL": [
+    "transport_c130",
+    "transport_c212"
+   ],
+   "CHN": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "CMR": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "COG": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "COL": [
+    "transport_c130",
+    "transport_c212"
+   ],
+   "CRI": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "CUB": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "CYP": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "CZE": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "DEU": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "DNK": [
+    "transport_c130"
+   ],
+   "DOM": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "DZA": [
+    "transport_il76"
+   ],
+   "ECU": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "EGY": [
+    "transport_c130"
+   ],
+   "ERI": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "ESP": [
+    "transport_a400m",
+    "transport_c212"
+   ],
+   "EST": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "ETH": [
+    "transport_an12"
+   ],
+   "FIN": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "FRA": [
+    "transport_a400m",
+    "transport_c160",
+    "transport_kc135"
+   ],
+   "GBR": [
+    "transport_a400m",
+    "transport_c17",
+    "transport_c130"
+   ],
+   "GEO": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "GHA": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "GRC": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "GTM": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "HND": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "HRV": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "HUN": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "IDN": [
+    "transport_a400m",
+    "transport_c130",
+    "transport_c212"
+   ],
+   "IND": [
+    "transport_c17",
+    "transport_c130",
+    "transport_il76",
+    "transport_an12"
+   ],
+   "IRL": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "IRN": [
+    "transport_c130",
+    "transport_il76"
+   ],
+   "IRQ": [
+    "transport_il76"
+   ],
+   "ISL": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "ISR": [
+    "transport_c130"
+   ],
+   "ITA": [
+    "transport_c130"
+   ],
+   "JOR": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "JPN": [
+    "transport_c130"
+   ],
+   "KAZ": [
+    "transport_a400m",
+    "transport_il76"
+   ],
+   "KEN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "KGZ": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "KHM": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "KOR": [
+    "transport_c130"
+   ],
+   "KWT": [
+    "transport_c17"
+   ],
+   "LAO": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "LBN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "LBY": [
+    "transport_il76"
+   ],
+   "LKA": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "LTU": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "LUX": [
+    "transport_a400m"
+   ],
+   "LVA": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "MAR": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "MDA": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "MEX": [
+    "transport_c130",
+    "transport_c212"
+   ],
+   "MKD": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "MLI": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "MLT": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "MMR": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "MNE": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "MNG": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "MOZ": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "MYS": [
+    "transport_a400m"
+   ],
+   "NER": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "NGA": [
+    "transport_c130"
+   ],
+   "NIC": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "NLD": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "NOR": [
+    "transport_c130"
+   ],
+   "NPL": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "NZL": [
+    "transport_c130"
+   ],
+   "PAK": [
+    "transport_c130"
+   ],
+   "PAN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "PER": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "PHL": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "POL": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "PRK": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "PRT": [
+    "transport_c130",
+    "transport_c212"
+   ],
+   "PRY": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "QAT": [
+    "transport_c17"
+   ],
+   "ROU": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "RUS": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "SAU": [
+    "transport_c130"
+   ],
+   "SDN": [
+    "transport_an12"
+   ],
+   "SEN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "SGP": [
+    "transport_kc135"
+   ],
+   "SLV": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "SRB": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "SVK": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "SVN": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "SWE": [
+    "transport_a400m",
+    "transport_c160"
+   ],
+   "SYR": [
+    "transport_il76"
+   ],
+   "TCD": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "THA": [
+    "transport_c130"
+   ],
+   "TJK": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "TKM": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "TUN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "TUR": [
+    "transport_a400m",
+    "transport_c130",
+    "transport_c160",
+    "transport_kc135"
+   ],
+   "TWN": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "TZA": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "UGA": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "UKR": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "URY": [
+    "transport_c17",
+    "transport_c130"
+   ],
+   "USA": [
+    "transport_c17",
+    "transport_c130",
+    "transport_kc135"
+   ],
+   "UZB": [
+    "transport_il76"
+   ],
+   "VEN": [
+    "transport_c130",
+    "transport_c212"
+   ],
+   "VNM": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "YEM": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "ZAF": [
+    "transport_c130",
+    "transport_c160"
+   ],
+   "ZMB": [
+    "transport_il76",
+    "transport_an12"
+   ],
+   "ZWE": [
+    "transport_il76",
+    "transport_an12"
+   ]
+  }
+ },
+ "drone": {
+  "default": "drone",
+  "byCountry": {
+   "AFG": [
+    "drone_mq9"
+   ],
+   "ALB": [
+    "drone_tb2"
+   ],
+   "ARE": [
+    "drone_mq9"
+   ],
+   "ARG": [
+    "drone_mq9"
+   ],
+   "AUS": [
+    "drone_mq9"
+   ],
+   "AUT": [
+    "drone_mq9"
+   ],
+   "AZE": [
+    "drone_tb2"
+   ],
+   "BEL": [
+    "drone_mq9"
+   ],
+   "BGR": [
+    "drone_mq9"
+   ],
+   "BHR": [
+    "drone_mq9"
+   ],
+   "BIH": [
+    "drone_mq9"
+   ],
+   "BRA": [
+    "drone_mq9"
+   ],
+   "CAN": [
+    "drone_mq9"
+   ],
+   "CHE": [
+    "drone_mq9"
+   ],
+   "CHL": [
+    "drone_mq9"
+   ],
+   "COL": [
+    "drone_mq9"
+   ],
+   "CRI": [
+    "drone_mq9"
+   ],
+   "CYP": [
+    "drone_mq9"
+   ],
+   "CZE": [
+    "drone_mq9"
+   ],
+   "DEU": [
+    "drone_mq9"
+   ],
+   "DNK": [
+    "drone_mq9"
+   ],
+   "DOM": [
+    "drone_mq9"
+   ],
+   "ECU": [
+    "drone_mq9"
+   ],
+   "EGY": [
+    "drone_mq9"
+   ],
+   "ESP": [
+    "drone_mq9"
+   ],
+   "EST": [
+    "drone_mq9"
+   ],
+   "ETH": [
+    "drone_tb2"
+   ],
+   "FIN": [
+    "drone_mq9"
+   ],
+   "FRA": [
+    "drone_mq9"
+   ],
+   "GBR": [
+    "drone_mq9"
+   ],
+   "GEO": [
+    "drone_mq9"
+   ],
+   "GHA": [
+    "drone_mq9"
+   ],
+   "GRC": [
+    "drone_mq9"
+   ],
+   "GTM": [
+    "drone_mq9"
+   ],
+   "HND": [
+    "drone_mq9"
+   ],
+   "HRV": [
+    "drone_mq9"
+   ],
+   "HUN": [
+    "drone_mq9"
+   ],
+   "IDN": [
+    "drone_mq9"
+   ],
+   "IND": [
+    "drone_mq9"
+   ],
+   "IRL": [
+    "drone_mq9"
+   ],
+   "IRQ": [
+    "drone_mq9"
+   ],
+   "ISL": [
+    "drone_mq9"
+   ],
+   "ISR": [
+    "drone_mq9"
+   ],
+   "ITA": [
+    "drone_mq9"
+   ],
+   "JOR": [
+    "drone_mq9"
+   ],
+   "JPN": [
+    "drone_mq9"
+   ],
+   "KEN": [
+    "drone_mq9"
+   ],
+   "KGZ": [
+    "drone_tb2"
+   ],
+   "KOR": [
+    "drone_mq9"
+   ],
+   "KWT": [
+    "drone_tb2"
+   ],
+   "LBN": [
+    "drone_mq9"
+   ],
+   "LTU": [
+    "drone_tb2"
+   ],
+   "LUX": [
+    "drone_mq9"
+   ],
+   "LVA": [
+    "drone_mq9"
+   ],
+   "MAR": [
+    "drone_tb2"
+   ],
+   "MEX": [
+    "drone_mq9"
+   ],
+   "MKD": [
+    "drone_mq9"
+   ],
+   "MLT": [
+    "drone_mq9"
+   ],
+   "MNE": [
+    "drone_mq9"
+   ],
+   "MYS": [
+    "drone_mq9"
+   ],
+   "NGA": [
+    "drone_tb2"
+   ],
+   "NLD": [
+    "drone_mq9"
+   ],
+   "NOR": [
+    "drone_mq9"
+   ],
+   "NZL": [
+    "drone_mq9"
+   ],
+   "PAN": [
+    "drone_mq9"
+   ],
+   "PER": [
+    "drone_mq9"
+   ],
+   "PHL": [
+    "drone_mq9"
+   ],
+   "POL": [
+    "drone_tb2"
+   ],
+   "PRT": [
+    "drone_mq9"
+   ],
+   "PRY": [
+    "drone_mq9"
+   ],
+   "QAT": [
+    "drone_tb2"
+   ],
+   "ROU": [
+    "drone_mq9"
+   ],
+   "SAU": [
+    "drone_mq9"
+   ],
+   "SEN": [
+    "drone_mq9"
+   ],
+   "SGP": [
+    "drone_mq9"
+   ],
+   "SLV": [
+    "drone_mq9"
+   ],
+   "SRB": [
+    "drone_mq9"
+   ],
+   "SVK": [
+    "drone_mq9"
+   ],
+   "SVN": [
+    "drone_mq9"
+   ],
+   "SWE": [
+    "drone_mq9"
+   ],
+   "THA": [
+    "drone_mq9"
+   ],
+   "TKM": [
+    "drone_tb2"
+   ],
+   "TUN": [
+    "drone_mq9"
+   ],
+   "TUR": [
+    "drone_tb2"
+   ],
+   "TWN": [
+    "drone_mq9"
+   ],
+   "UKR": [
+    "drone_tb2"
+   ],
+   "URY": [
+    "drone_mq9"
+   ],
+   "USA": [
+    "drone_mq9"
+   ],
+   "ZAF": [
+    "drone_mq9"
+   ]
+  }
+ },
+ "destroyer": {
+  "default": "destroyer",
+  "byCountry": {
+   "AFG": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ALB": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ARE": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ARG": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "AUS": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "AUT": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "BEL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "BGR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "BHR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "BIH": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "BRA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "CAN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "CHE": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "CHL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "COL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "CRI": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "CYP": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "CZE": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "DEU": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "DNK": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "DOM": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ECU": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "EGY": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ESP": [
+    "destroyer_arleigh_burke"
+   ],
+   "EST": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "FIN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "FRA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "GBR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "GEO": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "GHA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "GRC": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "GTM": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "HND": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "HRV": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "HUN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "IDN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "IRL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "IRQ": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ISL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ISR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ITA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "JOR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "JPN": [
+    "destroyer_arleigh_burke"
+   ],
+   "KEN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "KOR": [
+    "destroyer_arleigh_burke"
+   ],
+   "KWT": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "LBN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "LTU": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "LUX": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "LVA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "MAR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "MEX": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "MKD": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "MLT": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "MNE": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "MYS": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "NGA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "NLD": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "NOR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "NZL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "PAN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "PER": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "PHL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "POL": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "PRT": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "PRY": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "QAT": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ROU": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SAU": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SEN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SGP": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SLV": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SRB": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SVK": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SVN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "SWE": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "THA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "TUN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "TUR": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "TWN": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "URY": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "USA": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ],
+   "ZAF": [
+    "destroyer_arleigh_burke",
+    "destroyer_cg47"
+   ]
+  }
+ },
+ "carrier": {
+  "default": "carrier",
+  "byCountry": {
+   "AFG": [
+    "carrier_nimitz"
+   ],
+   "ALB": [
+    "carrier_nimitz"
+   ],
+   "ARE": [
+    "carrier_nimitz"
+   ],
+   "ARG": [
+    "carrier_nimitz"
+   ],
+   "AUS": [
+    "carrier_nimitz"
+   ],
+   "AUT": [
+    "carrier_nimitz"
+   ],
+   "BEL": [
+    "carrier_nimitz"
+   ],
+   "BGR": [
+    "carrier_nimitz"
+   ],
+   "BHR": [
+    "carrier_nimitz"
+   ],
+   "BIH": [
+    "carrier_nimitz"
+   ],
+   "BRA": [
+    "carrier_nimitz"
+   ],
+   "CAN": [
+    "carrier_nimitz"
+   ],
+   "CHE": [
+    "carrier_nimitz"
+   ],
+   "CHL": [
+    "carrier_nimitz"
+   ],
+   "COL": [
+    "carrier_nimitz"
+   ],
+   "CRI": [
+    "carrier_nimitz"
+   ],
+   "CYP": [
+    "carrier_nimitz"
+   ],
+   "CZE": [
+    "carrier_nimitz"
+   ],
+   "DEU": [
+    "carrier_nimitz"
+   ],
+   "DNK": [
+    "carrier_nimitz"
+   ],
+   "DOM": [
+    "carrier_nimitz"
+   ],
+   "ECU": [
+    "carrier_nimitz"
+   ],
+   "EGY": [
+    "carrier_nimitz"
+   ],
+   "ESP": [
+    "carrier_nimitz"
+   ],
+   "EST": [
+    "carrier_nimitz"
+   ],
+   "FIN": [
+    "carrier_nimitz"
+   ],
+   "FRA": [
+    "carrier_nimitz"
+   ],
+   "GBR": [
+    "carrier_nimitz"
+   ],
+   "GEO": [
+    "carrier_nimitz"
+   ],
+   "GHA": [
+    "carrier_nimitz"
+   ],
+   "GRC": [
+    "carrier_nimitz"
+   ],
+   "GTM": [
+    "carrier_nimitz"
+   ],
+   "HND": [
+    "carrier_nimitz"
+   ],
+   "HRV": [
+    "carrier_nimitz"
+   ],
+   "HUN": [
+    "carrier_nimitz"
+   ],
+   "IDN": [
+    "carrier_nimitz"
+   ],
+   "IRL": [
+    "carrier_nimitz"
+   ],
+   "IRQ": [
+    "carrier_nimitz"
+   ],
+   "ISL": [
+    "carrier_nimitz"
+   ],
+   "ISR": [
+    "carrier_nimitz"
+   ],
+   "ITA": [
+    "carrier_nimitz"
+   ],
+   "JOR": [
+    "carrier_nimitz"
+   ],
+   "JPN": [
+    "carrier_nimitz"
+   ],
+   "KEN": [
+    "carrier_nimitz"
+   ],
+   "KOR": [
+    "carrier_nimitz"
+   ],
+   "KWT": [
+    "carrier_nimitz"
+   ],
+   "LBN": [
+    "carrier_nimitz"
+   ],
+   "LTU": [
+    "carrier_nimitz"
+   ],
+   "LUX": [
+    "carrier_nimitz"
+   ],
+   "LVA": [
+    "carrier_nimitz"
+   ],
+   "MAR": [
+    "carrier_nimitz"
+   ],
+   "MEX": [
+    "carrier_nimitz"
+   ],
+   "MKD": [
+    "carrier_nimitz"
+   ],
+   "MLT": [
+    "carrier_nimitz"
+   ],
+   "MNE": [
+    "carrier_nimitz"
+   ],
+   "MYS": [
+    "carrier_nimitz"
+   ],
+   "NGA": [
+    "carrier_nimitz"
+   ],
+   "NLD": [
+    "carrier_nimitz"
+   ],
+   "NOR": [
+    "carrier_nimitz"
+   ],
+   "NZL": [
+    "carrier_nimitz"
+   ],
+   "PAN": [
+    "carrier_nimitz"
+   ],
+   "PER": [
+    "carrier_nimitz"
+   ],
+   "PHL": [
+    "carrier_nimitz"
+   ],
+   "POL": [
+    "carrier_nimitz"
+   ],
+   "PRT": [
+    "carrier_nimitz"
+   ],
+   "PRY": [
+    "carrier_nimitz"
+   ],
+   "QAT": [
+    "carrier_nimitz"
+   ],
+   "ROU": [
+    "carrier_nimitz"
+   ],
+   "SAU": [
+    "carrier_nimitz"
+   ],
+   "SEN": [
+    "carrier_nimitz"
+   ],
+   "SGP": [
+    "carrier_nimitz"
+   ],
+   "SLV": [
+    "carrier_nimitz"
+   ],
+   "SRB": [
+    "carrier_nimitz"
+   ],
+   "SVK": [
+    "carrier_nimitz"
+   ],
+   "SVN": [
+    "carrier_nimitz"
+   ],
+   "SWE": [
+    "carrier_nimitz"
+   ],
+   "THA": [
+    "carrier_nimitz"
+   ],
+   "TUN": [
+    "carrier_nimitz"
+   ],
+   "TUR": [
+    "carrier_nimitz"
+   ],
+   "TWN": [
+    "carrier_nimitz"
+   ],
+   "URY": [
+    "carrier_nimitz"
+   ],
+   "USA": [
+    "carrier_nimitz"
+   ],
+   "ZAF": [
+    "carrier_nimitz"
+   ]
+  }
+ },
+ "submarine": {
+  "default": "submarine",
+  "byCountry": {
+   "AFG": [
+    "submarine_virginia"
+   ],
+   "ALB": [
+    "submarine_virginia"
+   ],
+   "ARE": [
+    "submarine_virginia"
+   ],
+   "ARG": [
+    "submarine_virginia"
+   ],
+   "AUS": [
+    "submarine_virginia"
+   ],
+   "AUT": [
+    "submarine_virginia"
+   ],
+   "BEL": [
+    "submarine_virginia"
+   ],
+   "BGR": [
+    "submarine_virginia"
+   ],
+   "BHR": [
+    "submarine_virginia"
+   ],
+   "BIH": [
+    "submarine_virginia"
+   ],
+   "BRA": [
+    "submarine_virginia"
+   ],
+   "CAN": [
+    "submarine_virginia"
+   ],
+   "CHE": [
+    "submarine_virginia"
+   ],
+   "CHL": [
+    "submarine_virginia"
+   ],
+   "COL": [
+    "submarine_virginia"
+   ],
+   "CRI": [
+    "submarine_virginia"
+   ],
+   "CYP": [
+    "submarine_virginia"
+   ],
+   "CZE": [
+    "submarine_virginia"
+   ],
+   "DEU": [
+    "submarine_virginia"
+   ],
+   "DNK": [
+    "submarine_virginia"
+   ],
+   "DOM": [
+    "submarine_virginia"
+   ],
+   "ECU": [
+    "submarine_virginia"
+   ],
+   "EGY": [
+    "submarine_virginia"
+   ],
+   "ESP": [
+    "submarine_virginia"
+   ],
+   "EST": [
+    "submarine_virginia"
+   ],
+   "FIN": [
+    "submarine_virginia"
+   ],
+   "FRA": [
+    "submarine_virginia"
+   ],
+   "GBR": [
+    "submarine_virginia"
+   ],
+   "GEO": [
+    "submarine_virginia"
+   ],
+   "GHA": [
+    "submarine_virginia"
+   ],
+   "GRC": [
+    "submarine_virginia"
+   ],
+   "GTM": [
+    "submarine_virginia"
+   ],
+   "HND": [
+    "submarine_virginia"
+   ],
+   "HRV": [
+    "submarine_virginia"
+   ],
+   "HUN": [
+    "submarine_virginia"
+   ],
+   "IDN": [
+    "submarine_virginia"
+   ],
+   "IRL": [
+    "submarine_virginia"
+   ],
+   "IRQ": [
+    "submarine_virginia"
+   ],
+   "ISL": [
+    "submarine_virginia"
+   ],
+   "ISR": [
+    "submarine_virginia"
+   ],
+   "ITA": [
+    "submarine_virginia"
+   ],
+   "JOR": [
+    "submarine_virginia"
+   ],
+   "JPN": [
+    "submarine_virginia"
+   ],
+   "KEN": [
+    "submarine_virginia"
+   ],
+   "KOR": [
+    "submarine_virginia"
+   ],
+   "KWT": [
+    "submarine_virginia"
+   ],
+   "LBN": [
+    "submarine_virginia"
+   ],
+   "LTU": [
+    "submarine_virginia"
+   ],
+   "LUX": [
+    "submarine_virginia"
+   ],
+   "LVA": [
+    "submarine_virginia"
+   ],
+   "MAR": [
+    "submarine_virginia"
+   ],
+   "MEX": [
+    "submarine_virginia"
+   ],
+   "MKD": [
+    "submarine_virginia"
+   ],
+   "MLT": [
+    "submarine_virginia"
+   ],
+   "MNE": [
+    "submarine_virginia"
+   ],
+   "MYS": [
+    "submarine_virginia"
+   ],
+   "NGA": [
+    "submarine_virginia"
+   ],
+   "NLD": [
+    "submarine_virginia"
+   ],
+   "NOR": [
+    "submarine_virginia"
+   ],
+   "NZL": [
+    "submarine_virginia"
+   ],
+   "PAN": [
+    "submarine_virginia"
+   ],
+   "PER": [
+    "submarine_virginia"
+   ],
+   "PHL": [
+    "submarine_virginia"
+   ],
+   "POL": [
+    "submarine_virginia"
+   ],
+   "PRT": [
+    "submarine_virginia"
+   ],
+   "PRY": [
+    "submarine_virginia"
+   ],
+   "QAT": [
+    "submarine_virginia"
+   ],
+   "ROU": [
+    "submarine_virginia"
+   ],
+   "SAU": [
+    "submarine_virginia"
+   ],
+   "SEN": [
+    "submarine_virginia"
+   ],
+   "SGP": [
+    "submarine_virginia"
+   ],
+   "SLV": [
+    "submarine_virginia"
+   ],
+   "SRB": [
+    "submarine_virginia"
+   ],
+   "SVK": [
+    "submarine_virginia"
+   ],
+   "SVN": [
+    "submarine_virginia"
+   ],
+   "SWE": [
+    "submarine_virginia"
+   ],
+   "THA": [
+    "submarine_virginia"
+   ],
+   "TUN": [
+    "submarine_virginia"
+   ],
+   "TUR": [
+    "submarine_virginia"
+   ],
+   "TWN": [
+    "submarine_virginia"
+   ],
+   "URY": [
+    "submarine_virginia"
+   ],
+   "USA": [
+    "submarine_virginia"
+   ],
+   "ZAF": [
+    "submarine_virginia"
+   ]
+  }
+ },
+ "attack_heli": {
+  "default": "attack_heli",
+  "byCountry": {
+   "AFG": [
+    "attack_heli_mi24"
+   ],
+   "AGO": [
+    "attack_heli_mi24"
+   ],
+   "ALB": [
+    "attack_heli_tiger"
+   ],
+   "ARE": [
+    "attack_heli_apache"
+   ],
+   "ARG": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "ARM": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "AUS": [
+    "attack_heli_apache",
+    "attack_heli_tiger"
+   ],
+   "AUT": [
+    "attack_heli_tiger"
+   ],
+   "AZE": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "BEL": [
+    "attack_heli_tiger"
+   ],
+   "BFA": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "BGD": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "BGR": [
+    "attack_heli_mi24"
+   ],
+   "BHR": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "BIH": [
+    "attack_heli_tiger"
+   ],
+   "BLR": [
+    "attack_heli_mi24"
+   ],
+   "BRA": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "CAF": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "CAN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "CHE": [
+    "attack_heli_tiger"
+   ],
+   "CHL": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "CHN": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "CMR": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "COG": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "COL": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "CRI": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "CUB": [
+    "attack_heli_mi24"
+   ],
+   "CYP": [
+    "attack_heli_tiger"
+   ],
+   "CZE": [
+    "attack_heli_mi24"
+   ],
+   "DEU": [
+    "attack_heli_tiger"
+   ],
+   "DNK": [
+    "attack_heli_tiger"
+   ],
+   "DOM": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "DZA": [
+    "attack_heli_mi24"
+   ],
+   "ECU": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "EGY": [
+    "attack_heli_apache"
+   ],
+   "ERI": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "ESP": [
+    "attack_heli_tiger"
+   ],
+   "EST": [
+    "attack_heli_tiger"
+   ],
+   "ETH": [
+    "attack_heli_mi24"
+   ],
+   "FIN": [
+    "attack_heli_tiger"
+   ],
+   "FRA": [
+    "attack_heli_tiger"
+   ],
+   "GBR": [
+    "attack_heli_apache"
+   ],
+   "GEO": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "GHA": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "GRC": [
+    "attack_heli_apache"
+   ],
+   "GTM": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "HND": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "HRV": [
+    "attack_heli_tiger"
+   ],
+   "HUN": [
+    "attack_heli_mi24"
+   ],
+   "IDN": [
+    "attack_heli_apache"
+   ],
+   "IND": [
+    "attack_heli_apache",
+    "attack_heli_mi24"
+   ],
+   "IRL": [
+    "attack_heli_tiger"
+   ],
+   "IRN": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "IRQ": [
+    "attack_heli_mi24"
+   ],
+   "ISL": [
+    "attack_heli_tiger"
+   ],
+   "ISR": [
+    "attack_heli_apache"
+   ],
+   "ITA": [
+    "attack_heli_tiger"
+   ],
+   "JOR": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "JPN": [
+    "attack_heli_apache",
+    "attack_heli_oh1"
+   ],
+   "KAZ": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "KEN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "KGZ": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "KHM": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "KOR": [
+    "attack_heli_apache"
+   ],
+   "KWT": [
+    "attack_heli_apache"
+   ],
+   "LAO": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "LBN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "LBY": [
+    "attack_heli_mi24"
+   ],
+   "LKA": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "LTU": [
+    "attack_heli_tiger"
+   ],
+   "LUX": [
+    "attack_heli_tiger"
+   ],
+   "LVA": [
+    "attack_heli_tiger"
+   ],
+   "MAR": [
+    "attack_heli_apache"
+   ],
+   "MDA": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "MEX": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "MKD": [
+    "attack_heli_tiger"
+   ],
+   "MLI": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "MLT": [
+    "attack_heli_tiger"
+   ],
+   "MMR": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "MNE": [
+    "attack_heli_tiger"
+   ],
+   "MNG": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "MOZ": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "MYS": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "NER": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "NGA": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "NIC": [
+    "attack_heli_mi24"
+   ],
+   "NLD": [
+    "attack_heli_apache"
+   ],
+   "NOR": [
+    "attack_heli_tiger"
+   ],
+   "NPL": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "NZL": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "PAK": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "PAN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "PER": [
+    "attack_heli_mi24"
+   ],
+   "PHL": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "POL": [
+    "attack_heli_apache",
+    "attack_heli_mi24"
+   ],
+   "PRK": [
+    "attack_heli_mi24"
+   ],
+   "PRT": [
+    "attack_heli_tiger"
+   ],
+   "PRY": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "QAT": [
+    "attack_heli_apache"
+   ],
+   "ROU": [
+    "attack_heli_tiger"
+   ],
+   "RUS": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "SAU": [
+    "attack_heli_apache"
+   ],
+   "SDN": [
+    "attack_heli_mi24"
+   ],
+   "SEN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "SGP": [
+    "attack_heli_apache"
+   ],
+   "SLV": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "SRB": [
+    "attack_heli_tiger"
+   ],
+   "SVK": [
+    "attack_heli_mi24"
+   ],
+   "SVN": [
+    "attack_heli_tiger"
+   ],
+   "SWE": [
+    "attack_heli_tiger"
+   ],
+   "SYR": [
+    "attack_heli_mi24"
+   ],
+   "TCD": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "THA": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "TJK": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "TKM": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "TUN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "TUR": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "TWN": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "TZA": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "UGA": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "UKR": [
+    "attack_heli_mi24"
+   ],
+   "URY": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "USA": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "UZB": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "VEN": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "VNM": [
+    "attack_heli_mi24"
+   ],
+   "YEM": [
+    "attack_heli_mi24"
+   ],
+   "ZAF": [
+    "attack_heli_apache",
+    "attack_heli_oh58"
+   ],
+   "ZMB": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ],
+   "ZWE": [
+    "attack_heli_mi24",
+    "attack_heli_ka50"
+   ]
+  }
+ },
+ "transport_heli": {
+  "default": "transport_heli",
+  "byCountry": {
+   "AFG": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ALB": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ARE": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ARG": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "AUS": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "AUT": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "BEL": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "BGR": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "BHR": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "BIH": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "BRA": [
+    "transport_heli_uh60"
+   ],
+   "CAN": [
+    "transport_heli_ch47"
+   ],
+   "CHE": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "CHL": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "COL": [
+    "transport_heli_uh60"
+   ],
+   "CRI": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "CYP": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "CZE": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "DEU": [
+    "transport_heli_ch47"
+   ],
+   "DNK": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "DOM": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ECU": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "EGY": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ESP": [
+    "transport_heli_ch47"
+   ],
+   "EST": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "FIN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "FRA": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "GBR": [
+    "transport_heli_ch47"
+   ],
+   "GEO": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "GHA": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "GRC": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "GTM": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "HND": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "HRV": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "HUN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "IDN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "IND": [
+    "transport_heli_ch47"
+   ],
+   "IRL": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "IRQ": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ISL": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ISR": [
+    "transport_heli_uh60"
+   ],
+   "ITA": [
+    "transport_heli_ch47"
+   ],
+   "JOR": [
+    "transport_heli_uh60"
+   ],
+   "JPN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47",
+    "transport_heli_v22"
+   ],
+   "KEN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "KOR": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "KWT": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "LBN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "LTU": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "LUX": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "LVA": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "MAR": [
+    "transport_heli_uh60"
+   ],
+   "MEX": [
+    "transport_heli_uh60"
+   ],
+   "MKD": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "MLT": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "MNE": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "MYS": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "NGA": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "NLD": [
+    "transport_heli_ch47"
+   ],
+   "NOR": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "NZL": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "PAN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "PER": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "PHL": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "POL": [
+    "transport_heli_uh60"
+   ],
+   "PRT": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "PRY": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "QAT": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "ROU": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "SAU": [
+    "transport_heli_uh60"
+   ],
+   "SEN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "SGP": [
+    "transport_heli_ch47"
+   ],
+   "SLV": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "SRB": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "SVK": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "SVN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "SWE": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "THA": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "TUN": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "TUR": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "TWN": [
+    "transport_heli_uh60"
+   ],
+   "URY": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ],
+   "USA": [
+    "transport_heli_uh60",
+    "transport_heli_ch47",
+    "transport_heli_v22"
+   ],
+   "ZAF": [
+    "transport_heli_uh60",
+    "transport_heli_ch47"
+   ]
+  }
+ },
+ "frigate": {
+  "default": "frigate",
+  "byCountry": {
+   "AFG": [
+    "frigate_perry"
+   ],
+   "ALB": [
+    "frigate_perry"
+   ],
+   "ARE": [
+    "frigate_perry"
+   ],
+   "ARG": [
+    "frigate_perry"
+   ],
+   "AUS": [
+    "frigate_perry"
+   ],
+   "AUT": [
+    "frigate_perry"
+   ],
+   "BEL": [
+    "frigate_perry"
+   ],
+   "BGR": [
+    "frigate_perry"
+   ],
+   "BHR": [
+    "frigate_perry"
+   ],
+   "BIH": [
+    "frigate_perry"
+   ],
+   "BRA": [
+    "frigate_perry"
+   ],
+   "CAN": [
+    "frigate_perry"
+   ],
+   "CHE": [
+    "frigate_perry"
+   ],
+   "CHL": [
+    "frigate_perry"
+   ],
+   "COL": [
+    "frigate_perry"
+   ],
+   "CRI": [
+    "frigate_perry"
+   ],
+   "CYP": [
+    "frigate_perry"
+   ],
+   "CZE": [
+    "frigate_perry"
+   ],
+   "DEU": [
+    "frigate_perry"
+   ],
+   "DNK": [
+    "frigate_perry"
+   ],
+   "DOM": [
+    "frigate_perry"
+   ],
+   "ECU": [
+    "frigate_perry"
+   ],
+   "EGY": [
+    "frigate_perry"
+   ],
+   "ESP": [
+    "frigate_perry"
+   ],
+   "EST": [
+    "frigate_perry"
+   ],
+   "FIN": [
+    "frigate_perry"
+   ],
+   "FRA": [
+    "frigate_perry"
+   ],
+   "GBR": [
+    "frigate_perry"
+   ],
+   "GEO": [
+    "frigate_perry"
+   ],
+   "GHA": [
+    "frigate_perry"
+   ],
+   "GRC": [
+    "frigate_perry"
+   ],
+   "GTM": [
+    "frigate_perry"
+   ],
+   "HND": [
+    "frigate_perry"
+   ],
+   "HRV": [
+    "frigate_perry"
+   ],
+   "HUN": [
+    "frigate_perry"
+   ],
+   "IDN": [
+    "frigate_perry"
+   ],
+   "IRL": [
+    "frigate_perry"
+   ],
+   "IRQ": [
+    "frigate_perry"
+   ],
+   "ISL": [
+    "frigate_perry"
+   ],
+   "ISR": [
+    "frigate_perry"
+   ],
+   "ITA": [
+    "frigate_perry"
+   ],
+   "JOR": [
+    "frigate_perry"
+   ],
+   "JPN": [
+    "frigate_perry"
+   ],
+   "KEN": [
+    "frigate_perry"
+   ],
+   "KOR": [
+    "frigate_perry"
+   ],
+   "KWT": [
+    "frigate_perry"
+   ],
+   "LBN": [
+    "frigate_perry"
+   ],
+   "LTU": [
+    "frigate_perry"
+   ],
+   "LUX": [
+    "frigate_perry"
+   ],
+   "LVA": [
+    "frigate_perry"
+   ],
+   "MAR": [
+    "frigate_perry"
+   ],
+   "MEX": [
+    "frigate_perry"
+   ],
+   "MKD": [
+    "frigate_perry"
+   ],
+   "MLT": [
+    "frigate_perry"
+   ],
+   "MNE": [
+    "frigate_perry"
+   ],
+   "MYS": [
+    "frigate_perry"
+   ],
+   "NGA": [
+    "frigate_perry"
+   ],
+   "NLD": [
+    "frigate_perry"
+   ],
+   "NOR": [
+    "frigate_perry"
+   ],
+   "NZL": [
+    "frigate_perry"
+   ],
+   "PAK": [
+    "frigate_perry"
+   ],
+   "PAN": [
+    "frigate_perry"
+   ],
+   "PER": [
+    "frigate_perry"
+   ],
+   "PHL": [
+    "frigate_perry"
+   ],
+   "POL": [
+    "frigate_perry"
+   ],
+   "PRT": [
+    "frigate_perry"
+   ],
+   "PRY": [
+    "frigate_perry"
+   ],
+   "QAT": [
+    "frigate_perry"
+   ],
+   "ROU": [
+    "frigate_perry"
+   ],
+   "SAU": [
+    "frigate_perry"
+   ],
+   "SEN": [
+    "frigate_perry"
+   ],
+   "SGP": [
+    "frigate_perry"
+   ],
+   "SLV": [
+    "frigate_perry"
+   ],
+   "SRB": [
+    "frigate_perry"
+   ],
+   "SVK": [
+    "frigate_perry"
+   ],
+   "SVN": [
+    "frigate_perry"
+   ],
+   "SWE": [
+    "frigate_perry"
+   ],
+   "THA": [
+    "frigate_perry"
+   ],
+   "TUN": [
+    "frigate_perry"
+   ],
+   "TUR": [
+    "frigate_perry"
+   ],
+   "TWN": [
+    "frigate_perry"
+   ],
+   "URY": [
+    "frigate_perry"
+   ],
+   "USA": [
+    "frigate_perry"
+   ],
+   "ZAF": [
+    "frigate_perry"
+   ]
+  }
+ },
+ "soldier": {
+  "default": "soldier",
+  "byCountry": {
+   "ABW": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "AFG": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "AGO": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "AIA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ALB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ALD": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "AND": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ARE": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "ARG": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ARM": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "ASM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ATA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ATC": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ATF": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ATG": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "AUS": [
+    "soldier_nato",
+    "soldier_nato_f",
+    "soldier_camo"
+   ],
+   "AUT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "AZE": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "BDI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BEL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BEN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BFA": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "BGD": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "BGR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BHR": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "BHS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BIH": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BJN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BLM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BLR": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "BLZ": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BMU": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BOL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BRA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BRB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BRI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BRN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BRT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BTN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "BWA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CAF": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "CAN": [
+    "soldier_nato",
+    "soldier_nato_f",
+    "soldier_camo"
+   ],
+   "CHE": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CHL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CHN": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "CIV": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CLP": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CMR": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "CNM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "COD": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "COG": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "COK": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "COL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "COM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CPV": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CRI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CSI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CUB": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "CUW": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CYM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CYN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CYP": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "CZE": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "DEU": [
+    "soldier_nato",
+    "soldier_nato_f",
+    "soldier_camo"
+   ],
+   "DJI": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "DMA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "DNK": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "DOM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "DZA": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "ECU": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "EGY": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "ERI": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "ESB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ESP": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "EST": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "ETH": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "FIN": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "FJI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "FLK": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "FRA": [
+    "soldier_nato",
+    "soldier_nato_f",
+    "soldier_camo"
+   ],
+   "FRO": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "FSM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GAB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GBR": [
+    "soldier_nato",
+    "soldier_nato_f",
+    "soldier_camo"
+   ],
+   "GEO": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "GGY": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GHA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GIB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GIN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GMB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GNB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GNQ": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GRC": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GRD": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GRL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GTM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GUM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "GUY": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "HKG": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "HMD": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "HND": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "HRV": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "HTI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "HUN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "IDN": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "IMN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "IND": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "IOA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "IOT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "IRL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "IRN": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "IRQ": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "ISL": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "ISR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ITA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "JAM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "JEY": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "JOR": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "JPN": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "KAB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "KAS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "KAZ": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "KEN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "KGZ": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "KHM": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "KIR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "KNA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "KOR": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "KOS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "KWT": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "LAO": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "LBN": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "LBR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "LBY": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "LCA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "LIE": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "LKA": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "LSO": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "LTU": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "LUX": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "LVA": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "MAC": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MAF": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MAR": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "MCO": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MDA": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "MDG": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MDV": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MEX": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MHL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MKD": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MLI": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "MLT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MMR": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "MNE": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MNG": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "MNP": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MOZ": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "MRT": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "MSR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MUS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MWI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "MYS": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "NAM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NCL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NER": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "NFK": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NGA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NIC": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "NIU": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NLD": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NOR": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "NPL": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "NRU": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "NZL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "OMN": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "PAK": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "PAN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PCN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PER": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PGA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PHL": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "PLW": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PNG": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "POL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PRI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PRK": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "PRT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PRY": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PSX": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "PYF": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "QAT": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "ROU": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "RUS": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "RWA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SAH": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SAU": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "SCR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SDN": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "SDS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SEN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SER": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SGP": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "SGS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SHN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SLB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SLE": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SLV": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SMR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SOL": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SOM": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "SPI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SPM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SRB": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "STP": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SUR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SVK": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SVN": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SWE": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "SWZ": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SXM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SYC": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "SYR": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "TCA": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "TCD": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "TGO": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "THA": [
+    "soldier_cn",
+    "soldier_cn_f"
+   ],
+   "TJK": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "TKM": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "TLS": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "TON": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "TTO": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "TUN": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "TUR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "TUV": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "TWN": [
+    "soldier_urban",
+    "soldier_urban_f"
+   ],
+   "TZA": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "UGA": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "UKR": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "UMI": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "URY": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "USA": [
+    "soldier_nato",
+    "soldier_nato_f",
+    "soldier_camo"
+   ],
+   "USG": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "UZB": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "VAT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "VCT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "VEN": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "VGB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "VIR": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "VNM": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "VUT": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "WLF": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "WSB": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "WSM": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "YEM": [
+    "soldier_desert",
+    "soldier_desert_f"
+   ],
+   "ZAF": [
+    "soldier_nato",
+    "soldier_nato_f"
+   ],
+   "ZMB": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ],
+   "ZWE": [
+    "soldier_ru",
+    "soldier_ru_f"
+   ]
+  }
+ }
+}
