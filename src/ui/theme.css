@@ -146,5 +146,9 @@
 
 /* Cesium credits: collapsed to an (i) badge at the bottom-right; expands on hover. */
 div[style*="max-width: 420px"][style*="font-size: 10px"] { left: auto !important; right: 262px !important; bottom: 8px !important; width: 20px; height: 20px; overflow: hidden; border-radius: 10px; background: #0b121ae6; border: 1px solid var(--line-2); opacity: .85 !important; text-align: right; pointer-events: auto; }
+div[style*="max-width: 420px"][style*="font-size: 10px"] { color: transparent !important; }
+div[style*="max-width: 420px"][style*="font-size: 10px"] > * { visibility: hidden; }
+div[style*="max-width: 420px"][style*="font-size: 10px"]:hover { color: #d7e2ee !important; }
+div[style*="max-width: 420px"][style*="font-size: 10px"]:hover > * { visibility: visible; }
 div[style*="max-width: 420px"][style*="font-size: 10px"]::before { content: 'i'; position: absolute; right: 0; top: 0; width: 20px; height: 20px; line-height: 19px; text-align: center; font: italic 700 12px serif; color: var(--dim); }
 div[style*="max-width: 420px"][style*="font-size: 10px"]:hover { width: auto; height: auto; max-width: 420px !important; overflow: visible; border-radius: 6px; padding: 4px 26px 4px 8px; z-index: 40 !important; }

@@ -125,6 +125,8 @@ export interface MilitaryState {
   /** Per-country spending on tacticalSuspend etc. not needed; counters: */
   /** Upkeep calibration per country (real defense budget ≈ 2× scaled upkeep), fixed at world creation. */
   upk: Record<CountryId, number>;
+  /** Negative road-route cache: search key → hour until which the route is considered impossible (absent in old saves). */
+  np?: Record<string, number>;
   nextF: number;
   nextB: number;
   nextQ: number;

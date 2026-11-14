@@ -67,6 +67,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   let squadLabels = new Map<number, Cesium.Label>(), selLines = new Map<number, { ring: Cesium.Polyline; ord: Cesium.Polyline }>();
   let smokeZones = new Map<string, Cesium.Billboard[]>();
   const squadMarks = new Map<number, Cesium.Billboard>();
+  let saved: { mode: string; fill: boolean } | null = null;
   let mul = 1, last = performance.now(), nextShotEv = 0, wrecks = 0;
   const imgs = { flame: spriteCanvas([255, 190, 90], 1), smoke: spriteCanvas([85, 85, 85], 0.85), dark: spriteCanvas([30, 30, 30], 0.9), dust: spriteCanvas([150, 130, 100], 0.7) };
   const neutralFlag = (() => { const c = document.createElement('canvas'); c.width = 30; c.height = 20; const g = c.getContext('2d')!; g.fillStyle = '#d6d6d6'; g.fillRect(0, 0, 30, 20); g.strokeStyle = '#555'; g.strokeRect(0.5, 0.5, 29, 19); return c; })();
@@ -121,6 +122,9 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     bills = scene.primitives.add(new Cesium.BillboardCollection({ scene })) as Cesium.BillboardCollection;
     lines = scene.primitives.add(new Cesium.PolylineCollection()) as Cesium.PolylineCollection;
     labels = scene.primitives.add(new Cesium.LabelCollection({ scene })) as Cesium.LabelCollection;
+    saved = { mode: globe.currentMapMode(), fill: globe.isLayerVisible('fill') };
+    if (saved.mode !== 'satellite') globe.setMapMode('satellite');
+    globe.setLayerVisible('fill', false);
     renderLock(globe, 'tac', true);
     useTacSelection.getState().clear();
     const ground = mapH(0, 0);
@@ -143,6 +147,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     for (const c of [bills, lines, labels]) scene.primitives.remove(c);
     cur = null; fxs = []; projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); smokeZones.clear(); wrecks = 0;
     renderLock(globe, 'tac', false);
+    if (saved) { if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); saved = null; }
     mode.tactical = false;
     useTacSelection.getState().clear();
     globe.requestRender();
@@ -219,7 +224,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       if (!l) { l = lines.add({ positions: pos, width: p.kind === 'bullet' ? 4 : 7, material: mat('#fff1a8', 1) }); projLines.push(l); } else { l.positions = pos; l.show = true; }
       i++;
       if (!seenProj.has(p.id)) {
-        if (now > nextShotEv) { nextShotEv = now + 70; renderEvents.emit({ type: 'tacShot', kind: p.kind, side: p.side }); }
+        if (now > nextShotEv) { nextShotEv = now + 70; renderEvents.emit({ type: 'tacShot', kind: p.kind, side: p.side, pos: ll(p.x0, p.y0), dist }); }
         if (p.kind !== 'bomb') for (const [, s] of cur!.ents) if (s.ent.side === p.side && s.ent.alive && Math.abs(s.ent.x - p.x0) < 6 && Math.abs(s.ent.y - p.y0) < 6) { s.shoot = now + 450; break; }
       }
       seenProj.set(p.id, { x1: p.x1, y1: p.y1, kind: p.kind, side: p.side });
@@ -232,7 +237,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       const big = s.kind === 'bomb' ? 70 : s.kind === 'shell' ? 38 : 28;
       spawnFx(s.x1, s.y1, big * mul * 0.7, 'flame', 2.6);
       spawnFx(s.x1, s.y1, big * mul, 'dust', 3.4);
-      renderEvents.emit({ type: 'tacExplosion', kind: s.kind });
+      renderEvents.emit({ type: 'tacExplosion', kind: s.kind, pos: ll(s.x1, s.y1) });
     }
   }
 

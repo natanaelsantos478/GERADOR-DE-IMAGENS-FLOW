@@ -9,8 +9,8 @@ export type RenderEvent =
   | { type: 'nuke'; pos: LonLat }
   | { type: 'missileLaunch'; pos: LonLat; weapon: string }
   | { type: 'battleStart'; pos: LonLat }
-  | { type: 'tacShot'; kind: string; side: 0 | 1 }
-  | { type: 'tacExplosion'; kind: string }
+  | { type: 'tacShot'; kind: string; side: 0 | 1; pos: LonLat; dist: number }
+  | { type: 'tacExplosion'; kind: string; pos: LonLat }
   | { type: 'tacOrder'; ok: boolean }
   | { type: 'commandRejected'; reason: string };
 type Listener = (e: RenderEvent) => void;

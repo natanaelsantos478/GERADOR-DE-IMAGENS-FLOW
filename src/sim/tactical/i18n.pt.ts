@@ -12,7 +12,7 @@ export const tacticalPt: Record<string, string> = {
   'tac.kind.infantry': 'Infantaria', 'tac.kind.special': 'Forças especiais', 'tac.kind.engineer': 'Engenharia', 'tac.kind.mech': 'Infantaria mecanizada',
   'tac.kind.mbt': 'Carros de combate', 'tac.kind.recon': 'Reconhecimento', 'tac.kind.artillery': 'Artilharia', 'tac.kind.mlrs': 'Foguetes múltiplos',
   'tac.kind.sam': 'Antiaérea', 'tac.kind.logistics': 'Logística', 'tac.kind.attackHeli': 'Helicóptero de ataque',
-  'tac.speed': 'Velocidade ×{scale}', 'tac.pause': 'Pausa', 'tac.auto': 'Auto-comandar', 'tac.withdraw': 'Retirada geral', 'tac.exit': 'Sair (auto-resolver)',
+  'tac.speed': 'Velocidade ×{scale}', 'tac.pause': 'Pausa', 'tac.auto': 'Auto-comandar', 'tac.withdraw': 'Retirada geral', 'tac.exit': 'Resolver automaticamente',
   'tac.result.winner': 'Vitória: {side}', 'tac.result.draw': 'Empate',
   'tac.result.destruction': 'Destruição das forças inimigas', 'tac.result.morale': 'Colapso do moral inimigo', 'tac.result.points': 'Vitória por pontos',
   'tac.result.withdrawn': 'Retirada do inimigo', 'tac.result.aborted': 'Batalha interrompida',

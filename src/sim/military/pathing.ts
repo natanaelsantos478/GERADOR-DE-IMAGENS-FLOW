@@ -58,6 +58,10 @@ function straightLand(ctx: Ctx, A: Apis3, f: Formation, a: LonLat, b: LonLat): {
 }
 
 /** Same-hour cache of road searches (hour-exact so reloaded saves replay identically) shared by formations of one country with the same endpoints (groups ordered together). */
+/** Search counters (read by the forced-war perf scenario). */
+const MAX_NODES = 60_000;
+const NEG_TTL_H = 96;
+export const pathStats = { searches: 0, failed: 0, expanded: 0, hits: 0, negHits: 0 };
 let pathDay = -1;
 const pathCache = new Map<string, ReturnType<typeof aStar>>();
 
@@ -99,23 +103,38 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
       if (day !== pathDay || pathCache.size > 600) (pathDay = day), pathCache.clear();
       const ck = `${f.c}|${na}|${nz}|${Math.round(vRoad)}|${f.reb ? 1 : 0}`;
       const hit = pathCache.get(ck);
-      const res = hit !== undefined ? hit : aStar(
-        {
-          neighbors(n, visit) {
-            for (let k = g.adjStart[n]; k < g.adjStart[n + 1]; k++) {
-              const e = g.adjEdge[k], o = g.otherEnd(e, n);
-              if (okNode(o)) visit(o, edgeHours(e));
-            }
+      // Impossible/too-costly routes are remembered in the (serialized) state for NEG_TTL_H hours so the AI re-issuing the same order does not
+      // repeat a 100k-node failed search every day; a per-search node cap and the per-tick budget bound the rest.
+      const mil = ctx.state.military, neg = (mil.np ??= {});
+      const until = neg[ck];
+      let res: ReturnType<typeof aStar>;
+      if (hit !== undefined) { res = hit; pathStats.hits++; if (!hit) pathStats.negHits++; }
+      else if (until !== undefined && until > day) { res = null; pathStats.negHits++; }
+      else {
+        res = aStar(
+          {
+            neighbors(n, visit) {
+              for (let k = g.adjStart[n]; k < g.adjStart[n + 1]; k++) {
+                const e = g.adjEdge[k], o = g.otherEnd(e, n);
+                if (okNode(o)) visit(o, edgeHours(e));
+              }
+            },
+            heuristic: (n) => dist([g.nodeLon[n], g.nodeLat[n]], [zLon, zLat]) / vRoad,
+            isGoal: (n) => n === nz,
           },
-          heuristic: (n) => dist([g.nodeLon[n], g.nodeLat[n]], [zLon, zLat]) / vRoad,
-          isGoal: (n) => n === nz,
-        },
-        na,
-        { nodeCount: g.nodeCount, maxExpanded: Math.max(2000, Math.min(250_000, budget.left)) },
-      );
-      if (hit === undefined) {
+          na,
+          { nodeCount: g.nodeCount, maxExpanded: Math.max(2000, Math.min(MAX_NODES, budget.left)) },
+        );
+        pathStats.searches++;
+        pathStats.expanded += res ? res.expanded : MAX_NODES;
+        budget.left -= res ? res.expanded : MAX_NODES;
+        if (!res) {
+          pathStats.failed++;
+          neg[ck] = day + NEG_TTL_H;
+          const keys = Object.keys(neg);
+          if (keys.length > 500) for (const k of keys) if (neg[k] <= day) delete neg[k];
+        }
         pathCache.set(ck, res);
-        budget.left -= res ? res.expanded : 250_000;
       }
       if (res) {
         const ed: number[] = [];

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { bootText } from '../app/bootText';
 import { useAppHost } from '../app/host';
 import { unlockAudio } from '../audio';
+import { bindRenderAudio } from '../audio/events';
 import GlobeView from '../render/globe/GlobeView';
 import { onGlobe } from '../render/globe/registry';
 import { GameHud, Toasts } from './hud/Hud';
@@ -26,6 +27,7 @@ export default function App() {
     window.addEventListener('keydown', unlock);
     return () => { window.removeEventListener('pointerdown', unlock); window.removeEventListener('keydown', unlock); };
   }, []);
+  useEffect(() => bindRenderAudio(), []);
   useEffect(() => onGlobe((g) => { if (g) applySettings(); }), []);
 
   const box: React.CSSProperties = { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' };

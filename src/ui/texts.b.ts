@@ -97,7 +97,7 @@ const dict: Record<string, string> = {
   'ui.tac.selectFirst': 'Selecione esquadrões primeiro.', 'ui.tac.pickDest': 'Clique no terreno para o destino', 'ui.tac.pickEnemy': 'Clique perto do inimigo a atacar', 'ui.tac.pickFront': 'Clique na direção da frente',
   'ui.tac.pick.artillery': 'Clique no ponto do bombardeio de artilharia', 'ui.tac.pick.airstrike': 'Clique no ponto do ataque aéreo', 'ui.tac.pick.drone': 'Clique no ponto do ataque de drone',
   'ui.tac.ready': 'Pronto', 'ui.tac.waiting': 'Aguardando o inimigo', 'ui.tac.withdraw': 'Retirar', 'ui.tac.withdrawConfirm': 'Confirmar retirada', 'ui.tac.timeLeft': 'Tempo decorrido', 'ui.tac.left': 'restam',
-  'ui.tac.score': 'Placar', 'ui.tac.objective': 'Objetivo', 'ui.tac.deployHelp': 'Implantação: posicione seus esquadrões na zona azul e clique em Pronto.',
+  'ui.tac.score': 'Pontos', 'ui.tac.scoreHelp': 'Pontos por tempo de controle dos objetivos. Uma vantagem de 100 pontos vence a batalha.', 'ui.tac.objective': 'Objetivo', 'ui.tac.deployHelp': 'Implantação: posicione seus esquadrões na zona azul e clique em Pronto.',
   'ui.tac.resultTitle': 'Resultado da batalha', 'ui.tac.casualties': 'Baixas', 'ui.tac.you': 'você', 'ui.tac.collateral': 'Dano colateral à região: {p}', 'ui.tac.backToMap': 'Voltar ao mapa',
   // guide
   'ui.guide.search': 'Buscar…', 'ui.guide.units': 'Unidades', 'ui.guide.buildings': 'Construções', 'ui.guide.techs': 'Tecnologias', 'ui.guide.resources': 'Recursos', 'ui.guide.base': 'Disponível desde o início',

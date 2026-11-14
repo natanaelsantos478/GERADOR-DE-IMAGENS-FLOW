@@ -2,7 +2,7 @@ import { fmtInt, fmtPct } from '../fmt';
 import { t } from '../i18n';
 import { countryName } from '../useGame';
 import { Flag, Icon } from '../kit/Icon';
-import type { TacModel } from './model';
+import { tacPoints, type TacModel } from './model';
 
 export function TacResult({ m, onExit }: { m: TacModel; onExit(): void }) {
   const r = m.result!;
@@ -19,7 +19,7 @@ export function TacResult({ m, onExit }: { m: TacModel; onExit(): void }) {
             <Icon name={draw ? 'peace' : won ? 'check' : 'warning'} size={26} />
             <b className={draw ? 'warn' : won ? 'good' : 'bad'}>{draw ? t('tac.result.draw') : t('tac.result.winner', { side: countryName(m.countries[r.winner!][0]) })}</b>
           </div>
-          <div className="dim" style={{ textAlign: 'center' }}>{t(`tac.result.${r.reason}`)} · {Math.floor(r.elapsedS / 60)} min · {t('ui.tac.score')} {r.score[ps]} × {r.score[1 - ps]}</div>
+          <div className="dim" style={{ textAlign: 'center' }}>{t(`tac.result.${r.reason}`)} · {Math.floor(r.elapsedS / 60)} min · {t('ui.tac.score')} {tacPoints(r.score[ps])} × {tacPoints(r.score[1 - ps])}</div>
           <div className="row" style={{ alignItems: 'flex-start', gap: 14 }}>
             {cols.map((c) => (
               <div key={c.s} className="col gap4" style={{ flex: 1 }}>

@@ -4,7 +4,7 @@ import type { Game } from '../../core/game';
 import { configureCamera, cameraState, flyToPoint, flyToRect, installKeyboard, MAX_HEIGHT, setViewPoint } from './camera';
 import { createCanvasImagery } from './canvasProvider';
 import { createTerrariumTerrain } from './terrain';
-import { chooseSource, nextSource, offlineProvider, onlineProvider, type ImageryKind } from './imagery';
+import { chooseSource, offlineProvider, onlineProvider, type ImageryKind } from './imagery';
 import { GlobeInput } from './input';
 import { createBuiltinModes, toMode } from './mapModes';
 import { markerFeature, Markers } from './markers';
@@ -68,7 +68,8 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
   let failStart = 0;
   const makeSat = () => {
     const p = onlineProvider(kind === 'eox' ? 'eox' : 'esri');
-    p.errorEvent.addEventListener(() => {
+    p.errorEvent.addEventListener((e: { error?: { statusCode?: number } }) => {
+      if (e?.error?.statusCode === 404) return; // missing tile at this zoom: Cesium falls back to the parent tile, not a provider failure
       const now = performance.now();
       if (now - failStart > 12000) {
         failStart = now;
@@ -81,15 +82,23 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
   const sat = new SwapLayer(viewer, makeSat);
   const tint = new SwapLayer(viewer, () => createReliefImagery('tint'), { show: false });
   const gray = new SwapLayer(viewer, () => createReliefImagery('gray'), { show: false });
+  /** A burst of tile errors only demotes the source when a fresh probe confirms it is really unreachable (rate limits / slow frames are not outages). */
+  let probing = false;
   function failover() {
     failures = 0;
-    const n = nextSource(kind);
-    if (!n) return;
-    kind = n;
-    if (n === 'offline') sat.setShow(false);
-    else sat.refresh();
-    applyBase();
+    if (probing || destroyed) return;
+    probing = true;
+    void chooseSource().then((k) => {
+      probing = false;
+      if (destroyed || k === kind) return;
+      kind = k;
+      if (k === 'offline') sat.setShow(false);
+      else sat.refresh();
+      applyBase();
+    });
   }
+  // While on the bundled low-resolution fallback, keep looking for a reachable online source.
+  const recoverTimer = setInterval(() => { if (kind === 'offline' && !probing) failover(); }, 20000);
   void chooseSource().then((k) => {
     if (k === kind || destroyed) return;
     kind = k;
@@ -458,6 +467,7 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
     applyAccessKeys,
     destroy() {
       destroyed = true;
+      clearInterval(recoverTimer);
       busOff.forEach((f) => f());
       offKeys();
       input.destroy();

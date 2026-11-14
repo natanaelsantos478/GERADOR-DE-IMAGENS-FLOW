@@ -124,7 +124,7 @@ export function TacticalHud() {
           <b><Icon name="war" /> {t('tac.title')}</b>
           <span className={`chip ${m.phase === 'combat' ? 'warn' : ''}`} data-testid="tac-phase">{t(`tac.phase.${m.phase}`)}</span>
           <span className="dim" title={t('ui.tac.timeLeft')}>{clock(m.t)} · {t('ui.tac.left')} {clock(left)}</span>
-          <span className="row gap4" title={t('ui.tac.score')}><Flag id={m.countries[ps][0]} width={18} /><b className="good">{m.score[ps]}</b><span className="dim">×</span><b className="bad">{m.score[1 - ps]}</b><Flag id={m.countries[1 - ps][0]} width={18} /></span>
+          <span className="row gap4" title={t('ui.tac.scoreHelp')}><span className="dim">{t('ui.tac.score')}</span><Flag id={m.countries[ps][0]} width={18} /><b className="good">{m.score[ps]}</b><span className="dim">×</span><b className="bad">{m.score[1 - ps]}</b><Flag id={m.countries[1 - ps][0]} width={18} /></span>
         </div>
         <div className="row wrap gap4" style={{ justifyContent: 'center' }}>
           {m.objs.map((o) => <span key={o.id} className={`chip ${o.owner === ps ? 'good' : o.owner === -1 ? '' : 'bad'}`} title={`${t('ui.tac.objective')}: ${fmtInt(o.cap * 100)}%`}>{o.name || t('ui.tac.objective')} {o.owner === ps ? '●' : o.owner === -1 ? '○' : '◆'}</span>)}

@@ -88,7 +88,7 @@ function finishIfNeeded(ctx: Ctx): void {
   ctx.bus.emit({ type: 'tac.battleEnded', battleId: b.strategicBattleId, result: r });
 }
 
-function exit(ctx: Ctx): CommandResult {
+function exit(ctx: Ctx, auto = false): CommandResult {
   const s = st(ctx);
   const b = s.battle;
   if (!b) return fail('tac.err.none');
@@ -96,7 +96,8 @@ function exit(ctx: Ctx): CommandResult {
     cmd(ctx, 'mil.setTactical', ctx.state.meta.playerCountryId, { battle: b.strategicBattleId, active: false });
     ctx.bus.emit({ type: 'tac.battleEnded', battleId: b.strategicBattleId, result: null });
   }
-  if (s.resume) ctx.dispatch({ type: 'game.resume', country: ctx.state.meta.playerCountryId });
+  // "Resolve automatically": hand the battle back to the strategic auto-resolution and make sure time runs so it can progress.
+  if (s.resume || (auto && !b.result)) ctx.dispatch({ type: 'game.resume', country: ctx.state.meta.playerCountryId });
   s.battle = null; s.resume = false;
   return { ok: true };
 }
@@ -141,7 +142,7 @@ export const tacticalSystem = defineSystem({
         issueOrder(b, side, ids, { kind: 'retreat' });
         return { ok: true };
       }
-      case 'exit': return exit(ctx);
+      case 'exit': return exit(ctx, (c as Command).resolve === 'auto');
       default: return undefined;
     }
   },

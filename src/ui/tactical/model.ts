@@ -28,7 +28,7 @@ export function tacModel(g: Game): TacModel | null {
   const r2 = (v: number) => Math.round(v * 100) / 100;
   return {
     id: b.id, strategic: b.strategicBattleId, phase: b.phase, t: Math.round(b.t), timeLimit: b.timeLimit, deployLimit: b.deployLimit, player: b.player,
-    auto: b.player === null ? true : b.auto[b.player], ready: b.ready[ps], score: [Math.round(b.score[0]), Math.round(b.score[1])],
+    auto: b.player === null ? true : b.auto[b.player], ready: b.ready[ps], score: [tacPoints(b.score[0]), tacPoints(b.score[1])],
     objs: b.objs.map((o) => ({ id: o.id, name: o.name, owner: o.owner, cap: r2(o.cap), value: o.value })), support: b.support[ps], timeScale: s.timeScale, paused: s.paused,
     squads: b.squads.map((q) => ({
       id: q.id, side: q.side, kind: q.kind, name: q.name, alive: alive[q.id], n0: q.n0, morale: r2(q.morale), ammo: alive[q.id] ? r2(ammo[q.id] / alive[q.id]) : 0,
@@ -37,3 +37,6 @@ export function tacModel(g: Game): TacModel | null {
     result: b.result, center: b.center, countries: s.countries, withdrawing: b.withdrawing[ps],
   };
 }
+
+/** Raw score is objective-seconds held (victory at a 2400 lead); shown as points (raw/24); a 100-point lead wins. */
+export const tacPoints = (raw: number): number => Math.round(raw / 24);

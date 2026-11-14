@@ -16,7 +16,7 @@ import { UNITS } from './catalog';
 import type { Formation, MilitaryState, TacticalOutcome } from './types';
 
 const fail = (reason: string): CommandResult => ({ ok: false, reason });
-const PLAN_BUDGET = 150_000;
+const PLAN_BUDGET = 50_000; // A* nodes per military tick; formations still waiting keep `pend` and are planned on the next tick
 
 function forEach(ctx: Ctx, cmd: { country: CountryId; formations?: unknown; formation?: unknown }, fn: (f: Formation) => CommandResult): CommandResult {
   const ids = Array.isArray(cmd.formations) ? (cmd.formations as string[]) : typeof cmd.formation === 'string' ? [cmd.formation] : [];
