@@ -8,13 +8,17 @@ import { Modal } from '../menu/Modal';
 import { t } from '../i18n';
 import { useSettings } from '../settings';
 import { ui, useUi } from '../store';
-import { dispatch, me, theGame } from '../useGame';
+import { dispatch, me, theGame, useGame } from '../useGame';
 import { Alerts, Feed, Toasts } from './Feed';
 import { MapControls } from './MapControls';
 import { InspectorDock, SelectionController } from './Selection';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { Windows } from './Windows';
+import { EventModal } from '../diplo';
+import { Tutorial } from '../guide';
+import { TacticalHud } from '../tactical/TacticalHud';
+import { AdviceCard, UnitSelectionBridge } from '../war';
 
 function useShortcuts() {
   useEffect(() => {
@@ -88,17 +92,26 @@ export function GameHud() {
   const pauseMenu = useUi((s) => s.pauseMenu);
   useShortcuts();
   useGameEffects();
+  const tactical = useGame((g) => !!g.state.tactical?.battle);
   return (
     <>
       <TopBar />
-      <Sidebar />
-      <div className="right-col">
-        <MapControls />
-        <InspectorDock />
-      </div>
-      <Windows />
-      <Feed />
-      <Alerts />
+      {tactical ? <TacticalHud /> : (
+        <>
+          <Sidebar />
+          <div className="right-col">
+            <MapControls />
+            <InspectorDock />
+          </div>
+          <Windows />
+          <Feed />
+          <Alerts />
+          <AdviceCard />
+          <Tutorial />
+        </>
+      )}
+      <UnitSelectionBridge />
+      {!tactical && <EventModal />}
       <SelectionController />
       {pauseMenu && <PauseMenu />}
     </>

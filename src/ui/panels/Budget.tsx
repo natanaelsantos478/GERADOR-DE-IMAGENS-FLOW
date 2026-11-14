@@ -17,7 +17,7 @@ export function BudgetPanel() {
   const rev = ledger.filter((l) => l.category === 'revenue'), exp = ledger.filter((l) => l.category === 'expense');
   return (
     <div className="col">
-      <div className="sect-title">{t('ui.bud.taxes')} <span className="dim">· {t('ui.bud.burden')}: {fmtPct(s.taxBurden)}</span></div>
+      <div className="sect-title">{t('ui.bud.taxes')}</div>
       {TAX_KINDS.map((k) => (
         <div key={k} className="row" title={t(`ui.bud.taxHelp.${k}`)}>
           <span style={{ width: 90 }}>{t(`eco.tax.${k}`)}</span>

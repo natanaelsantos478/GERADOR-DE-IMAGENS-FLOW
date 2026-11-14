@@ -8,7 +8,13 @@ test('loads the world data, creates a game and advances time without console err
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 
   await page.goto('./');
-  await expect(page.getByTestId('boot-ready')).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByTestId('main-menu')).toBeVisible({ timeout: 120_000 });
+  // The game is created through the menu (new game → Brasil).
+  await page.getByTestId('menu-new').click();
+  await page.getByTestId('country-search').fill('Brasil');
+  await page.getByTestId('pick-BRA').click();
+  await page.getByTestId('start-game').click();
+  await expect(page.getByTestId('topbar')).toBeVisible();
 
   const info = await page.evaluate(() => ({
     countries: window.__world?.countries.length ?? 0,
