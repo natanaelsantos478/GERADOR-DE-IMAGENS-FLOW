@@ -13,6 +13,11 @@ const FUEL = {
 // WRI country codes that differ from Natural Earth ADM0_A3 (loader remaps the rest by location)
 const ISO_FIX = { XKX: 'KOS', XKO: 'KOS' };
 
+// Point corrections for known bad WRI coordinates: "name|iso3" -> { lat?, lon? }
+const PLANT_FIXES = {
+  'ESCOMBRERAS GRUPO 1|ESP': { lat: 37.5732 }, // WRI has 7.5732 (Cartagena is at ~37.57 N)
+};
+
 function plants() {
   const rows = parse(fs.readFileSync(path.join(RAW, 'gppd.csv')), { columns: true, skip_empty_lines: true, relax_column_count: true });
   const out = [];
@@ -21,7 +26,9 @@ function plants() {
     const fuel = FUEL[r.primary_fuel];
     const lon = parseFloat(r.longitude), lat = parseFloat(r.latitude), mw = parseFloat(r.capacity_mw);
     if (!fuel || !isFinite(lon) || !isFinite(lat) || !isFinite(mw) || Math.abs(lat) > 90 || Math.abs(lon) > 180) { skipped++; continue; }
-    out.push({ name: r.name, lon: round(lon, 4), lat: round(lat, 4), fuel, mw: round(mw, 1), iso3: ISO_FIX[r.country] || r.country });
+    const iso3 = ISO_FIX[r.country] || r.country;
+    const fix = PLANT_FIXES[`${r.name}|${iso3}`] || {};
+    out.push({ name: r.name, lon: round(fix.lon ?? lon, 4), lat: round(fix.lat ?? lat, 4), fuel, mw: round(mw, 1), iso3 });
   }
   out.sort((a, b) => b.mw - a.mw || a.name.localeCompare(b.name));
   const cols = { name: [], lon: [], lat: [], fuel: [], mw: [], iso3: [] };

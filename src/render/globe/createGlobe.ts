@@ -192,24 +192,31 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
   function ensureRoads() {
     if (roadPainter || roadsBuilding || destroyed) return;
     roadsBuilding = true;
-    setTimeout(() => {
+    const r = world.roads;
+    const lines: { cls: number; coords: number[][] }[] = [];
+    let e = 0;
+    // Convert edges in slices after the first frames, then build the vector-tile index chunk by chunk.
+    const step = () => {
       if (destroyed) return;
-      const r = world.roads;
-      const lines: { cls: number; coords: number[][] }[] = [];
-      for (let e = 0; e < r.edgeCount; e++) {
-        const s = r.edgeGeomStart[e], n = r.edgeGeomLen[e];
+      for (const end = Math.min(r.edgeCount, e + 15000); e < end; e++) {
+        const s0 = r.edgeGeomStart[e], n = r.edgeGeomLen[e];
         const coords: number[][] = new Array(n);
-        for (let k = 0; k < n; k++) coords[k] = [r.geom[(s + k) * 2], r.geom[(s + k) * 2 + 1]];
+        for (let k = 0; k < n; k++) coords[k] = [r.geom[(s0 + k) * 2], r.geom[(s0 + k) * 2 + 1]];
         lines.push({ cls: r.edgeCls[e], coords });
       }
-      roadPainter = new RoadPainter(lines);
-      syncRoadDamage(false);
-      const rp = roadPainter;
-      roadPainter.showRoads = vis.roads;
-      roadPainter.showRail = vis.railways;
-      roadsLayer = new SwapLayer(viewer, () => createCanvasImagery({ size: 512, maxLevel: 14, draw: rp.draw }), { show: vis.roads || vis.railways });
-      scene.requestRender();
-    }, 0);
+      if (e < r.edgeCount) { setTimeout(step, 0); return; }
+      const rp = new RoadPainter();
+      void rp.load(lines, () => destroyed).then(() => {
+        if (destroyed) return;
+        roadPainter = rp;
+        syncRoadDamage(false);
+        rp.showRoads = vis.roads;
+        rp.showRail = vis.railways;
+        roadsLayer = new SwapLayer(viewer, () => createCanvasImagery({ size: 512, maxLevel: 14, draw: rp.draw }), { show: vis.roads || vis.railways });
+        scene.requestRender();
+      });
+    };
+    setTimeout(step, 200);
   }
   function syncRoadDamage(refresh = true) {
     const d = getGame()?.state.world.roadDamage;
@@ -319,7 +326,9 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
   const groundAt = (lon: number, lat: number) => heightAt(lon, lat);
   function heightAt(lon: number, lat: number): number {
     const h = globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat));
-    return h ?? Math.max(0, world.elevationAt(lon, lat));
+    const we = Math.max(0, world.elevationAt(lon, lat));
+    // Half-loaded tiles can report garbage (e.g. -10 km): keep only plausible values that agree with the world model.
+    return h !== undefined && Number.isFinite(h) && h >= -450 && h <= 9000 && Math.abs(h - we) < 1500 ? h : we;
   }
   function setView(lon: number, lat: number, o: FlyOptions = {}) {
     setViewPoint(viewer, groundAt(lon, lat), lon, lat, o);

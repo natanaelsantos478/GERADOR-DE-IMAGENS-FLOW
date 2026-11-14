@@ -179,7 +179,7 @@ export class Markers {
       const i = porder[n];
       const p = w.plants[i];
       const mw = Math.max(0.5, p.mw);
-      const far = mw >= 3000 ? 9e6 : mw >= 1000 ? 4.5e6 : mw >= 300 ? 1.8e6 : mw >= 100 ? 7e5 : mw >= 30 ? 2.5e5 : mw >= 10 ? 1e5 : 4e4;
+      const far = mw >= 3000 ? 9e6 : mw >= 1000 ? 3.2e6 : mw >= 500 ? 1.1e6 : mw >= 300 ? 6e5 : mw >= 100 ? 2.5e5 : mw >= 30 ? 1.1e5 : mw >= 10 ? 5e4 : 2.5e4;
       const b = plantCol.add({
         position: pos(p.lon, p.lat),
         scale: Math.max(0.2, Math.min(0.6, 0.1 + 0.12 * Math.log10(mw + 1))),
@@ -220,6 +220,8 @@ export class Markers {
       b.setImage('port', portIcon);
       this.bb.port[i] = b;
     });
+    // text always on top of icons (primitives draw in insertion order)
+    for (const id of ['cityLabels', 'countryLabels'] as const) { const c = this.col[id]; if (c) this.viewer.scene.primitives.raiseToTop(c); }
     scene.requestRender();
   }
 

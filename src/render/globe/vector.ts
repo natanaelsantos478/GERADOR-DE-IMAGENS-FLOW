@@ -84,7 +84,7 @@ export class FillPainter {
 
 export function bordersDraw(index: GeoJSONVT, kind: 'country' | 'province'): DrawTile {
   return (g, z, x, y, size) => {
-    if (kind === 'province' && z < 3) return false;
+    if (kind === 'province' && (z < 3 || z >= 13)) return false; // below ~8 km: no province lines
     const t = index.getTile(z, x, y);
     if (!t) return false;
     const k = size / EXTENT;
@@ -93,18 +93,19 @@ export function bordersDraw(index: GeoJSONVT, kind: 'country' | 'province'): Dra
     g.beginPath();
     for (const f of t.features) tracePath(g, f, k, true);
     if (kind === 'province') {
-      const a = Math.min(0.75, 0.25 + (z - 3) * 0.12);
-      g.strokeStyle = 'rgba(0,0,0,0.35)';
-      g.lineWidth = 1.6;
+      const near = z >= 11 ? 0.55 : 1; // below ~30 km: thinner and fainter
+      const a = Math.min(0.75, 0.25 + (z - 3) * 0.12) * near;
+      g.strokeStyle = `rgba(0,0,0,${0.35 * near})`;
+      g.lineWidth = 1.6 * near;
       g.stroke();
       g.strokeStyle = `rgba(255,255,255,${a})`;
-      g.lineWidth = 0.7;
+      g.lineWidth = 0.7 * (z >= 11 ? 0.8 : 1);
       g.stroke();
     } else {
-      const w = z >= 8 ? 1.4 : Math.min(3.2, 1.1 + z * 0.26);
-      const fade = z >= 8 ? 0.55 : 0.95;
-      g.strokeStyle = 'rgba(0,0,0,0.45)';
-      g.lineWidth = w + 1.6;
+      const w = z >= 12 ? 0.8 : z >= 11 ? 1 : z >= 8 ? 1.4 : Math.min(3.2, 1.1 + z * 0.26);
+      const fade = z >= 12 ? 0.3 : z >= 11 ? 0.4 : z >= 8 ? 0.55 : 0.95;
+      g.strokeStyle = `rgba(0,0,0,${z >= 11 ? 0.25 : 0.45})`;
+      g.lineWidth = w + (z >= 11 ? 0.8 : 1.6);
       g.stroke();
       g.strokeStyle = `rgba(255,244,214,${fade})`;
       g.lineWidth = w;
@@ -168,18 +169,26 @@ export class HighlightPainter {
 
 // ------------------------------------------------------------------ roads
 
+const ROAD_CHUNK = 6000;
+const idle = () => new Promise<void>((r) => setTimeout(r, 0));
+
 export class RoadPainter {
-  private base: GeoJSONVT;
+  /** One small index per (class, chunk): built one per task so the main thread never stalls for long. */
+  private bases: GeoJSONVT[] = [];
   private damaged: GeoJSONVT | null = null;
   showRoads = true;
   showRail = true;
-  constructor(lines: { cls: number; coords: number[][] }[]) {
-    const features: GeoJSON.Feature[] = [];
+  /** Builds the index in slices (one geojson-vt per class/chunk, yielding between them). */
+  async load(lines: { cls: number; coords: number[][] }[], isDead: () => boolean = () => false): Promise<void> {
     for (let c = 0; c < 5; c++) {
-      const coordinates = lines.filter((l) => l.cls === c).map((l) => l.coords);
-      if (coordinates.length) features.push({ type: 'Feature', properties: { c }, geometry: { type: 'MultiLineString', coordinates } });
+      const own = lines.filter((l) => l.cls === c);
+      for (let i = 0; i < own.length; i += ROAD_CHUNK) {
+        await idle();
+        if (isDead()) return;
+        const coordinates = own.slice(i, i + ROAD_CHUNK).map((l) => l.coords);
+        this.bases.push(new GeoJSONVT({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: { c }, geometry: { type: 'MultiLineString', coordinates } }] }, { ...VT_OPTS, maxZoom: 14, tolerance: 4 }));
+      }
     }
-    this.base = new GeoJSONVT({ type: 'FeatureCollection', features }, { ...VT_OPTS, maxZoom: 14, tolerance: 4 });
   }
   setDamaged(lines: number[][][]) {
     this.damaged = lines.length
@@ -197,13 +206,15 @@ export class RoadPainter {
     const k = size / EXTENT;
     g.lineCap = 'round';
     g.lineJoin = 'round';
-    const t = this.base.getTile(z, x, y);
-    if (t) {
-      for (const f of t.features) {
+    for (const base of this.bases) {
+      const t = base.getTile(z, x, y);
+      if (!t) continue;
+      {
+        for (const f of t.features) {
         const c = f.tags?.c as number;
         const rail = c === 3;
         if (rail ? !this.showRail : !this.showRoads) continue;
-        const minZ = c === 0 ? 4 : c === 3 ? 6 : c === 1 ? 6 : c === 2 ? 8 : 7;
+        const minZ = c === 0 ? 4 : c === 3 ? 7 : c === 1 ? 7 : c === 2 ? 9 : 8;
         if (z < minZ) continue;
         g.beginPath();
         tracePath(g, f, k, false);
@@ -225,15 +236,19 @@ export class RoadPainter {
           g.stroke();
           g.setLineDash([]);
         } else {
-          const w = (c === 0 ? 2.4 : c === 1 ? 1.8 : 1.2) + grow;
-          g.strokeStyle = 'rgba(0,0,0,0.55)';
-          g.lineWidth = w + 1.4;
-          g.stroke();
+          const thin = c === 0 && z < 6;
+          const w = thin ? 0.9 : (c === 0 ? 2.4 : c === 1 ? 1.8 : 1.2) + grow;
+          if (!thin) {
+            g.strokeStyle = 'rgba(0,0,0,0.55)';
+            g.lineWidth = w + 1.4;
+            g.stroke();
+          }
           g.strokeStyle = c === 0 ? 'rgba(255,196,84,0.98)' : c === 1 ? 'rgba(255,236,170,0.95)' : 'rgba(250,250,250,0.85)';
           g.lineWidth = w;
           g.stroke();
         }
       }
+    }
     }
     const d = this.damaged?.getTile(z, x, y);
     if (d && z >= 3) {

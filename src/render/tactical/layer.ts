@@ -25,7 +25,7 @@ export interface TacticalLayer {
   prefetch(): Promise<void>;
   destroy(): void;
 }
-interface E { h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
+interface E { dot?: Cesium.Billboard; h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
 interface Fx { b: Cesium.Billboard; t0: number; size: number; grow: number }
 
 export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): TacticalLayer {
@@ -66,9 +66,28 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   let deployLines: Cesium.Polyline[] = [];
   let squadLabels = new Map<number, Cesium.Label>(), selLines = new Map<number, { ring: Cesium.Polyline; ord: Cesium.Polyline }>();
   let smokeZones = new Map<string, Cesium.Billboard[]>();
+  const squadMarks = new Map<number, Cesium.Billboard>();
   let mul = 1, last = performance.now(), nextShotEv = 0, wrecks = 0;
   const imgs = { flame: spriteCanvas([255, 190, 90], 1), smoke: spriteCanvas([85, 85, 85], 0.85), dark: spriteCanvas([30, 30, 30], 0.9), dust: spriteCanvas([150, 130, 100], 0.7) };
   const neutralFlag = (() => { const c = document.createElement('canvas'); c.width = 30; c.height = 20; const g = c.getContext('2d')!; g.fillStyle = '#d6d6d6'; g.fillRect(0, 0, 30, 20); g.strokeStyle = '#555'; g.strokeRect(0.5, 0.5, 29, 19); return c; })();
+
+  const KIND_LETTER: Record<string, string> = { infantry: 'I', special: 'S', engineer: 'E', mech: 'M', mbt: 'T', recon: 'R', artillery: 'A', mlrs: 'L', sam: 'D', logistics: 'U', attackHeli: 'H' };
+  const markImgs = new Map<string, HTMLCanvasElement>();
+  function markImg(side: number, kind: string, dot = false): [string, HTMLCanvasElement] {
+    const k = `${dot ? 'd' : 'm'}${side}${kind}`;
+    let c = markImgs.get(k);
+    if (!c) {
+      const z = dot ? 20 : 56;
+      c = document.createElement('canvas'); c.width = c.height = z;
+      const g = c.getContext('2d')!, col = SIDE_COLOR[side];
+      g.beginPath();
+      if (dot) { g.moveTo(z / 2, 1); g.lineTo(z - 2, z - 3); g.lineTo(2, z - 3); g.closePath(); } else g.roundRect(3, 3, z - 6, z - 6, 10);
+      g.fillStyle = col; g.fill(); g.lineWidth = dot ? 2 : 4; g.strokeStyle = '#fff'; g.stroke();
+      if (!dot) { g.fillStyle = '#fff'; g.font = '700 30px system-ui'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 4; g.strokeText(KIND_LETTER[kind] ?? '?', z / 2, z / 2 + 2); g.fillText(KIND_LETTER[kind] ?? '?', z / 2, z / 2 + 2); }
+      markImgs.set(k, c);
+    }
+    return [k, c];
+  }
 
   const ll = (x: number, y: number): [number, number] => [cur!.clon + x / cur!.mPerLon, cur!.clat + y / M_PER_DEG];
   const cg = new Cesium.Cartographic();
@@ -105,8 +124,8 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     renderLock(globe, 'tac', true);
     useTacSelection.getState().clear();
     const ground = mapH(0, 0);
-    viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(b.center[0], b.center[1], ground), 1), {
-      offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-55), 5200), duration: 2.2,
+    viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(b.center[0], b.center[1] + 250 / M_PER_DEG, ground), 1), {
+      offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-50), 13500), duration: 2.2,
     });
     objs = b.objs.map((o) => {
       const ring = lines.add({ positions: circle(o.x, o.y, o.r, 4, 48), width: 3, material: mat('#ffd54a', 0.9) });
@@ -122,7 +141,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     if (!cur) { mode.tactical = false; return; }
     cur.pool?.destroy();
     for (const c of [bills, lines, labels]) scene.primitives.remove(c);
-    cur = null; fxs = []; projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); selLines.clear(); smokeZones.clear(); wrecks = 0;
+    cur = null; fxs = []; projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); smokeZones.clear(); wrecks = 0;
     renderLock(globe, 'tac', false);
     mode.tactical = false;
     useTacSelection.getState().clear();
@@ -171,12 +190,15 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
         }
         if (s.wreck) s.wreck.position = P(s.x, s.y, 10 * mul + Math.sin(now / 400 + e.id) * 2);
       } else if (soldier) pool.setAnim(s.h, s.shoot > now ? 'shoot' : e.moving ? 'run' : 'idle');
-      const m = soldier ? mul * 1.3 : mul;
+      const m = soldier ? mul * 2.6 : mul;
+      if (!s.dot) { const [k, img] = markImg(e.side, e.kind, true); s.dot = bills.add({ position: Cesium.Cartesian3.ZERO, width: 11, height: 11, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, disableDepthTestDistance: INF }); s.dot.setImage(k, img); }
+      s.dot.show = e.alive && mul > 1.6;
+      if (s.dot.show) s.dot.position = P(s.x, s.y, (soldier ? 3 : 4) * m);
       pool.place(s.h, ll(s.x, s.y)[0], ll(s.x, s.y)[1], hAt(s.x, s.y), s.hd, m, soldier && s.dead ? 90 : 0, true);
     }
     if (c.ents.size > n) {
       const live = new Set(b.ents.filter((e) => !e.gone).map((e) => e.id));
-      for (const [id, s] of c.ents) if (!live.has(id)) { pool.release(s.h); if (s.wreck) bills.remove(s.wreck); c.ents.delete(id); }
+      for (const [id, s] of c.ents) if (!live.has(id)) { pool.release(s.h); if (s.wreck) bills.remove(s.wreck); if (s.dot) bills.remove(s.dot); c.ents.delete(id); }
     }
   }
 
@@ -189,12 +211,12 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       const x = p.x0 + (p.x1 - p.x0) * f, y = p.y0 + (p.y1 - p.y0) * f;
       const dist = Math.hypot(p.x1 - p.x0, p.y1 - p.y0);
       const arc = p.kind === 'shell' ? dist * 0.22 : p.kind === 'rocket' ? dist * 0.05 + 8 : p.kind === 'missile' ? 18 : 0;
-      const up = p.kind === 'bomb' ? 300 * (1 - f) : 1.8 + 4 * arc * f * (1 - f);
-      const tail = p.kind === 'bullet' ? 14 : p.kind === 'bomb' ? 24 : 38;
+      const vm = clamp(mul * 0.7, 1, 10), up = p.kind === 'bomb' ? 300 * (1 - f) : (1.8 + 4 * arc * f * (1 - f)) * vm;
+      const tail = (p.kind === 'bullet' ? 14 : p.kind === 'bomb' ? 24 : 38) * clamp(mul * 0.8, 1, 12);
       const bx = x - ((p.x1 - p.x0) / Math.max(1, dist)) * tail, by = y - ((p.y1 - p.y0) / Math.max(1, dist)) * tail;
       let l = projLines[i];
       const pos = [P(bx, by, p.kind === 'bomb' ? up + 24 : Math.max(1, up - 1)), P(x, y, up)];
-      if (!l) { l = lines.add({ positions: pos, width: p.kind === 'bullet' ? 2 : 4, material: mat('#ffe6a0', 0.95) }); projLines.push(l); } else { l.positions = pos; l.show = true; }
+      if (!l) { l = lines.add({ positions: pos, width: p.kind === 'bullet' ? 4 : 7, material: mat('#fff1a8', 1) }); projLines.push(l); } else { l.positions = pos; l.show = true; }
       i++;
       if (!seenProj.has(p.id)) {
         if (now > nextShotEv) { nextShotEv = now + 70; renderEvents.emit({ type: 'tacShot', kind: p.kind, side: p.side }); }
@@ -284,10 +306,14 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       let alive = 0;
       for (const [, e] of cur!.ents) if (e.ent.sq === s.id && e.ent.alive) alive++;
       let l = squadLabels.get(s.id);
-      if (!l) { l = labels.add({ position: Cesium.Cartesian3.ZERO, font: '600 12px system-ui', style: Cesium.LabelStyle.FILL_AND_OUTLINE, outlineWidth: 3, outlineColor: C.BLACK, pixelOffset: V(0, -16), disableDepthTestDistance: INF, fillColor: C.fromCssColorString(SIDE_COLOR[s.side]) }); squadLabels.set(s.id, l); }
+      if (!l) { l = labels.add({ position: Cesium.Cartesian3.ZERO, font: '600 12px system-ui', style: Cesium.LabelStyle.FILL_AND_OUTLINE, outlineWidth: 3, outlineColor: C.BLACK, pixelOffset: V(0, -50), disableDepthTestDistance: INF, fillColor: C.fromCssColorString(SIDE_COLOR[s.side]) }); squadLabels.set(s.id, l); }
       l.show = alive > 0;
       l.text = `${s.name ? s.name.slice(0, 14) + ' ' : ''}${alive}/${s.n0}${s.routed ? ' !' : ''}`;
       l.position = P(s.x, s.y, 14 * mul);
+      let mk = squadMarks.get(s.id);
+      if (!mk) { const [k, img] = markImg(s.side, s.kind); mk = bills.add({ position: Cesium.Cartesian3.ZERO, width: 34, height: 34, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, disableDepthTestDistance: INF }); mk.setImage(k, img); squadMarks.set(s.id, mk); }
+      mk.show = alive > 0;
+      mk.position = l.position;
       const on = sel.has(s.id);
       let sl = selLines.get(s.id);
       if (on && !sl) {
@@ -313,8 +339,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     if (!g || !b || !cur || cur.id !== b.id) return;
-    g.ctx.api.tactical.advance(dt);
-    mul = clamp(globe.cameraHeight() / 350, 1, 12);
+    mul = clamp(globe.cameraHeight() / 450, 1, 22);
     cur.b = b;
     updateEnts(b, now, dt);
     updateProjectiles(b, now);
@@ -325,6 +350,15 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     updateSquads(b);
   };
   scene.preRender.addEventListener(onPre);
+
+  // The sim clock is driven by wall time, independent of the render frame rate (a slow GPU must not slow the battle down).
+  let simLast = performance.now();
+  const simTimer = setInterval(() => {
+    const now = performance.now(), dt = Math.min(0.25, (now - simLast) / 1000); // capped: an overloaded thread slows the sim instead of spiralling
+    simLast = now;
+    const g = getGame();
+    if (g && cur && g.state.tactical?.battle?.id === cur.id) g.ctx.api.tactical.advance(dt);
+  }, 50);
 
   // ------------------------------------------------------------ lifecycle poll
   const timer = setInterval(() => {
@@ -385,7 +419,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     stats: () => ({ models: cur?.pool?.liveCount ?? 0, ents: cur?.ents.size ?? 0, proj: cur?.b.proj.length ?? 0 }),
     prefetch: async () => { const g = getGame(); if (g) await Promise.all(battlePreviews(g.ctx).map((b) => prefetchAt(b.pos[0], b.pos[1]))); },
     destroy() {
-      clearInterval(timer); clearInterval(timerPre);
+      clearInterval(timer); clearInterval(timerPre); clearInterval(simTimer);
       scene.preRender.removeEventListener(onPre);
       unPick(); unClick(); unBox(); unRight();
       leave();
