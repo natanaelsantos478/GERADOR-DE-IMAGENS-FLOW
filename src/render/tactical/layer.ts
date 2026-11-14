@@ -1,4 +1,5 @@
 /** Tactical battle on the real globe: glb entities on terrain, projectiles, smoke, objectives, selection and orders. */
+import { resolveModel } from '../models/variants';
 import * as Cesium from 'cesium';
 import type { Game } from '../../core/game';
 import { setTacticalMapProvider } from '../../sim/tactical';
@@ -6,7 +7,7 @@ import type { Battle, Ent, Order } from '../../sim/tactical/types';
 import { UNITS } from '../../sim/tactical/units';
 import { battlePreviews } from '../../sim/military';
 import type { Globe } from '../globe/types';
-import { M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadManifest, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
+import { M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
 import { useTacSelection } from './store';
 import { sampleGrid } from './terrain';
 
@@ -116,7 +117,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
 
   async function enter(g: Game, b: Battle) {
     mode.tactical = true;
-    const mf = await loadManifest();
+    const mf = await loadModelData();
     if (g.state.tactical?.battle?.id !== b.id) { mode.tactical = false; return; }
     cur = { id: b.id, b, pool: new ModelPool(scene, mf), ents: new Map(), clat: b.center[1], clon: b.center[0], mPerLon: M_PER_DEG * Math.cos((b.center[1] * Math.PI) / 180) };
     bills = scene.primitives.add(new Cesium.BillboardCollection({ scene })) as Cesium.BillboardCollection;
@@ -176,7 +177,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       let s = c.ents.get(e.id);
       const sq = b.squads[e.sq];
       if (!s) {
-        const h = pool.acquire(sq.modelId || UNITS[e.kind].model, { __tac: true, sq: e.sq, ent: e.id, side: e.side });
+        const h = pool.acquire(resolveModel(sq.modelId || UNITS[e.kind].model, sq.country, `${sq.ref}:${e.id}`, { mf: pool.manifest, needAnim: SOLDIER_KINDS.has(e.kind) }), { __tac: true, sq: e.sq, ent: e.id, side: e.side });
         if (!h) continue;
         s = { h, x: e.x, y: e.y, hd: (e.h * 180) / Math.PI, shoot: 0, dead: false, ent: e };
         c.ents.set(e.id, s);

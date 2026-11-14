@@ -1,4 +1,5 @@
 /** Strategic formations: clustered billboard markers far away, glb models in formation up close, selection and orders. */
+import { resolveModel } from '../models/variants';
 import * as Cesium from 'cesium';
 import type { CountryId, FormationId, FormationView, LonLat } from '../../core/contracts';
 import type { Game } from '../../core/game';
@@ -32,7 +33,7 @@ interface FS {
 
 export interface StrategicApi {
   /** Visible formation states (id → lon/lat/relation) for other layers (minimap, tests). */
-  states(): { id: FormationId; lon: number; lat: number; rel: Rel; country: CountryId; clustered: boolean; models: number }[];
+  states(): { id: FormationId; lon: number; lat: number; rel: Rel; country: CountryId; clustered: boolean; models: number; modelIds: string[] }[];
   modelCount(): number;
   destroy(): void;
 }
@@ -165,11 +166,13 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   function desired(fs: FS): string[] {
     const out: string[] = [];
     const naval = fs.v.domain === 'naval';
-    for (const u of fs.v.units.slice(0, 6)) {
+    const cc = fs.v.rebel ? 'REB' : fs.v.country;
+    for (const [ui, u] of fs.v.units.slice(0, 6).entries()) {
       if (u.strength < 0.02) continue;
+      const mid = resolveModel(u.modelId, cc, `${fs.id}:${ui}`, { mf: pool.manifest });
       const ents = UNITS[u.template]?.ents ?? 4;
       const n = naval ? 1 : clamp(Math.round((ents * u.strength) / 4), 1, 3);
-      for (let i = 0; i < n && out.length < (naval ? 6 : 12); i++) out.push(u.modelId);
+      for (let i = 0; i < n && out.length < (naval ? 6 : 12); i++) out.push(mid);
     }
     return out;
   }
@@ -386,7 +389,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   updateNear();
 
   return {
-    states: () => [...states.values()].map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, rel: s.rel, country: s.v.country, clustered: s.cluster !== null, models: s.handles.length })),
+    states: () => [...states.values()].map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, rel: s.rel, country: s.v.country, clustered: s.cluster !== null, models: s.handles.length, modelIds: s.handles.map((h) => h.modelId) })),
     modelCount: () => [...states.values()].reduce((a, s) => a + s.handles.length, 0),
     destroy() {
       dead = true;

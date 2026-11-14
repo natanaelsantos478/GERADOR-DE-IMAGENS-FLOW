@@ -1,7 +1,7 @@
 /** Strategic map units & world effects. `attachUnitsLayer(globe, getGame)` mounts everything; returns a disposer + test handles. */
 import type { Game } from '../../core/game';
 import type { Globe } from '../globe/types';
-import { ModelPool, loadManifest } from './common';
+import { ModelPool, loadModelData } from './common';
 import { useUnitSelection } from './store';
 import { attachStrategic, type StrategicApi } from './strategic';
 import { attachWorldLayer, type WorldLayerApi } from './world';
@@ -20,7 +20,7 @@ export function attachUnitsLayer(globe: Globe, getGame: () => Game | null): Unit
   const layer: UnitsLayer = { strategic: null, world: null, pool: null, destroy() { dead = true; layer.world?.destroy(); layer.strategic?.destroy(); layer.pool?.destroy(); } };
   let dead = false;
   (window as unknown as { __unitSel?: typeof useUnitSelection }).__unitSel = useUnitSelection;
-  void loadManifest().then((mf) => {
+  void loadModelData().then((mf) => {
     if (dead) return;
     const pool = new ModelPool(globe.viewer.scene, mf);
     layer.pool = pool;

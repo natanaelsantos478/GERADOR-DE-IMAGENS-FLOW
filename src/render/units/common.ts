@@ -1,4 +1,5 @@
 /** Shared render helpers: event emitter for audio, glb pool, tinted icon canvases, ENU maths, continuous-render lock. */
+import { loadVariants } from '../models/variants';
 import * as Cesium from 'cesium';
 import type { LonLat } from '../../core/contracts';
 import type { Globe } from '../globe/types';
@@ -51,6 +52,7 @@ export interface ModelInfo { file: string; lengthM: number; yawOffsetDeg: number
 export type Manifest = Record<string, ModelInfo>;
 let manifestP: Promise<Manifest> | null = null;
 export const loadManifest = () => (manifestP ??= fetch(new URL('models/manifest.json', document.baseURI)).then((r) => r.json() as Promise<Manifest>));
+export const loadModelData = () => Promise.all([loadManifest(), loadVariants()]).then(([mf]) => mf);
 export const assetUrl = (p: string) => new URL(p, document.baseURI).href;
 
 // ------------------------------------------------------------------ glb pool
@@ -74,6 +76,7 @@ export class ModelPool {
   private free = new Map<string, Cesium.Model[]>();
   private all = new Set<Cesium.Model>();
   constructor(private scene: Cesium.Scene, private mf: Manifest) {}
+  get manifest(): Manifest { return this.mf; }
 
   info(modelId: string): ModelInfo | undefined { return this.mf[modelId]; }
   baseScale(modelId: string): number {

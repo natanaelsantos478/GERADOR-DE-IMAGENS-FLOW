@@ -29,13 +29,13 @@ function sideFromFormations(ctx: Ctx, ids: string[]): SideInput | null {
       if (f.domain === 'air') {
         if (u.template.includes('bomber')) support.airstrike += 1;
         else if (u.template.includes('drone')) support.drone += 1;
-        else if (u.template.includes('attack_heli')) squads.push({ ref: `${fid}:${slot}`, name: f.name, kind: 'attackHeli', count: Math.max(1, Math.round(UNITS.attackHeli.n * u.strength)), morale: f.morale, ammo: f.supply, modelId: u.modelId });
+        else if (u.template.includes('attack_heli')) squads.push({ ref: `${fid}:${slot}`, name: f.name, kind: 'attackHeli', count: Math.max(1, Math.round(UNITS.attackHeli.n * u.strength)), morale: f.morale, ammo: f.supply, modelId: u.modelId, country: f.rebel ? 'REB' : f.country });
         return;
       }
       const kind = kindFromTemplate(u.template);
       if (!kind) return;
       const n = Math.max(1, Math.round(UNITS[kind].n * u.strength));
-      squads.push({ ref: `${fid}:${slot}`, name: f.name, kind, count: n, morale: f.morale, ammo: Math.max(0.2, f.supply), cargo: kind === 'mech' ? Math.round(n / 2) : undefined, modelId: u.modelId });
+      squads.push({ ref: `${fid}:${slot}`, name: f.name, kind, count: n, morale: f.morale, ammo: Math.max(0.2, f.supply), cargo: kind === 'mech' ? Math.round(n / 2) : undefined, modelId: u.modelId, country: f.rebel ? 'REB' : f.country });
     });
   }
   if (!squads.length) return null;

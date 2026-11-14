@@ -36,7 +36,7 @@ export function createBattle(input: TacticalBattleInput, seed: number): Battle {
       const k = row.indexOf(i);
       const d = UNITS[si.kind];
       const s: Squad = {
-        id: b.squads.length, ref: si.ref, name: si.name ?? si.ref, side, kind: si.kind, modelId: si.modelId ?? d.model,
+        id: b.squads.length, ref: si.ref, name: si.name ?? si.ref, side, kind: si.kind, modelId: si.modelId ?? d.model, country: si.country,
         form: si.kind === 'infantry' || si.kind === 'special' || si.kind === 'engineer' ? 'scatter' : 'line', face: side === 0 ? 0 : Math.PI,
         x: r.x + ((k + 0.5) / row.length - 0.5) * r.w * 0.9, y: r.y + dir * (r.h / 2 - depthOf(si.kind) * r.h),
         order: 'idle', ox: 0, oy: 0, target: -1, path: [], pi: 0, repath: -99, fireFree: true, dug: 0, digging: false,

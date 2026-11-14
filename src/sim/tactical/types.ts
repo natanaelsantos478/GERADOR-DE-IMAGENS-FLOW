@@ -38,6 +38,8 @@ export interface SquadInput {
   /** Infantry elements carried (mech only) that can be dismounted. */
   cargo?: number;
   modelId?: string;
+  /** Owner country (render picks a real-world model variant). */
+  country?: string;
   /** Controlled by the AI even on the player's side (allies). */
   ai?: boolean;
 }
@@ -80,7 +82,7 @@ export interface Ent {
 }
 export type OrderKind = 'idle' | 'move' | 'amove' | 'attack' | 'hold' | 'retreat';
 export interface Squad {
-  id: number; ref: string; name: string; side: Side; kind: UnitKind; modelId: string;
+  id: number; ref: string; name: string; side: Side; kind: UnitKind; modelId: string; country?: string;
   form: FormationKind; face: number;
   x: number; y: number;
   order: OrderKind; ox: number; oy: number; target: number;
