@@ -3,6 +3,8 @@ import type {
   BBox, CountryId, Ctx, Domain, FormationFilter, FormationId, FormationView, LonLat, SpawnWhere, UnitTemplateId,
 } from '../../core/contracts';
 import { UNITS } from './catalog';
+import { officerOf, officerView } from './commanders';
+import { fatigueOf, readinessOf, weatherSummary } from './effects';
 import { type Env, envOf, r3, r4 } from './env';
 import type { BaseRef, Formation, MilitaryState, Slot, StockState } from './types';
 
@@ -83,6 +85,8 @@ export function removeFormation(ctx: Ctx, f: Formation, destroyed: boolean): voi
   for (const o of Object.values(st.forms)) if (o.cr === f.id) delete o.cr;
   const env = envOf(ctx.world);
   const fresh = env.stateRef === st && env.byCountryVer === env.ver;
+  const cmo = f.cm ? st.cmd?.off[f.cm] : undefined;
+  if (cmo && cmo.f === f.id) cmo.f = null;
   delete st.forms[f.id];
   env.legs.delete(f.id);
   touch(ctx);
@@ -225,6 +229,11 @@ export function viewOf(ctx: Ctx, f: Formation): FormationView {
     strength: strengthOf(f), organization: f.o, morale: f.m, experience: f.x, supply: f.s,
     order: f.od.k, destination: dest, battleId: f.bt,
     routeProgress: f.rt ? Math.min(1, f.rt.dn / Math.max(1, f.rt.tot)) : 0, carriedBy: f.cr ?? null, rebel: !!f.reb,
+    commander: (() => {
+      const o = officerOf(ctx, f);
+      return o ? officerView(ctx, o) : null;
+    })(),
+    fatigue: fatigueOf(f), readiness: readinessOf(f), weather: weatherSummary(ctx, f),
   };
 }
 

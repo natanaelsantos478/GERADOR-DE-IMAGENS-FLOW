@@ -48,14 +48,14 @@ export interface Env {
   /** nearestRoadNode(…, 200) by 1e-4° position. */
   nrn: Map<number, number | null>;
   provIndex: Map<string, number>;
-  seaCache: Map<string, number[]>;
+  seaCache: Map<string, { cells: number[]; cost: number }>;
   legs: Map<string, LegGeo>;
   /** Scratch caches rebuilt when the state object changes. */
   stateRef: MilitaryState | null;
   byCountry: Map<CountryId, Formation[]>;
   all: Formation[];
   /** `set` = countries in a war; `cands` = formations that may make contact (war countries + rebels + formations near rebels). */
-  warring: { until: number; ver: number; set: Set<CountryId>; cands: Formation[] };
+  warring: { until: number; ver: number; set: Set<CountryId>; cands: Formation[]; ref: object | null };
   byCountryVer: number;
   ver: number;
   powerCache: Map<CountryId, { day: number; v: number; ref: object }>;
@@ -69,7 +69,7 @@ export function envOf(world: WorldStatic): Env {
     world.provinces.forEach((p, i) => provIndex.set(p.id, i));
     e = {
       comp: null, nodeProv: new Int32Array(world.roads.nodeCount).fill(-2), cosLat: null, accStamp: new Int32Array(world.provinces.length), accVal: new Uint8Array(world.provinces.length), accN: 0, provRings: null, edgeLegs: new Map(), nrn: new Map(), provIndex, seaCache: new Map(), legs: new Map(),
-      stateRef: null, byCountry: new Map(), all: [], warring: { until: -1, ver: -1, set: new Set(), cands: [] }, byCountryVer: -1, ver: 0, powerCache: new Map(),
+      stateRef: null, byCountry: new Map(), all: [], warring: { until: -1, ver: -1, set: new Set(), cands: [], ref: null }, byCountryVer: -1, ver: 0, powerCache: new Map(),
     };
     envs.set(world, e);
   }

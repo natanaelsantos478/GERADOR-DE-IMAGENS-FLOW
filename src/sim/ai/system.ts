@@ -4,7 +4,8 @@ import { defineSystem } from '../../core/registry';
 import { advice } from './advice';
 import { answerProposals, garrison, production } from './peace';
 import type { AiState } from './types';
-import { dropViews, hash, isAiControlled } from './util';
+import { applySpending, outreach, planFor } from './neuralPlan';
+import { dropViews, hash, isAiControlled, useRules } from './util';
 import { warThink } from './war';
 
 const WAR_PERIOD = 2;
@@ -36,9 +37,11 @@ export const aiSystem = defineSystem({
       if ((day + h) % (war ? WAR_PERIOD : PEACE_PERIOD) !== 0) continue;
       s.stats.thinks++;
       if (c === ctx.state.meta.playerCountryId) answerProposals(ctx, c);
-      if (war) warThink(ctx, s, c as CountryId, enemies);
+      const plan = useRules(ctx, c) ? null : planFor(ctx, c, war, enemies);
+      if (plan) { applySpending(ctx, c, plan, war); if (!war) outreach(ctx, c, plan); }
+      if (war) warThink(ctx, s, c as CountryId, enemies, plan);
       else garrison(ctx, s, c);
-      production(ctx, s, c, war);
+      production(ctx, s, c, war, plan);
     }
     if (day % 30 === 0) {
       const live = new Set(d.wars().map((w) => w.id));

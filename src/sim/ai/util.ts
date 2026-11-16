@@ -1,5 +1,6 @@
 import type { CountryId, Ctx, FormationView, LonLat } from '../../core/contracts';
 import { distanceKm } from '../../core/geo';
+import { extLive } from '../neural/pack';
 
 export const dist = distanceKm;
 
@@ -85,4 +86,19 @@ export function bigPlants(ctx: Ctx, c: CountryId): number[] {
     m.set(c, l);
   }
   return l;
+}
+
+/** Engine of one country: rules by default; `automation['ai.engine.neural.<ID>']` overrides the global `ai.engine.neural` opt-in (used by tournaments). */
+export function useRules(ctx: Ctx, c: CountryId): boolean {
+  const a = ctx.state.meta.automation;
+  const o = a[`ai.engine.neural.${c}`];
+  return !(o !== undefined ? o === true : a['ai.engine.neural'] === true);
+}
+/** Extension features of a formation view from the real military fields (commander skill 0..2, fatigue 0..1, bad-weather 0..1, wear = 1 - readiness). Zeros unless the pack is feature-set v2. */
+export function extOf(f: FormationView): [number, number, number, number] {
+  if (!extLive()) return [0, 0, 0, 0];
+  const c = f.commander;
+  const skill = c ? (c.attack + c.defense + c.logistics + c.maneuver) / 4 : 1;
+  const wx = f.weather ? 1 - f.weather.off : 0;
+  return [Math.min(2, Math.max(0, skill)), Math.min(1, Math.max(0, f.fatigue ?? 0)), Math.min(1, Math.max(0, wx)), Math.min(1, Math.max(0, 1 - (f.readiness ?? 1)))];
 }

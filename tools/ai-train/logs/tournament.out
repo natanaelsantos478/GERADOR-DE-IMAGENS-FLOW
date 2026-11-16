@@ -1,0 +1,16 @@
+TATICO 48 batalhas em mapas de teste: vitórias 19, empates 0, derrotas 29 -> taxa 39.6% (empate = 0,5); só vitórias 39.6%; neural atacando 4%
+GUERRA 12 cenários (6 pares x 2 lados, 90 dias):
+  neural : placar médio -4.9  fitness -0.046  provs -0.031  forças -0.016
+  controle (regras x regras, mesmos cenários): placar médio -3.8  fitness -0.032
+  ARG-BOL neural=a: placar neural 60 | controle 64
+  ARG-BOL neural=b: placar neural -62 | controle -56
+  ARG-CHL neural=a: placar neural 20 | controle 34
+  ARG-CHL neural=b: placar neural -41 | controle -35
+  COD-UGA neural=a: placar neural -13 | controle -25
+  COD-UGA neural=b: placar neural 12 | controle 13
+  ZAF-ZWE neural=a: placar neural 25 | controle 23
+  ZAF-ZWE neural=b: placar neural -23 | controle -23
+  KAZ-UZB neural=a: placar neural 35 | controle 13
+  KAZ-UZB neural=b: placar neural -72 | controle -53
+  DEU-POL neural=a: placar neural 0 | controle 0
+  DEU-POL neural=b: placar neural 0 | controle 0

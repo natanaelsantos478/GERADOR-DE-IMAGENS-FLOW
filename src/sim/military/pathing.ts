@@ -65,8 +65,12 @@ const MAX_NODES = 60_000;
 const HEUR_W = 1.5;
 const NEG_TTL_H = 96;
 export const pathStats = { searches: 0, failed: 0, expanded: 0, hits: 0, negHits: 0 };
+// The cache is a pure accelerator: it is valid for ONE state object at ONE hour, and a hit charges the budget and applies the same side effects
+// as a fresh search (so results never depend on call history or on which game copy filled it).
 let pathDay = -1;
-const pathCache = new Map<string, ReturnType<typeof aStar>>();
+let pathOwner: object | null = null;
+interface PathEntry { res: ReturnType<typeof aStar>; cap: number }
+const pathCache = new Map<string, PathEntry>();
 
 export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: Budget): PlanResult {
   const w = ctx.world, g = w.roads;
@@ -109,7 +113,7 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
       const adjStart = g.adjStart, adjEdge = g.adjEdge, eA = g.edgeA, eB = g.edgeB;
       const cz = cosLat[nz], twoR = 2 * EARTH_RADIUS_KM, nLon = g.nodeLon, nLat = g.nodeLat;
       const day = ctx.state.time.hours;
-      if (day !== pathDay || pathCache.size > 600) (pathDay = day), pathCache.clear();
+      if (day !== pathDay || pathOwner !== ctx.state || pathCache.size > 600) (pathDay = day), (pathOwner = ctx.state), pathCache.clear();
       const ck = `${f.c}|${na}|${nz}|${Math.round(vRoad)}|${f.reb ? 1 : 0}`;
       const hit = pathCache.get(ck);
       // Impossible/too-costly routes are remembered in the (serialized) state for NEG_TTL_H hours so the AI re-issuing the same order does not
@@ -117,39 +121,47 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
       const mil = ctx.state.military, neg = (mil.np ??= {});
       const until = neg[ck];
       let res: ReturnType<typeof aStar>;
-      if (hit !== undefined) { res = hit; pathStats.hits++; if (!hit) pathStats.negHits++; }
-      else if (until !== undefined && until > day) { res = null; pathStats.negHits++; }
+      const fail = () => {
+        pathStats.failed++;
+        neg[ck] = day + NEG_TTL_H;
+        const keys = Object.keys(neg);
+        if (keys.length > 500) for (const k of keys) if (neg[k] <= day) delete neg[k];
+      };
+      if (until !== undefined && until > day) { res = null; pathStats.negHits++; }
       else {
         // Real routes need ≤ ~4 expansions per straight-line km; a generous 15/km bound keeps short impossible trips (blocked border) from flooding 60k nodes.
         const cap = Math.max(2000, Math.floor(Math.min(MAX_NODES, budget.left, 2000 + 15 * total)));
-        res = aStar(
-          {
-            neighbors(n, visit) {
-              for (let k = adjStart[n], kEnd = adjStart[n + 1]; k < kEnd; k++) {
-                const e = adjEdge[k], o = eA[e] === n ? eB[e] : eA[e];
-                if (okNode(o)) visit(o, edgeHours(e));
-              }
+        if (hit !== undefined && (hit.res ? hit.res.expanded <= cap : hit.cap >= cap)) {
+          // Same outcome a fresh search with this cap would give (A* is deterministic), same budget charge.
+          res = hit.res && hit.res.expanded <= cap ? hit.res : null;
+          pathStats.hits++;
+          budget.left -= res ? res.expanded : cap;
+          if (!res) { pathStats.negHits++; fail(); }
+        } else {
+          res = aStar(
+            {
+              neighbors(n, visit) {
+                for (let k = adjStart[n], kEnd = adjStart[n + 1]; k < kEnd; k++) {
+                  const e = adjEdge[k], o = eA[e] === n ? eB[e] : eA[e];
+                  if (okNode(o)) visit(o, edgeHours(e));
+                }
+              },
+              heuristic: (n) => {
+                const dLat = (zLat - nLat[n]) * RAD, dLon = (zLon - nLon[n]) * RAD;
+                const a = Math.sin(dLat / 2) ** 2 + cosLat[n] * cz * Math.sin(dLon / 2) ** 2;
+                return (HEUR_W * twoR * Math.asin(Math.min(1, Math.sqrt(a)))) / vRoad;
+              },
+              isGoal: (n) => n === nz,
             },
-            heuristic: (n) => {
-              const dLat = (zLat - nLat[n]) * RAD, dLon = (zLon - nLon[n]) * RAD;
-              const a = Math.sin(dLat / 2) ** 2 + cosLat[n] * cz * Math.sin(dLon / 2) ** 2;
-              return (HEUR_W * twoR * Math.asin(Math.min(1, Math.sqrt(a)))) / vRoad;
-            },
-            isGoal: (n) => n === nz,
-          },
-          na,
-          { nodeCount: g.nodeCount, maxExpanded: cap },
-        );
-        pathStats.searches++;
-        pathStats.expanded += res ? res.expanded : cap;
-        budget.left -= res ? res.expanded : cap;
-        if (!res) {
-          pathStats.failed++;
-          neg[ck] = day + NEG_TTL_H;
-          const keys = Object.keys(neg);
-          if (keys.length > 500) for (const k of keys) if (neg[k] <= day) delete neg[k];
+            na,
+            { nodeCount: g.nodeCount, maxExpanded: cap },
+          );
+          pathStats.searches++;
+          pathStats.expanded += res ? res.expanded : cap;
+          budget.left -= res ? res.expanded : cap;
+          if (!res) fail();
+          pathCache.set(ck, { res, cap });
         }
-        pathCache.set(ck, res);
       }
       if (res) {
         const ed: number[] = [];
@@ -212,8 +224,13 @@ export function planSea(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: Bu
   const s = nearestSeaCell(ctx, f.p), g = nearestSeaCell(ctx, to);
   if (!s || !g) return { ok: false, reason: 'err.mil.noSeaPath' };
   const key = `${s[0]},${s[1]}>${g[0]},${g[1]}`;
-  let cells = env.seaCache.get(key);
-  if (!cells) {
+  const seaHit = env.seaCache.get(key);
+  let cells: number[] | undefined;
+  const seaCap = Math.max(5000, Math.min(400_000, budget.left));
+  // A hit charges the same budget a fresh search would (cache never changes outcomes or budget flow).
+  if (seaHit && seaHit.cost <= seaCap) { cells = seaHit.cells; budget.left -= seaHit.cost; }
+  else if (seaHit) { budget.left -= 400_000; return { ok: false, reason: 'err.mil.noSeaPath' }; }
+  else {
     const W = ng.w;
     const goalC = ng.cellCenter(g[0], g[1]);
     const res = aStar(
@@ -237,7 +254,7 @@ export function planSea(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: Bu
         isGoal: (n) => n === g[1] * W + g[0],
       },
       s[1] * W + s[0],
-      { maxExpanded: Math.max(5000, Math.min(400_000, budget.left)) },
+      { maxExpanded: seaCap },
     );
     budget.left -= res ? res.expanded : 400_000;
     if (!res) return { ok: false, reason: 'err.mil.noSeaPath' };
@@ -253,7 +270,7 @@ export function planSea(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: Bu
     }
     cells = out.map((n) => Math.round(n * 1000) / 1000);
     if (env.seaCache.size > 300) env.seaCache.delete(env.seaCache.keys().next().value as string);
-    env.seaCache.set(key, cells);
+    env.seaCache.set(key, { cells, cost: res.expanded });
   }
   const w = [f.p[0], f.p[1], ...cells, to[0], to[1]];
   let km = 0;

@@ -1,0 +1,13 @@
+treino: 0.3 h, 4 workers, seed 1, etapas war,final
+[war] gen 1 pop -0.026 max -0.010 centro -0.041 melhor -0.041 (2.9 min)
+[war] gen 2 pop 0.029 max 0.049 centro 0.009 melhor 0.009 (5.3 min)
+[war] gen 3 pop -0.342 max -0.295 centro -0.183 melhor 0.009 (7.4 min)
+[war] gen 4 pop 0.169 max 0.230 centro -0.083 melhor 0.009 (9.2 min)
+[war] gen 5 pop 0.221 max 0.316 centro -0.120 melhor 0.009 (11.0 min)
+[war] gen 6 pop 0.112 max 0.151 centro -0.044 melhor 0.009 (12.7 min)
+[war] gen 7 pop -0.042 max -0.039 centro 0.139 melhor 0.139 (14.3 min)
+[war] gen 8 pop 0.010 max 0.011 centro -0.044 melhor 0.139 (15.3 min)
+[war] gen 9 pop 0.136 max 0.148 centro -0.091 melhor 0.139 (16.1 min)
+[war] gen 10 pop -0.296 max -0.207 centro -0.138 melhor 0.139 (16.9 min)
+[war] gen 11 pop 0.230 max 0.288 centro -0.123 melhor 0.139 (17.7 min)
+pesos gravados em /home/user/GERADOR-DE-IMAGENS-FLOW/public/data/ai/policy.json (25 KB). Rode: npx tsx tools/ai-train/tournament.ts

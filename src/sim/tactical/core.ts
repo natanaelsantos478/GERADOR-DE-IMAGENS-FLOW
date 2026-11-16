@@ -26,6 +26,9 @@ export function createBattle(input: TacticalBattleInput, seed: number): Battle {
     deploy, ents: [], squads: [], proj: [], smokes: [], pend: [], objs: [],
     support: [{ ...input.sides[0].support }, { ...input.sides[1].support }], score: [0, 0], urbanHits: 0, nextProj: 0, result: null,
   };
+  if (input.engine) b.engine = input.engine;
+  if (input.aiTemp !== undefined) b.aiTemp = input.aiTemp;
+  if (input.weather) b.wx = input.weather;
   for (const side of [0, 1] as Side[]) {
     const r = deploy[side], dir = side === 0 ? 1 : -1;
     const list = input.sides[side].squads;
@@ -41,8 +44,9 @@ export function createBattle(input: TacticalBattleInput, seed: number): Battle {
         x: r.x + ((k + 0.5) / row.length - 0.5) * r.w * 0.9, y: r.y + dir * (r.h / 2 - depthOf(si.kind) * r.h),
         order: 'idle', ox: 0, oy: 0, target: -1, path: [], pi: 0, repath: -99, fireFree: true, dug: 0, digging: false,
         morale: Math.max(0.05, Math.min(1, si.morale)), routed: false, ai: !!si.ai, n0: Math.max(1, si.count) + (si.cargo ?? 0),
-        smoke: d.smoke, cargo: si.cargo ?? 0, engagedT: -99,
+        smoke: d.smoke, cargo: si.cargo ?? 0, engagedT: -99, fg: Math.max(0, Math.min(1, si.fx?.fatigue ?? 0)),
       };
+      if (si.fx) s.fx = si.fx;
       b.squads.push(s);
       for (let j = 0; j < Math.max(1, si.count); j++) newEnt(b, s, Math.max(0, Math.min(1, si.ammo)), s.x, s.y);
       layout(b, s);
@@ -145,6 +149,7 @@ function buildResult(b: Battle, winner: Side | null, reason: TacticalResult['rea
     r.ammo = am.length ? am.reduce((a, v) => a + v, 0) / am.length : 0;
     r.withdrawn = r.withdrawn || es.some((e) => e.alive && e.gone);
     r.morale = Math.min(r.morale, s.morale);
+    r.fatigue = Math.max(r.fatigue ?? 0, Math.round(s.fg * 100) / 100);
   }
   const squads = [...byRef.values()].map((r) => ({ ...r, strength: r.initial ? r.strength / r.initial : 0 }));
   return { winner, reason, elapsedS: b.t, score: [b.score[0], b.score[1]], squads, casualties: cas, collateral: Math.min(1, b.urbanHits) };
@@ -175,7 +180,7 @@ export function snapshotBattle(b: Battle, timeScale: number, paused: boolean): T
     }),
     squads: b.squads.map((s) => ({
       id: s.id, side: s.side, kind: s.kind, name: s.name, x: r1(s.x), y: r1(s.y), face: r1((s.face * 180) / Math.PI), alive: alive[s.id], n0: s.n0,
-      morale: Math.round(s.morale * 100) / 100, routed: s.routed, order: s.order, form: s.form, dug: Math.round(s.dug * 100) / 100, smoke: s.smoke, fireFree: s.fireFree, ai: s.ai, cargo: s.cargo,
+      morale: Math.round(s.morale * 100) / 100, fatigue: Math.round(s.fg * 100) / 100, routed: s.routed, order: s.order, form: s.form, dug: Math.round(s.dug * 100) / 100, smoke: s.smoke, fireFree: s.fireFree, ai: s.ai, cargo: s.cargo,
     })),
     projectiles: b.proj.map((p) => ({ id: p.id, kind: p.kind, x0: r1(p.x0), y0: r1(p.y0), x1: r1(p.x1), y1: r1(p.y1), t0: Math.round(p.t0 * 100) / 100, t1: Math.round(p.t1 * 100) / 100 })),
     smokes: b.smokes, objectives: b.objs, deploy: b.deploy, score: [Math.round(b.score[0]), Math.round(b.score[1])], support: b.support,

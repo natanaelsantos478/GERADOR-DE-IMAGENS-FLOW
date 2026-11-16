@@ -33,3 +33,37 @@ export const milPt: Record<string, string> = {
   'err.mil.onMission': 'Já em missão.', 'err.mil.lowOrg': 'Organização baixa.', 'err.mil.noStrikeUnits': 'Sem unidades de ataque.',
   'err.mil.ownTarget': 'Alvo é seu próprio país.', 'err.mil.noMissiles': 'Sem mísseis em estoque.', 'err.mil.noSuchBattle': 'Batalha inexistente.',
 };
+
+/** Rank names by `${rank}.${domain}`. */
+export const RANK_PT: Record<string, string> = {
+  'brigadier.land': 'General de Brigada', 'major.land': 'General de Divisão', 'lieutenant.land': 'Tenente-General', 'general.land': 'General de Exército', 'marshal.land': 'Marechal',
+  'brigadier.naval': 'Contra-Almirante', 'major.naval': 'Vice-Almirante', 'lieutenant.naval': 'Almirante de Esquadra', 'general.naval': 'Almirante', 'marshal.naval': 'Grande Almirante',
+  'brigadier.air': 'Brigadeiro', 'major.air': 'Major-Brigadeiro', 'lieutenant.air': 'Tenente-Brigadeiro', 'general.air': 'Marechal do Ar', 'marshal.air': 'Marechal-Chefe do Ar',
+};
+const TRAIT_PT: Record<string, [string, string]> = {
+  armor: ['Especialista blindado', '+12% ataque e +6% defesa com formações de maioria blindada/mecanizada.'],
+  urban: ['Combate urbano', '+10% ataque e +12% defesa em batalhas dentro de cidades.'],
+  mountain: ['Guerra de montanha', '+10% em terreno acidentado e +8% de velocidade fora de estrada em relevo difícil.'],
+  winter: ['Guerra de inverno', '+10% no frio; sofre bem menos fadiga por frio; avança melhor na neve e na lama.'],
+  stubborn: ['Defensor obstinado', '+10% defesa; tropas perdem menos moral; mas arrisca a vida (maior chance de morrer).'],
+  aggressive: ['Agressivo', '+8% ataque, -5% defesa.'],
+  logistic: ['Logístico', '+5% suprimento da formação e menos fadiga acumulada.'],
+  air: ['Aviação', '+12% ataque e +8% defesa com asas aéreas.'],
+  sea: ['Lobo do mar', '+12% ataque e +8% defesa com frotas.'],
+};
+export const milCommandPt: Record<string, string> = {
+  ...RANK_PT_KEYS(),
+  ...Object.fromEntries(Object.entries(TRAIT_PT).flatMap(([k, [n, d]]) => [[`mil.trait.${k}`, n], [`mil.trait.${k}.desc`, d]])),
+  'mil.news.officer.wounded': '{rank} {name} foi ferido em combate e está afastado.',
+  'mil.news.officer.captured': '{rank} {name} foi capturado pelo inimigo!',
+  'mil.news.officer.killed': '{rank} {name} morreu em combate.',
+  'mil.news.plot': 'Generais conspiram contra o governo (general {name}).',
+  'mil.cause.generalsPlot': 'Generais descontentes', 'mil.cause.defeat': 'Derrota militar', 'mil.cause.lowWarSupport': 'Baixo apoio popular à guerra',
+  'mil.cause.highWarSupport': 'Moral elevada pelas vitórias', 'mil.maintenance': 'Manutenção de equipamentos',
+  'err.mil.noSuchOfficer': 'Oficial inexistente.', 'err.mil.officerUnavailable': 'O oficial está ferido, capturado ou morto.', 'err.mil.wrongDomain': 'O oficial é de outra arma (terra/ar/mar).',
+};
+function RANK_PT_KEYS(): Record<string, string> {
+  return Object.fromEntries(Object.entries(RANK_PT).map(([k, v]) => [`mil.rank.${k}`, v]));
+}
+
+Object.assign(milPt, milCommandPt);

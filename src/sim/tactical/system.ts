@@ -4,7 +4,8 @@ import { defineSystem } from '../../core/registry';
 import { createBattle, result, snapshotBattle, stepBattle } from './core';
 import { issueOrder } from './orders';
 import { buildMapFromWorld, defaultObjectives, type MapOptions } from './mapWorld';
-import type { Order, Side, SquadInput, SideInput, Support, TacticalOutcomeLike, TacticalResult, TacticalState } from './types';
+import { engineOf, temperatureOf } from '../neural/engine';
+import type { AiEngine, Order, Side, SquadFx, SquadInput, SideInput, Support, TacticalOutcomeLike, TacticalResult, TacticalState } from './types';
 import { UNITS, kindFromTemplate } from './units';
 
 const SCALES = [0.5, 1, 2, 4];
@@ -15,6 +16,18 @@ const cmd = (ctx: Ctx, type: string, country: string, rest: Record<string, unkno
 /** Optional hook: the render injects real terrain heights (n*n, row-major from the south-west) before `start`. */
 let mapOptionsProvider: ((lon: number, lat: number) => MapOptions | undefined) | null = null;
 export function setTacticalMapProvider(fn: typeof mapOptionsProvider): void { mapOptionsProvider = fn; }
+
+/** Commander, equipment and fatigue of a formation as tactical multipliers. */
+function fxOf(f: FormationView): SquadFx | undefined {
+  const m = f.commander?.mods, q = f.readiness ?? 1, fg = f.fatigue ?? 0;
+  if (!m && q >= 0.999 && fg < 0.005) return undefined;
+  const sk = f.commander ? f.commander.attack : 5;
+  return {
+    acc: Math.max(0.7, Math.min(1.3, (m ? Math.pow(m.attack, 0.7) : 0.97) * (0.9 + 0.1 * q) * (1 + 0.01 * (sk - 5)))),
+    spd: Math.max(0.7, Math.min(1.25, (m?.speed ?? 0.97) * (0.92 + 0.08 * q))),
+    resolve: m?.morale ?? 1.05, fatigue: fg,
+  };
+}
 
 function sideFromFormations(ctx: Ctx, ids: string[]): SideInput | null {
   const squads: SquadInput[] = [];
@@ -29,13 +42,13 @@ function sideFromFormations(ctx: Ctx, ids: string[]): SideInput | null {
       if (f.domain === 'air') {
         if (u.template.includes('bomber')) support.airstrike += 1;
         else if (u.template.includes('drone')) support.drone += 1;
-        else if (u.template.includes('attack_heli')) squads.push({ ref: `${fid}:${slot}`, name: f.name, kind: 'attackHeli', count: Math.max(1, Math.round(UNITS.attackHeli.n * u.strength)), morale: f.morale, ammo: f.supply, modelId: u.modelId, country: f.rebel ? 'REB' : f.country });
+        else if (u.template.includes('attack_heli')) squads.push({ ref: `${fid}:${slot}`, name: f.name, kind: 'attackHeli', count: Math.max(1, Math.round(UNITS.attackHeli.n * u.strength)), morale: f.morale, ammo: f.supply, modelId: u.modelId, country: f.rebel ? 'REB' : f.country, fx: fxOf(f) });
         return;
       }
       const kind = kindFromTemplate(u.template);
       if (!kind) return;
       const n = Math.max(1, Math.round(UNITS[kind].n * u.strength));
-      squads.push({ ref: `${fid}:${slot}`, name: f.name, kind, count: n, morale: f.morale, ammo: Math.max(0.2, f.supply), cargo: kind === 'mech' ? Math.round(n / 2) : undefined, modelId: u.modelId, country: f.rebel ? 'REB' : f.country });
+      squads.push({ ref: `${fid}:${slot}`, name: f.name, kind, count: n, morale: f.morale, ammo: Math.max(0.2, f.supply), cargo: kind === 'mech' ? Math.round(n / 2) : undefined, modelId: u.modelId, country: f.rebel ? 'REB' : f.country, fx: fxOf(f) });
     });
   }
   if (!squads.length) return null;
@@ -50,14 +63,16 @@ function startBattle(ctx: Ctx, battleId: string): CommandResult {
   if (!bv) return fail('tac.err.noBattle');
   const a = sideFromFormations(ctx, bv.attackers), d = sideFromFormations(ctx, bv.defenders);
   if (!a || !d) return fail('tac.err.noForces');
+  const w = ctx.api.military.weather(bv.pos[0], bv.pos[1]);
   const map = buildMapFromWorld(ctx.world, bv.pos[0], bv.pos[1], mapOptionsProvider?.(bv.pos[0], bv.pos[1]));
   const me = ctx.state.meta.playerCountryId;
   const player: Side | null = bv.attackerCountries.includes(me) ? 0 : bv.defenderCountries.includes(me) ? 1 : null;
   s.counter++;
   const seed = ctx.rng.int(1, 2 ** 31 - 1);
   s.battle = createBattle({
-    id: `tac${s.counter}`, strategicBattleId: battleId, center: bv.pos, map, sides: [a, d], attacker: 0, player,
+    id: `tac${s.counter}`, strategicBattleId: battleId, center: bv.pos, map, sides: [a, d], attacker: 0, player, weather: { vis: w.mods.vis, rain: w.precip, fog: w.fog, mud: w.mud },
     objectives: defaultObjectives(map, 0),
+    engine: (engineOf(ctx.state.meta) === 'rules' ? ['rules', 'rules'] : ['neural', 'neural']) as [AiEngine, AiEngine], aiTemp: temperatureOf(ctx.state.meta.difficulty) * 0.15,
   }, seed);
   s.countries = [bv.attackerCountries.slice(), bv.defenderCountries.slice()];
   s.applied = false; s.paused = false; s.timeScale = 1;
@@ -72,7 +87,7 @@ function outcome(ctx: Ctx, r: TacticalResult, battle: string): TacticalOutcomeLi
   void ctx;
   return {
     battle, winner: r.winner === 0 ? 'attackers' : r.winner === 1 ? 'defenders' : 'draw',
-    squads: r.squads.map((q) => ({ ref: q.ref, strength: q.strength, morale: q.morale })), collateral: r.collateral,
+    squads: r.squads.map((q) => ({ ref: q.ref, strength: q.strength, morale: q.morale, fatigue: q.fatigue })), collateral: r.collateral,
   };
 }
 

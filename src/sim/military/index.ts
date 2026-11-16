@@ -9,6 +9,8 @@ import { validTargets } from './strikes';
 import type { BaseRef, QueueItem, StockState, TargetRef, TacticalOutcome } from './types';
 
 export { militarySystem } from './system';
+export { weatherAt } from './weather';
+export type { Weather, WeatherKind, WeatherMods } from './weather';
 export { milPt } from './i18n.pt';
 export { UNIT_IDS, UNIT_LIST, UNITS };
 export type { UnitTemplate };
@@ -35,6 +37,7 @@ export const milCmd = {
   setTactical: (country: CountryId, battle: BattleId, active: boolean) => ({ type: 'mil.setTactical' as const, country, battle, active }),
   applyTacticalResult: (country: CountryId, result: TacticalOutcome) => ({ type: 'mil.applyTacticalResult' as const, country, result }),
   rename: (country: CountryId, formation: FormationId, name: string) => ({ type: 'mil.rename' as const, country, formation, name }),
+  assignCommander: (country: CountryId, formation: FormationId, officer: string | null) => ({ type: 'mil.assignCommander' as const, country, formation, officer }),
 };
 
 // ------------------------------------------------------------------ selectors

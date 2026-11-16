@@ -7,4 +7,5 @@ import './panels';
 import './diplo';
 import './research';
 import './war';
+import './command';
 import './guide';

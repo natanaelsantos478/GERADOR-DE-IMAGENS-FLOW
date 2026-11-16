@@ -8,6 +8,7 @@ import {
   airRadius, edgeSpeedFactor, legCount, legPoints, planAir, planLand, planSea, reliefFactor, speedOf, type Budget,
 } from './pathing';
 import { onStrikeArrival } from './strikes';
+import { type MoveFx, marchWear, moveFx } from './effects';
 import type { Formation, Route } from './types';
 
 const fail = (reason: string): CommandResult => ({ ok: false, reason });
@@ -113,13 +114,14 @@ function posAt(g: LegGeo, km: number): { pos: LonLat; hd: number } {
 /** Base speeds of the formation being stepped, computed lazily once per tick (a fast column crosses many road legs per hour). */
 const spd = { road: -1, off: -1, fly: -1, sea: -1 };
 const baseSpeed = (A: Apis3, f: Formation, k: 'road' | 'off' | 'fly' | 'sea'): number => (spd[k] < 0 ? (spd[k] = speedOf(A, f, k)) : spd[k]);
-function legSpeed(ctx: Ctx, A: Apis3, f: Formation, rt: Route): number {
-  if (rt.m === 'air') return baseSpeed(A, f, 'fly');
-  if (rt.m === 'sea') return baseSpeed(A, f, 'sea');
-  if (rt.m === 'offroad') return baseSpeed(A, f, 'off') * reliefFactor(ctx, f.pr);
+function legSpeed(ctx: Ctx, A: Apis3, f: Formation, rt: Route, mf: MoveFx): number {
+  const w = mf.wx.mods;
+  if (rt.m === 'air') return baseSpeed(A, f, 'fly') * (0.8 + 0.2 * w.air);
+  if (rt.m === 'sea') return baseSpeed(A, f, 'sea') * w.sea;
+  if (rt.m === 'offroad') return baseSpeed(A, f, 'off') * reliefFactor(ctx, f.pr) * w.off;
   const i = rt.i;
-  if (i === 0 || i > rt.ed.length) return baseSpeed(A, f, 'off') * reliefFactor(ctx, f.pr);
-  return baseSpeed(A, f, 'road') * Math.max(0.04, edgeSpeedFactor(ctx, rt.ed[i - 1] >> 1));
+  if (i === 0 || i > rt.ed.length) return baseSpeed(A, f, 'off') * reliefFactor(ctx, f.pr) * w.off;
+  return baseSpeed(A, f, 'road') * Math.max(0.04, edgeSpeedFactor(ctx, rt.ed[i - 1] >> 1)) * w.road;
 }
 
 /** Advances every moving formation by `dt` hours. */
@@ -135,14 +137,15 @@ export function stepMovers(ctx: Ctx, A: Apis3, dt: number): void {
     const rt = f.rt;
     if (!rt || f.bt) continue;
     const fuel = st.sh[f.c]?.[0] ?? 1;
-    const mul = (0.55 + 0.45 * f.o) * (0.5 + 0.5 * fuel) * (f.s < 0.15 ? 0.5 : 1);
+    const mf = moveFx(ctx, f);
+    const mul = (0.55 + 0.45 * f.o) * (0.5 + 0.5 * fuel) * (f.s < 0.15 ? 0.5 : 1) * mf.spd;
     let left = dt;
     let moved = false;
     spd.road = spd.off = spd.fly = spd.sea = -1;
     while (left > 1e-6 && f.rt === rt) {
       const g = legGeo(ctx, f, rt);
       const total = g.cum[g.cum.length - 1];
-      let v = legSpeed(ctx, A, f, rt) * mul;
+      let v = legSpeed(ctx, A, f, rt, mf) * mul;
       if (radiated) v *= 0.7;
       if (v <= 0) break;
       const room = total - rt.km;
@@ -167,6 +170,7 @@ export function stepMovers(ctx: Ctx, A: Apis3, dt: number): void {
       f.h = Math.round(at.hd);
       moved = true;
     }
+    if (moved) marchWear(f, dt - Math.max(0, left), mf);
     if (moved && f.d !== 'air') {
       const pr = locateMoving(ctx.world, f.pr, f.p[0], f.p[1]);
       if (pr !== f.pr) {

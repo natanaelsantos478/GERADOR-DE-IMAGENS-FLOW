@@ -2,6 +2,7 @@
 import type {
   BattleId, BattleView, CountryId, Domain, FormationId, FormationView, LonLat, ProvinceId, UnitTemplateId,
 } from '../../core/contracts';
+import type { OfficerView } from '../../core/contracts';
 
 export type MilDomain = Domain | 'missile';
 
@@ -64,6 +65,47 @@ export interface Formation {
   cr?: FormationId;
   /** Rebel formation hostile to this country. */
   reb?: CountryId;
+  /** Fatigue 0..1 (absent = rested), equipment readiness 0..1 (absent = 1), commander id. */
+  fg?: number;
+  q?: number;
+  cm?: string;
+}
+
+// ------------------------------------------------------------------ commanders
+
+export type OfficerStatus = 0 | 1 | 2 | 3; // active, wounded, captured, dead / retired
+export type TraitId = 'armor' | 'urban' | 'mountain' | 'winter' | 'stubborn' | 'aggressive' | 'logistic' | 'air' | 'sea';
+export interface Officer {
+  id: string;
+  c: CountryId;
+  n: string;
+  d: Domain;
+  /** Rank 0..4 (brigadier … marshal). */
+  rk: number;
+  /** Attack, defense, logistics, manoeuvre (1..10). */
+  a: number;
+  df: number;
+  l: number;
+  m: number;
+  tr: TraitId[];
+  /** Experience 0..1, loyalty 0..1. */
+  x: number;
+  ly: number;
+  s: OfficerStatus;
+  /** Hours until a wounded officer returns. */
+  u: number;
+  f: FormationId | null;
+  /** Battles fought / won. */
+  b: number;
+  w: number;
+  /** History: [hours, code, arg?] (last 8). */
+  h: [number, string, string?][];
+}
+export interface CommandState {
+  off: Record<string, Officer>;
+  nx: number;
+  /** War support of the population 0..100 by country. */
+  ws: Record<CountryId, number>;
 }
 
 export interface Battle {
@@ -127,6 +169,8 @@ export interface MilitaryState {
   upk: Record<CountryId, number>;
   /** Negative road-route cache: search key → hour until which the route is considered impossible (absent in old saves). */
   np?: Record<string, number>;
+  /** Commanders, war support (absent in old saves; created on load). */
+  cmd?: CommandState;
   nextF: number;
   nextB: number;
   nextQ: number;
@@ -143,7 +187,7 @@ export interface MilCasualtyReport {
 export interface TacticalOutcome {
   battle: BattleId;
   winner: 'attackers' | 'defenders' | 'draw';
-  squads: { ref: string; strength: number; morale: number }[];
+  squads: { ref: string; strength: number; morale: number; fatigue?: number }[];
   /** 0..1 damage to the city/infrastructure at the location. */
   collateral?: number;
 }
@@ -169,6 +213,8 @@ declare module '../../core/contracts' {
     'mil.setTactical': { battle: BattleId; active: boolean };
     'mil.applyTacticalResult': { result: TacticalOutcome };
     'mil.rename': { formation: FormationId; name: string };
+    /** `officer: null` removes the commander (the automatic assignment fills the post later). */
+    'mil.assignCommander': { formation: FormationId; officer: string | null };
   }
   interface EventMap {
     'mil.battleStarted': { battle: BattleId; province: ProvinceId | null; pos: LonLat; attackerCountries: CountryId[]; defenderCountries: CountryId[] };
@@ -190,6 +236,8 @@ declare module '../../core/contracts' {
     'mil.rebelsSpawned': { province: ProvinceId; country: CountryId; formation: FormationId };
     'mil.rebelsDefeated': { province: ProvinceId; country: CountryId };
     'mil.rebelsHold': { province: ProvinceId; country: CountryId };
+    'mil.officerFell': { officer: string; country: CountryId; fate: 'wounded' | 'captured' | 'killed' };
+    'mil.generalsPlot': { country: CountryId; officer: string };
   }
   interface MilitaryApi {
     /** Fraction 0..1 of the country's port capacity under enemy blockade. */
@@ -198,12 +246,39 @@ declare module '../../core/contracts' {
     visibleTo(viewer: CountryId, f: FormationId): boolean;
     stock(c: CountryId): StockState;
     battleForces(b: BattleId): import('./tactical').BattleForces | null;
+    officer(id: string): OfficerView | null;
+    /** Officers of a country (all statuses), best first. */
+    officers(c: CountryId): OfficerView[];
+    commanderOf(f: FormationId): OfficerView | null;
+    /** 0..100 population support for the war effort. */
+    warSupport(c: CountryId): number;
+    /** Local weather (fronts + season); `hours` defaults to now. */
+    weather(lon: number, lat: number, hours?: number): import('./weather').Weather;
+  }
+  /** Stable view of an officer (also an AI feature source). Skills are effective values (base + experience). */
+  interface OfficerView {
+    id: string; country: CountryId; name: string; domain: Domain;
+    rank: number; rankKey: string;
+    attack: number; defense: number; logistics: number; maneuver: number;
+    traits: string[]; experience: number; loyalty: number;
+    status: 'active' | 'wounded' | 'captured' | 'dead';
+    formation: FormationId | null; battles: number; wins: number;
+    history: { hours: number; code: string; arg?: string }[];
+    /** Neutral-condition multipliers: attack, defense, speed, morale resilience. */
+    mods: { attack: number; defense: number; speed: number; morale: number };
   }
   interface FormationView {
     /** 0..1 fraction of the route covered, when moving. */
     routeProgress?: number;
     carriedBy?: FormationId | null;
     rebel?: boolean;
+    commander?: OfficerView | null;
+    /** 0..1 (1 = exhausted). */
+    fatigue?: number;
+    /** Equipment readiness 0..1. */
+    readiness?: number;
+    /** Local weather summary. */
+    weather?: { kind: string; tempC: number; precip: number; mud: number; visKm: number; ceilingM: number; off: number; air: number };
   }
   interface BattleView {
     kind?: 'land' | 'naval';

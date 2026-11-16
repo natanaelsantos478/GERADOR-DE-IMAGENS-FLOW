@@ -3,6 +3,7 @@ import type { CountryId, Ctx, FormationView, LonLat } from '../../core/contracts
 import { selectProposals, dipCommands } from '../diplomacy/index';
 import { UNITS, milCmd, productionQueue, unitCatalog } from '../military/index';
 import type { AiState } from './types';
+import { MIX_UNITS, type Plan } from './neuralPlan';
 import { bigCities, dist, hash, viewsOf } from './util';
 
 const DAY = 24;
@@ -21,22 +22,24 @@ function neighbourThreat(ctx: Ctx, c: CountryId): number {
   return t;
 }
 
-export function production(ctx: Ctx, s: AiState, c: CountryId, atWar: boolean): void {
+export function production(ctx: Ctx, s: AiState, c: CountryId, atWar: boolean, plan: Plan | null = null): void {
+  const mul = plan?.intensity ?? 1;
   const eco = ctx.api.economy;
   const ind = eco.militaryIndustry(c);
   if (!(ind > 0)) return;
   const queue = productionQueue(ctx, c);
   let pts = 0;
   for (const q of queue) pts += (UNITS[q.t].pts * q.qty) - (q.left > 0 ? UNITS[q.t].pts - q.left : 0);
-  if (pts > ind * (atWar ? 22 : 12) || queue.length >= 5) return;
+  if (pts > ind * (atWar ? 22 : 12) * mul || queue.length >= (mul > 1.25 ? 6 : mul < 0.7 ? 4 : 5)) return;
   const own = ctx.api.military.power(c);
   const threat = neighbourThreat(ctx, c);
-  if (!atWar && own > 1.5 * threat + 2 && ctx.rng.next() > 0.12) return; // enough for peacetime
+  if (!atWar && own > 1.5 * threat + 2 && ctx.rng.next() > 0.12 * mul) return; // enough for peacetime
   if (eco.treasury(c) < 200 && !atWar) return;
   const mix = atWar ? MIX_WAR : MIX_PEACE;
   const opts = unitCatalog(ctx, c).filter((u) => u.available && mix[u.id]);
   if (!opts.length) return;
-  const i = ctx.rng.weightedIndex(opts.map((u) => mix[u.id]));
+  const w = opts.map((u) => { const k = MIX_UNITS.indexOf(u.id as never); return mix[u.id] * (plan && k >= 0 ? Math.exp(plan.mixLogit[k]) : 1); });
+  const i = ctx.rng.weightedIndex(w);
   const u = opts[Math.max(0, i)];
   if (!eco.canAfford(c, { money: (u.cost.money ?? 0) * 3 })) return;
   if (ctx.dispatch(milCmd.produce(c, u.id, atWar ? 2 : 1)).ok) s.stats.produced++;

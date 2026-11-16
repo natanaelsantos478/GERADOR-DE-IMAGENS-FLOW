@@ -4,6 +4,8 @@ import { UNITS } from './catalog';
 import { type Apis3, clamp, dist, envOf, mod, r3 } from './env';
 import { allForms, createFormation, formationsOf, removeFormation, S, stockOf, strengthOf } from './forces';
 import type { Formation } from './types';
+import { fatigueOf, supplyAdjust, weatherOf } from './effects';
+import { maintenanceMap, wearDay } from './wear';
 
 const STRIDE = 5;
 const dayOf = (ctx: Ctx) => Math.floor(ctx.state.time.hours / 24);
@@ -47,6 +49,7 @@ export function logisticsDay(ctx: Ctx, A: Apis3): void {
   // Each formation is processed every STRIDE days (deltas scaled) to keep the daily cost low.
   const day = dayOf(ctx);
   const list = allForms(ctx).slice();
+  const mx = maintenanceMap(ctx, A);
   for (let i = 0; i < list.length; i++) {
     const f = list[i];
     if ((i + day) % STRIDE) continue;
@@ -70,12 +73,15 @@ export function logisticsDay(ctx: Ctx, A: Apis3): void {
     else if (f.d === 'air') target = f.home && friendly(A, f.c, ctx.state.world.controller[ctx.world.airports[f.home.index]?.provinceId ?? '']) ? 1 : 0.5;
     else if (f.d === 'naval') target = navalSupplyTarget(ctx, A, f);
     else target = Math.min(1, landSupplyTarget(ctx, A, f) + Math.min(0.3, 0.1 * logi));
+    target = clamp(target + supplyAdjust(ctx, f, weatherOf(ctx, f)), 0, 1);
     target = clamp(target * (0.6 + 0.4 * sh[0]) * (0.6 + 0.4 * sh[1]) * Math.min(1.15, mod(A, f.c, 'mil.supply')), 0, 1);
     f.s = r3(f.s + clamp(target - f.s, -0.15 * STRIDE, 0.2 * STRIDE));
+    wearDay(ctx, A, f, STRIDE, mx);
     const still = !f.rt && !f.bt;
     if (still) {
-      f.o = r3(Math.min(1, f.o + 0.12 * STRIDE * f.s * mod(A, f.c, 'mil.org')));
-      f.m = r3(Math.min(1, f.m + (0.02 + 0.02 * f.s) * STRIDE));
+      const rest = 1 - 0.5 * fatigueOf(f);
+      f.o = r3(Math.min(1, f.o + 0.12 * STRIDE * f.s * mod(A, f.c, 'mil.org') * rest));
+      f.m = r3(Math.min(1, f.m + (0.02 + 0.02 * f.s) * STRIDE * rest));
       if (f.d === 'land') f.e = r3(Math.min(1, f.e + (f.od.k === 'defend' ? 0.4 : 0.2) * STRIDE * mod(A, f.c, 'mil.entrench')));
     }
     if (f.s < 0.25 && !f.cr) {

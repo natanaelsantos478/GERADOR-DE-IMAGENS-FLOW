@@ -3,7 +3,9 @@ import type { CountryId, Ctx, FormationView, LonLat, WarView } from '../../core/
 import { dipCommands } from '../diplomacy/index';
 import { milCmd, type TargetRef } from '../military/index';
 import type { AiState, Op } from './types';
-import { bigCities, bigPlants, centroid, dist, landConnected, viewsOf, weight } from './util';
+import { chooseGoal, stance, type GoalCand } from './neuralOp';
+import type { Plan } from './neuralPlan';
+import { bigCities, useRules, bigPlants, centroid, dist, landConnected, viewsOf, weight } from './util';
 
 const DAY = 24;
 const STRIKE_UNITS = new Set(['bomber', 'attack_heli', 'drone']);
@@ -30,20 +32,27 @@ function heldByEnemy(ctx: Ctx, c: CountryId, ci: number): boolean {
   return ctl !== c && ctx.api.diplomacy.atWar(c, ctl);
 }
 
-function pickGoal(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], from: LonLat): number | null {
+function pickGoal(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], from: LonLat, ready: FormationView[], enemyLand: FormationView[]): number | null {
   const now = ctx.state.time.hours;
   const w = ctx.world;
   let best = -1, bs = 0;
+  const list: GoalCand[] = [];
   const consider = (ci: number, bonus: number) => {
     if ((s.bad[`${c}:${ci}`] ?? 0) > now || !heldByEnemy(ctx, c, ci)) return;
     const city = w.cities[ci];
     const d = dist(from, [city.lon, city.lat]);
     const sc = (bonus * (city.capital === 2 ? 3 : 1) * Math.sqrt(city.pop / 1e5 + 0.3)) / Math.pow(1 + d / 500, 2);
+    if (sc > 0) list.push({ ci, sc, recon: bonus > 2 });
     if (sc > bs) (bs = sc), (best = ci);
   };
   for (const e of enemies) for (const ci of bigCities(ctx, e)) consider(ci, 1);
   for (const ci of bigCities(ctx, c)) consider(ci, 2.5); // reconquest first
-  return best >= 0 ? best : null;
+  if (best < 0) return null;
+  if (useRules(ctx, c) || list.length < 2) return best;
+  list.sort((a, b) => b.sc - a.sc);
+  const side = ctx.api.diplomacy.wars().find((x) => x.attackers.includes(c) || x.defenders.includes(c));
+  const ws = side ? ctx.api.diplomacy.warScore(side.id, side.attackers.includes(c) ? 'attackers' : 'defenders') : 0;
+  return list[chooseGoal(ctx, c, list, ready, enemyLand, from, ws)].ci;
 }
 
 /** Strategic strikes with air wings and missiles against enemy infrastructure. */
@@ -97,7 +106,7 @@ function nuclear(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], enemy
   if (ci !== null && send(ctx, s, milCmd.launch(c, 'nuke', { kind: 'city', index: ci }))) s.stats.launches++;
 }
 
-function peace(ctx: Ctx, s: AiState, c: CountryId, wars: WarView[]): void {
+function peace(ctx: Ctx, s: AiState, c: CountryId, wars: WarView[], shift = 0): void {
   const now = ctx.state.time.hours;
   if ((s.nextPeace[c] ?? 0) > now) return;
   s.nextPeace[c] = now + 10 * DAY;
@@ -107,13 +116,13 @@ function peace(ctx: Ctx, s: AiState, c: CountryId, wars: WarView[]): void {
     const side = war.attackerLeader === c ? 'attackers' : 'defenders';
     const score = d.warScore(war.id, side);
     const days = (now - Math.max(war.startedHours, (s.seen[war.id] ??= now))) / DAY;
-    if (score < -30 && days > 30) send(ctx, s, dipCommands.proposePeace(c, war.id, 'white'));
-    else if (score > 40 && days > 60) send(ctx, s, dipCommands.proposePeace(c, war.id, 'annexOccupied'));
+    if (score < -30 + shift && days > 30) send(ctx, s, dipCommands.proposePeace(c, war.id, 'white'));
+    else if (score > 40 - Math.max(0, shift) && days > 60) send(ctx, s, dipCommands.proposePeace(c, war.id, 'annexOccupied'));
     else if (days > 270) send(ctx, s, dipCommands.proposePeace(c, war.id, 'white'));
   }
 }
 
-export function warThink(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[]): void {
+export function warThink(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], plan: Plan | null = null): void {
   const now = ctx.state.time.hours;
   s.stats.warThinks++;
   const mine = viewsOf(ctx, c);
@@ -152,20 +161,21 @@ export function warThink(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[
   // 4) Air / missiles / nuclear, peace.
   strikes(ctx, s, c, enemies, mine);
   nuclear(ctx, s, c, enemies, enemyLand);
-  peace(ctx, s, c, ctx.api.diplomacy.wars().filter((x) => x.attackers.includes(c) || x.defenders.includes(c)));
+  peace(ctx, s, c, ctx.api.diplomacy.wars().filter((x) => x.attackers.includes(c) || x.defenders.includes(c)), plan?.peaceShift ?? 0);
 }
 
 function offensive(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], ready: FormationView[], enemyLand: FormationView[]): void {
   const now = ctx.state.time.hours;
   const w = ctx.world;
   let op: Op | undefined = s.op[c];
+  const useNet = !useRules(ctx, c);
   if (op && (!heldByEnemy(ctx, c, op.ci) || now - op.since > (op.mode === 'attack' ? 35 : 15) * DAY)) {
     if (heldByEnemy(ctx, c, op.ci)) s.bad[`${c}:${op.ci}`] = now + 60 * DAY; // timed out: probably unreachable
     delete s.op[c];
     op = undefined;
   }
   if (!op) {
-    const ci = pickGoal(ctx, s, c, enemies, centroid(ready));
+    const ci = pickGoal(ctx, s, c, enemies, centroid(ready), ready, enemyLand);
     if (ci === null) return;
     const goalPos: LonLat = [w.cities[ci].lon, w.cities[ci].lat];
     const front = [...ready].sort((a, b) => dist(a.pos, goalPos) - dist(b.pos, goalPos)).slice(0, Math.max(1, Math.ceil(ready.length / 2)));
@@ -177,10 +187,17 @@ function offensive(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], rea
   const nearRally = ready.filter((f) => dist(f.pos, op!.rally) < 130);
   const mine = ready.reduce((a, f) => a + weight(f), 0);
   const foe = enemyLand.reduce((a, f) => (dist(f.pos, goal) < 380 ? a + weight(f) : a), 0) + 0.4 + w.cities[op.ci].pop / 3e6;
+  let atkR = 1.1, abR = 0.6;
+  if (useNet) {
+    const wr = ctx.api.diplomacy.wars().find((x) => x.attackers.includes(c) || x.defenders.includes(c));
+    const ws = wr ? ctx.api.diplomacy.warScore(wr.id, wr.attackers.includes(c) ? 'attackers' : 'defenders') : 0;
+    const st = stance(ctx, c, mine, foe, ready.length, enemyLand.length, (now - op.since) / DAY, op.mode === 'attack', ws, ready);
+    atkR = st.attack; abR = st.abort;
+  }
 
   if (op.mode === 'gather') {
     const gathered = nearRally.length >= Math.ceil(ready.length * 0.6) || now - op.since > 10 * DAY;
-    if (gathered && mine >= 1.1 * foe) (op.mode = 'attack'), (op.since = now);
+    if (gathered && mine >= atkR * foe) (op.mode = 'attack'), (op.since = now);
     else {
       const far = unordered(ctx, s, ready).filter((f) => dist(f.pos, op!.rally) >= 130 && !(f.order === 'move' && f.destination && dist(f.destination, op!.rally) < 40));
       if (far.length) (send(ctx, s, milCmd.move(c, far.map((f) => f.id), op.rally, false)), stamp(ctx, s, far));
@@ -188,7 +205,7 @@ function offensive(ctx: Ctx, s: AiState, c: CountryId, enemies: CountryId[], rea
       if (hold.length) send(ctx, s, milCmd.defend(c, hold.map((f) => f.id)));
       return;
     }
-  } else if (mine < 0.6 * foe) {
+  } else if (mine < abR * foe) {
     // Outgunned locally: pull back to the rally point and regroup.
     op.mode = 'gather';
     op.since = now;

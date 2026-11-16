@@ -1,6 +1,8 @@
 /** Air strikes, drone/cruise/ballistic missiles in flight, nuclear detonations, interception. */
 import type { CommandResult, CountryId, Ctx, LonLat } from '../../core/contracts';
 import { UNITS } from './catalog';
+import { commanderMul, officerOf } from './commanders';
+import { condPower, localWeather } from './effects';
 import { type Apis3, clamp, dist, mod, r3, r4 } from './env';
 import { formationsOf, removeFormation, S, stockOf, strengthOf } from './forces';
 import { airRadius, planAir } from './pathing';
@@ -120,6 +122,11 @@ export function onStrikeArrival(ctx: Ctx, A: Apis3, f: Formation): void {
       if (key) power += s.k * s.s * WARHEAD[key] * mod(A, f.c, t.group === 'air' ? 'mil.air.attack' : 'mil.missile.accuracy');
       s.s = r3(Math.max(0, s.s * (1 - lossFrac * (s.t === 'drone' ? 1.5 : 1))));
     }
+    const wx = localWeather(ctx, pos, null);
+    const cm = commanderMul(officerOf(ctx, f), f, { rugged: 0.3, urban: od.target.kind === 'city', cold: wx.tempC < 0, naval: false });
+    power *= condPower(f) * cm.atk * (0.35 + 0.65 * wx.mods.air);
+    f.fg = r3(Math.min(1, (f.fg ?? 0) + 0.04 * wx.mods.fatigue));
+    f.q = r3(Math.max(0.15, (f.q ?? 1) - 0.015 * wx.mods.wear));
     const dmg = applyHit(ctx, A, f.c, od.target, power * (1 - clamp(0.1 * I, 0, 0.8)), 'mil.airStrike');
     emitStrike(ctx, f.c, def, 'air', od.target, pos, false, dmg);
     f.x = r3(Math.min(1, f.x + 0.01));

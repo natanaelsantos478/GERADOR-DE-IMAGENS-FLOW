@@ -21,7 +21,7 @@ export function coverMod(b: Battle, t: Ent): number {
 const canHit = (w: Weapon, t: Ent) => (isAir(t) ? !!w.air : !w.noGround);
 
 /** Detection range of `t` as seen by a unit with sensor range `vis`. */
-const detect = (b: Battle, t: Ent, vis: number) => vis * (isFoot(t) ? 0.7 : 1) * (1 - 0.4 * b.squads[t.sq].dug) * (t.moving ? 1.2 : 1);
+const detect = (b: Battle, t: Ent, vis: number) => vis * (b.wx?.vis ?? 1) * (isFoot(t) ? 0.7 : 1) * (1 - 0.4 * b.squads[t.sq].dug) * (t.moving ? 1.2 : 1);
 
 const cand: { e: Ent; s: number }[] = [];
 export function acquire(b: Battle): void {
@@ -118,6 +118,8 @@ function fire(b: Battle, e: Ent, wi: number, t: Ent, dist: number): void {
     return;
   }
   let p = w.a * Math.max(0.12, 1 - 0.6 * (dist / w.r)) * (1 - 0.7 * e.supp) * (1 - coverMod(b, t));
+  const sq = b.squads[e.sq];
+  p *= (sq.fx?.acc ?? 1) * (1 - 0.3 * sq.fg) * (1 - 0.12 * (b.wx?.rain ?? 0) - 0.05 * (b.wx?.fog ?? 0));
   if (e.moving && !isAir(e)) p *= isFoot(e) ? 0.4 : 0.55;
   if (t.moving) p *= 0.8;
   const hit = rnd(b) < p;
@@ -232,7 +234,9 @@ export function secondly(b: Battle): void {
     const engaged = c.sqEngaged[sq.id] === 1;
     if (engaged) sq.engagedT = b.t;
     const calm = b.t - sq.engagedT > 6;
-    sq.morale = Math.min(1, Math.max(0, sq.morale + (calm ? 0.006 : 0.001) - 0.03 * c.sqSupp[sq.id]));
+    const moving = sq.path.length > 0 && sq.pi < sq.path.length && sq.order !== 'hold';
+    sq.fg = Math.max(0, Math.min(1, sq.fg + (engaged ? 0.0005 : 0) + (moving ? (UNITS[sq.kind].mob === 'foot' ? 0.0011 : 0.0004) : 0) - (!engaged && !moving ? 0.0007 : 0)));
+    sq.morale = Math.min(1, Math.max(0, sq.morale + (calm ? 0.006 * (1 - 0.5 * sq.fg) : 0.001) - 0.03 * c.sqSupp[sq.id] * (sq.fx?.resolve ?? 1) * (1 + 0.4 * sq.fg)));
     if (!sq.routed && sq.morale < 0.2) { sq.routed = true; sq.ai = true; sq.order = 'retreat'; sq.digging = false; sq.dug = 0; sq.path = []; }
     else if (sq.routed && sq.morale > 0.4 && calm) { sq.routed = false; sq.order = 'idle'; }
   }

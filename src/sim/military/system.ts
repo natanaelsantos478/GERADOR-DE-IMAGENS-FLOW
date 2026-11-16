@@ -13,6 +13,9 @@ import { autoProduce, cancel, enqueue, productionDay } from './production';
 import { launch, orderStrike, processFlights } from './strikes';
 import { applyTacticalOutcome, battleForces, setTacticalActive } from './tactical';
 import { UNITS } from './catalog';
+import { assignCommander, cmdState, commandersDay, initCommanders, onCoup, officerView, officersOf } from './commanders';
+import { localWeather, warSupportOf } from './effects';
+import { onWarEvent, warSupportDay } from './wear';
 import type { Formation, MilitaryState, TacticalOutcome } from './types';
 
 const fail = (reason: string): CommandResult => ({ ok: false, reason });
@@ -123,6 +126,7 @@ function handle(ctx: Ctx, cmd: { type: string; country: CountryId; [k: string]: 
     }
     case 'mil.launch': return launch(ctx, A, c, cmd.weapon as never, cmd.target as never, cmd.from as never);
     case 'mil.setTactical': return setTacticalActive(ctx, String(cmd.battle), !!cmd.active);
+    case 'mil.assignCommander': return assignCommander(ctx, c, String(cmd.formation), cmd.officer === null ? null : String(cmd.officer));
     case 'mil.applyTacticalResult': return applyTacticalOutcome(ctx, cmd.result as TacticalOutcome);
   }
   return undefined;
@@ -134,11 +138,14 @@ export const militarySystem = defineSystem({
     const slice = emptyState();
     (ctx.state as unknown as { military: MilitaryState }).military = slice;
     initForces(ctx);
+    initCommanders(ctx);
     return slice;
   },
   init(ctx) {
     warmRoadProvinces(ctx.world);
+    ctx.bus.onPrefix('mil', (e: GameEvent) => onWarEvent(ctx, e));
     ctx.bus.onPrefix('eco', (e: GameEvent) => {
+      if (e.type === 'eco.coup') onCoup(ctx, (e as unknown as { country: string }).country);
       if (e.type === 'eco.revolt') {
         const r = e as unknown as { country: string; province: string; lon: number; lat: number; strength: number };
         spawnRebels(ctx, r.country, r.province, r.lon, r.lat, r.strength);
@@ -151,6 +158,7 @@ export const militarySystem = defineSystem({
     env.powerCache.clear();
     env.stateRef = null;
     touch(ctx);
+    if (!S(ctx).cmd) initCommanders(ctx);
   },
   update(ctx, dt) {
     const A = apisOf(ctx);
@@ -170,6 +178,8 @@ export const militarySystem = defineSystem({
     logisticsDay(ctx, A);
     productionDay(ctx, A);
     rebelsDay(ctx, A);
+    commandersDay(ctx, A);
+    warSupportDay(ctx, A);
     const pc = ctx.state.meta.playerCountryId;
     if (ctx.state.meta.automation['mil.production']) autoProduce(ctx, A, pc);
   },
@@ -211,11 +221,24 @@ export const militarySystem = defineSystem({
       },
       stock: (c) => ({ ...stockOf(ctx, c) }),
       battleForces: (id) => battleForces(ctx, id),
+      officer: (id) => {
+        const o = cmdState(ctx).off[id];
+        return o ? officerView(ctx, o) : null;
+      },
+      officers: (c) => officersOf(ctx, c),
+      commanderOf: (id) => {
+        const f = S(ctx).forms[id];
+        const o = f?.cm ? cmdState(ctx).off[f.cm] : undefined;
+        return o && o.s === 0 ? officerView(ctx, o) : null;
+      },
+      warSupport: (c) => warSupportOf(ctx, c),
+      weather: (lon, lat, hours) => localWeather(ctx, [lon, lat], ctx.world.locateProvince(lon, lat), hours),
     };
   },
   metrics(ctx) {
     const st = S(ctx);
     const n = Object.keys(st.forms).length;
-    return { formations: n, battles: Object.keys(st.battles).length, flights: st.flights.length, stateKB: Math.round(JSON.stringify(st).length / 1024) };
+    const nOff = Object.keys(S(ctx).cmd?.off ?? {}).length;
+    return { officers: nOff, formations: n, battles: Object.keys(st.battles).length, flights: st.flights.length, stateKB: Math.round(JSON.stringify(st).length / 1024) };
   },
 });

@@ -1,0 +1,17 @@
+{
+ "version": "2026.11-short1",
+ "tactical": {
+  "battles": 48,
+  "wins": 19,
+  "draws": 0,
+  "losses": 29,
+  "rate": 0.3958333333333333
+ },
+ "war": {
+  "scenarios": 12,
+  "neuralWs": -4.916666666666667,
+  "controlWs": -3.75,
+  "neuralFit": -0.04597465831294245,
+  "controlFit": -0.031612483169736506
+ }
+}

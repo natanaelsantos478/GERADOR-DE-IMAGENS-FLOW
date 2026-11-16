@@ -5,6 +5,8 @@ import { UNITS } from './catalog';
 import { type Apis3, clamp, apisOf, dist, envOf, hostile, mod, r3, r4 } from './env';
 import { allForms, formationsOf, reindexIfNeeded, removeFormation, S, strengthOf } from './forces';
 import { orderMove } from './movement';
+import { battleExperience, commanderFate } from './commanders';
+import { type Fx, battleFx, fightWear, localWeather, sideManeuver } from './effects';
 import type { Battle, Formation, Slot } from './types';
 
 const CONTACT_KM = { land: 12, naval: 45 };
@@ -50,36 +52,36 @@ export function profileOf(forms: Formation[]): SideProfile {
 }
 
 /** Offensive power of a set of formations against a target profile. */
-export function powerOf(forms: Formation[], vs: SideProfile, naval: boolean, mc: ModCache, rugged: number, extra: Slot[] = [], extraC?: CountryId): number {
+export function powerOf(forms: Formation[], vs: SideProfile, naval: boolean, mc: ModCache, rugged: number, extra: Slot[] = [], extraC?: CountryId, fx?: Fx): number {
   let p = 0;
-  const one = (c: CountryId, s: Slot, r: number) => {
+  const one = (c: CountryId, s: Slot, r: number, f?: Formation) => {
     const t = UNITS[s.t];
     let a = naval ? t.naval + 0.15 * t.hard : t.soft * (1 - vs.hard) + t.hard * vs.hard;
     if (!naval && t.group === 'armor') a *= 1 - 0.35 * rugged;
     const key = s.t === 'mech_infantry' ? 'mil.mech.attack' : s.t === 'drone' ? 'mil.drone.attack' : GROUP_ATK[t.group];
-    p += s.k * s.s * a * r * (key ? mc.get(c, key) : 1);
+    p += s.k * s.s * a * r * (key ? mc.get(c, key) : 1) * (fx && f ? fx.atk(f, t.group) : 1);
   };
   for (const f of forms) {
     const r = readiness(f);
-    for (const s of f.u) one(f.c, s, r);
+    for (const s of f.u) one(f.c, s, r, f);
   }
   if (extraC) for (const s of extra) one(extraC, s, 0.8);
   return p;
 }
 
-export function defenseOf(forms: Formation[], mc: ModCache, bonus: number): number {
+export function defenseOf(forms: Formation[], mc: ModCache, bonus: number, fx?: Fx): number {
   let d = 0;
   for (const f of forms) {
     const r = 0.5 + 0.5 * f.o;
     for (const s of f.u) {
       const t = UNITS[s.t];
-      d += s.k * s.s * t.def * r * mc.get(f.c, GROUP_DEF[t.group] ?? 'mil.infantry.defense');
+      d += s.k * s.s * t.def * r * mc.get(f.c, GROUP_DEF[t.group] ?? 'mil.infantry.defense') * (fx ? fx.def(f, t.group) : 1);
     }
   }
   return d * bonus;
 }
 
-function applyLoss(ctx: Ctx, b: Battle, forms: Formation[], lam: number, selfBal: number): void {
+function applyLoss(ctx: Ctx, b: Battle, forms: Formation[], lam: number, selfBal: number, fx: Fx, dt: number): void {
   for (const f of forms) {
     let men = 0;
     for (const s of f.u) {
@@ -90,7 +92,8 @@ function applyLoss(ctx: Ctx, b: Battle, forms: Formation[], lam: number, selfBal
     }
     b.cas[f.c] = Math.round((b.cas[f.c] ?? 0) + men);
     f.o = r3(clamp(f.o - (0.008 + 1.6 * lam), 0, 1));
-    f.m = r3(clamp(f.m - 1.4 * lam + 0.004 * selfBal, 0, 1));
+    f.m = r3(clamp(f.m - 1.4 * lam * fx.resolve(f) + 0.004 * selfBal, 0, 1));
+    fightWear(f, lam, dt, fx, ctx);
     f.x = r3(Math.min(1, f.x + 0.0008));
     f.e = 0;
   }
@@ -152,6 +155,12 @@ export function finishBattle(ctx: Ctx, b: Battle, winner: 'attackers' | 'defende
   for (const id of [...b.a, ...b.d]) {
     const f = st.forms[id];
     if (f) f.bt = null;
+  }
+  for (const [ids, won] of [[b.a, winner === 'draw' ? null : winner === 'attackers'], [b.d, winner === 'draw' ? null : winner === 'defenders']] as const) {
+    for (const id of ids) {
+      const f = st.forms[id];
+      if (f) battleExperience(ctx, f, won);
+    }
   }
   let ca = 0, cd = 0;
   for (const c of b.ac) ca += b.cas[c] ?? 0;
@@ -218,11 +227,15 @@ export function runBattles(ctx: Ctx, A: Apis3, dt: number): void {
     const pa = profileOf(stillA), pd = profileOf(stillD);
     const ex = new Set([...b.a, ...b.d]);
     const supA = naval ? [] : supportSlots(ctx, b.ac, b.p, mc, ex), supD = naval ? [] : supportSlots(ctx, b.dc, b.p, mc, ex);
-    const attP = powerOf(stillA, pd, naval, mc, rugged, supA, b.ac[0]);
-    const defP = powerOf(stillD, pa, naval, mc, rugged, supD, b.dc[0]);
+    const wx = localWeather(ctx, b.p, b.pr);
+    const fx = battleFx(ctx, { wx, terrain: { rugged, urban: urban > 0, cold: wx.tempC < 0, naval } });
+    const mA = sideManeuver(ctx, stillA), mD = sideManeuver(ctx, stillD);
+    const manA = 1 + 0.02 * clamp(mA - mD, -6, 6), manD = 1 + 0.02 * clamp(mD - mA, -6, 6);
+    const attP = powerOf(stillA, pd, naval, mc, rugged, supA, b.ac[0], fx) * manA;
+    const defP = powerOf(stillD, pa, naval, mc, rugged, supD, b.dc[0], fx) * manD;
     const terr = naval ? 1 : 1 + 0.55 * rugged + urban + 0.6 * pd.entrench * mc.get(b.dc[0], 'mil.entrench');
-    const attDef = defenseOf(stillA, mc, naval ? 1 : 1 + 0.2 * rugged + 0.3 * pa.entrench);
-    const defDef = defenseOf(stillD, mc, terr);
+    const attDef = defenseOf(stillA, mc, naval ? 1 : 1 + 0.2 * rugged + 0.3 * pa.entrench, fx);
+    const defDef = defenseOf(stillD, mc, terr, fx);
     // Munitions: a dry side fights at 60 %.
     const ammo = (forms: Formation[], c: CountryId) => {
       if (!A.eco) return 1;
@@ -235,8 +248,8 @@ export function runBattles(ctx: Ctx, A: Apis3, dt: number): void {
     const lamD = clamp((K_LOSS * dt * (attP * ma * noise())) / Math.max(0.01, defDef), 0, 0.15);
     const lamA = clamp((K_LOSS * dt * (defP * md * noise())) / Math.max(0.01, attDef), 0, 0.15);
     b.bal = r3(clamp((attP - defP) / Math.max(0.01, attP + defP), -1, 1));
-    applyLoss(ctx, b, stillA, lamA, -b.bal);
-    applyLoss(ctx, b, stillD, lamD, b.bal);
+    applyLoss(ctx, b, stillA, lamA, -b.bal, fx, dt);
+    applyLoss(ctx, b, stillD, lamD, b.bal, fx, dt);
     collateral(ctx, A, b, lamA + lamD);
     // Retreats and destruction.
     for (const [side, forms, other] of [['a', stillA, stillD], ['d', stillD, stillA]] as const) {
@@ -244,9 +257,11 @@ export function runBattles(ctx: Ctx, A: Apis3, dt: number): void {
         const sv = strengthOf(f);
         if (sv < 0.05) {
           b[side] = b[side].filter((x) => x !== f.id);
+          commanderFate(ctx, A, f, true);
           removeFormation(ctx, f, true);
         } else if (f.o < 0.18 || f.m < 0.18 || sv < 0.14) {
           b[side] = b[side].filter((x) => x !== f.id);
+          commanderFate(ctx, A, f, false);
           retreatFormation(ctx, A, f, enemyCentroid(ctx, other.map((o) => o.id)));
         }
       }
@@ -275,7 +290,7 @@ function collateral(ctx: Ctx, A: Apis3, b: Battle, intensity: number): void {
 }
 
 /** Applies a tactical-battle outcome: per-slot strength, morale, winner and collateral. */
-export function applyOutcome(ctx: Ctx, A: Apis3, b: Battle, squads: { ref: string; strength: number; morale: number }[], winner: 'attackers' | 'defenders' | 'draw', collat?: number): void {
+export function applyOutcome(ctx: Ctx, A: Apis3, b: Battle, squads: { ref: string; strength: number; morale: number; fatigue?: number }[], winner: 'attackers' | 'defenders' | 'draw', collat?: number): void {
   const st = S(ctx);
   for (const q of squads) {
     const [fid, si] = q.ref.split(':');
@@ -287,6 +302,8 @@ export function applyOutcome(ctx: Ctx, A: Apis3, b: Battle, squads: { ref: strin
     b.cas[f.c] = Math.round((b.cas[f.c] ?? 0) + (before - s.s) * s.k * UNITS[s.t].men * 0.45);
     f.m = r3(clamp((f.m + q.morale) / 2, 0, 1));
     f.x = r3(Math.min(1, f.x + 0.03));
+    if (q.fatigue !== undefined) f.fg = r3(clamp(((f.fg ?? 0) + q.fatigue) / 2, 0, 1));
+    f.q = r3(clamp((f.q ?? 1) - (before - s.s) * 0.25 - 0.01, 0.15, 1));
   }
   if (collat && collat > 0) {
     const ci = nearCity(ctx, b);
@@ -295,7 +312,15 @@ export function applyOutcome(ctx: Ctx, A: Apis3, b: Battle, squads: { ref: strin
   for (const id of [...b.a, ...b.d]) {
     const f = st.forms[id];
     if (!f) continue;
-    if (strengthOf(f) < 0.05) removeFormation(ctx, f, true);
+    if (strengthOf(f) < 0.05) {
+      commanderFate(ctx, A, f, true);
+      removeFormation(ctx, f, true);
+    }
+  }
+  for (const id of [...b.a, ...b.d]) {
+    const f = st.forms[id];
+    const lost = winner === 'attackers' ? b.d.includes(id) : winner === 'defenders' ? b.a.includes(id) : false;
+    if (f && lost) commanderFate(ctx, A, f, false);
   }
   const loserSide = winner === 'attackers' ? b.d : winner === 'defenders' ? b.a : [];
   const win = winner === 'attackers' ? b.a : b.d;
@@ -316,7 +341,7 @@ export function detectContacts(ctx: Ctx, A: Apis3): void {
   const st = S(ctx);
   const env = envOf(ctx.world);
   reindexIfNeeded(ctx);
-  if (env.warring.until < ctx.state.time.hours || env.warring.until > ctx.state.time.hours + 3.5 || env.warring.ver !== env.ver) {
+  if (env.warring.until < ctx.state.time.hours || env.warring.until > ctx.state.time.hours + 3.5 || env.warring.ver !== env.ver || env.warring.ref !== st) {
     const set = new Set<CountryId>();
     if (A.dip) for (const wv of A.dip.wars()) for (const c of [...wv.attackers, ...wv.defenders]) set.add(c);
     const cands: Formation[] = [];
@@ -328,7 +353,7 @@ export function detectContacts(ctx: Ctx, A: Apis3): void {
       // The government's formations matter only when close to the rebels.
       if (!set.has(r.reb!)) for (const g of formationsOf(ctx, r.reb!)) if (g.d === 'land' && Math.abs(g.p[0] - r.p[0]) < 0.8 && Math.abs(g.p[1] - r.p[1]) < 0.8 && !cands.includes(g)) cands.push(g);
     }
-    env.warring = { until: ctx.state.time.hours + 3, ver: env.ver, set, cands };
+    env.warring = { until: ctx.state.time.hours + 3, ver: env.ver, set, cands, ref: st };
   }
   hash = new Map();
   const act: Formation[] = [];

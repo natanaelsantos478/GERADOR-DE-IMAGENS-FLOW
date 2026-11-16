@@ -45,6 +45,14 @@ describe('tactical core', () => {
     expect(() => JSON.stringify(snapshotBattle(a, 1, false))).not.toThrow();
   });
 
+  it('serialize -> hydrate in the middle gives the same future with the neural AI on', () => {
+    const a = createBattle({ ...scenarioInput(flatMap()), engine: ['neural', 'neural'], aiTemp: 0.05 }, 11);
+    run(a, 90);
+    const c = clone(a);
+    run(a, 60); run(c, 60);
+    expect(JSON.stringify(c)).toBe(JSON.stringify(a));
+  });
+
   it('frontal armour resists more than the flank', () => {
     let front = 0, side = 0;
     for (let seed = 1; seed <= 24; seed++) {

@@ -1,6 +1,6 @@
 /**
  * Headless soak runner (PLANO §6):
- *   npm run sim:soak -- --years 3 --player BRA [--seed N] [--difficulty normal] [--budget 12] [--data public/data]
+ *   npm run sim:soak -- --years 3 --player BRA [--engine neural|rules] [--seed N] [--difficulty normal] [--budget 12] [--data public/data]
  * Runs the whole world (all registered systems, AI included) day by day, prints monthly metrics and
  * exits with code 1 on exception, NaN/Infinity in state, non-JSON state, failed save round-trip or
  * average ms/day above the budget.
@@ -27,10 +27,11 @@ interface Args {
   difficulty: Difficulty;
   budget: number;
   data: string;
+  engine: 'neural' | 'rules';
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { years: 3, days: null, player: 'BRA', seed: 20260101, difficulty: 'normal', budget: 16, data: DEFAULT_DATA_DIR };
+  const a: Args = { years: 3, days: null, player: 'BRA', seed: 20260101, difficulty: 'normal', budget: 25, data: DEFAULT_DATA_DIR, engine: 'rules' };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i], v = argv[i + 1];
     const need = () => {
@@ -46,6 +47,7 @@ function parseArgs(argv: string[]): Args {
       case '--difficulty': a.difficulty = need() as Difficulty; break;
       case '--budget': a.budget = Number(need()); break;
       case '--data': a.data = need(); break;
+      case '--engine': a.engine = need() as Args['engine']; break;
       default: throw new Error(`argumento desconhecido: ${k}`);
     }
   }
@@ -69,8 +71,9 @@ async function main(): Promise<number> {
     playerCountryId: args.player,
     seed: args.seed,
     difficulty: args.difficulty,
-    automation: { [AI_CONTROLS_PLAYER]: true },
+    automation: { [AI_CONTROLS_PLAYER]: true, 'ai.engine.neural': args.engine === 'neural' },
   });
+  console.log(`IA: ${args.engine === 'rules' ? 'regras' : 'neural'}`);
   const days = args.days ?? Math.round(args.years * 365.25);
   const WARMUP = Math.min(7, Math.floor(days / 4));
   let cpuMs = 0;
@@ -136,7 +139,7 @@ async function main(): Promise<number> {
       game.advanceHours(1);
       reloaded.advanceHours(1);
     }
-    if (JSON.stringify(reloaded.state) !== JSON.stringify(game.state)) failures.push('simulação não determinística após carregar o save');
+    if (JSON.stringify(reloaded.state) !== JSON.stringify(game.state)) failures.push(`simulação não determinística após carregar o save (primeiras diferenças: ${diffPaths(game.state, reloaded.state).join(' | ')})`);
   }
 
   console.log('\npaís   PIB(bi USD)  saldo(M/mês)  aprov.  formações  prov.ctrl  guerras');
@@ -165,3 +168,13 @@ main().then(
     process.exit(1);
   },
 );
+
+/** First few JSON paths where two states differ (diagnostics for the determinism check). */
+function diffPaths(a: unknown, b: unknown, path = '', out: string[] = []): string[] {
+  if (out.length >= 5) return out;
+  if (a === b) return out;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) { out.push(`${path}: ${JSON.stringify(a)?.slice(0, 40)} != ${JSON.stringify(b)?.slice(0, 40)}`); return out; }
+  const ka = Object.keys(a as object), kb = new Set(Object.keys(b as object));
+  for (const k of new Set([...ka, ...kb])) { diffPaths((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k], `${path}.${k}`, out); if (out.length >= 5) break; }
+  return out;
+}

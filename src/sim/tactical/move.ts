@@ -16,6 +16,9 @@ export function setPath(b: Battle, s: Squad, x: number, y: number): boolean {
   return true;
 }
 
+/** Squad speed multiplier: commander, fatigue and mud. */
+export const squadPace = (b: Battle, s: Squad): number => (s.fx?.spd ?? 1) * (1 - 0.35 * s.fg) * (1 - 0.3 * (b.wx?.mud ?? 0) * (UNITS[s.kind].mob === 'foot' ? 0.5 : 1));
+
 export function stepSquads(b: Battle): void {
   const c = cacheOf(b);
   for (const s of b.squads) {
@@ -49,8 +52,8 @@ export function stepSquads(b: Battle): void {
     const dx = tx - s.x, dy = ty - s.y, dist = Math.hypot(dx, dy);
     if (dist < 4) { s.pi += 2; continue; }
     const hx = dx / dist, hy = dy / dist;
-    const lag = Math.min(1, Math.max(0.25, 1 - (c.sqLag[s.id] - 40) / 120));
-    const sp = d.spd * moveFactor(b.map, s.x, s.y, hx, hy, d.mob) * lag * (s.order === 'retreat' ? 1.1 : 1);
+    const lag = Math.min(1, Math.max(0.25, 1 - ((s.lag ?? 0) - 40) / 120));
+    const sp = d.spd * moveFactor(b.map, s.x, s.y, hx, hy, d.mob) * lag * (s.order === 'retreat' ? 1.1 : 1) * squadPace(b, s);
     const step = Math.min(dist, sp * DT);
     s.x += hx * step; s.y += hy * step;
     if (s.order !== 'attack' || dist > 20) s.face = Math.atan2(hx, hy);
@@ -70,7 +73,7 @@ export function stepEnts(b: Battle): void {
   for (const s of b.squads) {
     const ids = c.sqEnts[s.id];
     const n = ids.length;
-    if (!n) continue;
+    if (!n) { s.lag = 0; continue; }
     const d = UNITS[s.kind];
     let lag = 0;
     for (let i = 0; i < n; i++) {
@@ -82,7 +85,7 @@ export function stepEnts(b: Battle): void {
       if (dist > 1.5 && !pinned) {
         const hx = dx / dist, hy = dy / dist;
         const f = moveFactor(b.map, e.x, e.y, hx, hy, d.mob);
-        const step = Math.min(dist, d.spd * f * 1.3 * DT);
+        const step = Math.min(dist, d.spd * f * 1.3 * DT * squadPace(b, s));
         const nx = e.x + hx * step, ny = e.y + hy * step;
         if (isAir(e) || (inside(b.map, nx, ny) && cellFactor(b.map, cellOf(b.map, nx, ny), d.mob) > 0)) {
           e.x = nx; e.y = ny;
@@ -99,7 +102,7 @@ export function stepEnts(b: Battle): void {
         else if (e.still > 3 && !s.fireFree) turn(e, s.face, d.turn);
       }
     }
-    c.sqLag[s.id] = lag / n;
+    c.sqLag[s.id] = s.lag = lag / n;
   }
 }
 
