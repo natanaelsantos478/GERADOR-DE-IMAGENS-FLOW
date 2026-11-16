@@ -14,8 +14,9 @@
   "source": "https://opengameart.org/content/abrams-tank",
   "substitute": false,
   "triangles": 10255,
-  "bytes": 400548,
-  "notes": "Recoloured from yellow to olive drab; removed helper \"guide\" mesh."
+  "bytes": 1173768,
+  "notes": "Recoloured from yellow to olive drab; removed helper \"guide\" mesh. Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures.",
+  "textures": 3
  },
  "ifv": {
   "file": "ifv.glb",
@@ -32,7 +33,9 @@
   "source": "https://opengameart.org/content/blender-models-for-freeciv-units",
   "substitute": false,
   "triangles": 4102,
-  "bytes": 168692
+  "bytes": 546784,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "apc": {
   "file": "apc.glb",
@@ -49,7 +52,9 @@
   "source": "https://polyfork.dev (catalog: https://github.com/lucas-martinic/polyfork-catalog)",
   "substitute": false,
   "triangles": 2652,
-  "bytes": 226496
+  "bytes": 342972,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "truck": {
   "file": "truck.glb",
@@ -83,9 +88,10 @@
   "source": "https://polyfork.dev",
   "substitute": false,
   "triangles": 4146,
-  "bytes": 364756,
+  "bytes": 503540,
   "composite": true,
-  "notes": "Composite (self-propelled): Polyfork tracked crawler chassis + Polyfork field-howitzer gun mounted on the deck."
+  "notes": "Composite (self-propelled): Polyfork tracked crawler chassis + Polyfork field-howitzer gun mounted on the deck. Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures.",
+  "textures": 3
  },
  "mlrs": {
   "file": "mlrs.glb",
@@ -102,8 +108,9 @@
   "source": "https://opengameart.org/content/mobile-sam",
   "substitute": false,
   "triangles": 5886,
-  "bytes": 248440,
-  "notes": "Titled \"Mobile SAM\" by author but is a multi-tube rocket-launcher truck (BM-21 style); used as MLRS."
+  "bytes": 623336,
+  "notes": "Titled \"Mobile SAM\" by author but is a multi-tube rocket-launcher truck (BM-21 style); used as MLRS. Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures.",
+  "textures": 3
  },
  "sam": {
   "file": "sam.glb",
@@ -120,9 +127,10 @@
   "source": "https://polyfork.dev",
   "substitute": true,
   "triangles": 1580,
-  "bytes": 131688,
+  "bytes": 315508,
   "composite": true,
-  "notes": "Composite: Polyfork 8-wheel hauler recoloured olive + procedural tilted launch canisters (Patriot/S-300 style). Not a single downloaded SAM model."
+  "notes": "Composite: Polyfork 8-wheel hauler recoloured olive + procedural tilted launch canisters (Patriot/S-300 style). Not a single downloaded SAM model. Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures.",
+  "textures": 3
  },
  "radar": {
   "file": "radar.glb",
@@ -627,11 +635,13 @@
   "source": "https://www.thingiverse.com/thing:4324208 (archive.org mirror: https://archive.org/details/thingiverse-4324208)",
   "substitute": false,
   "triangles": 11998,
-  "bytes": 376120,
+  "bytes": 774140,
   "class": "mbt",
   "realName": "M1A1 Abrams",
   "origin": "USA",
-  "realLengthM": 9.83
+  "realLengthM": 9.83,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_leopard2": {
   "file": "mbt_leopard2.glb",
@@ -648,11 +658,13 @@
   "source": "https://www.thingiverse.com/thing:4324199 (archive.org mirror: https://archive.org/details/thingiverse-4324199)",
   "substitute": false,
   "triangles": 11998,
-  "bytes": 339176,
+  "bytes": 639364,
   "class": "mbt",
   "realName": "Leopard 2A6",
   "origin": "DEU",
-  "realLengthM": 10.97
+  "realLengthM": 10.97,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_leclerc": {
   "file": "mbt_leclerc.glb",
@@ -669,11 +681,13 @@
   "source": "https://www.thingiverse.com/thing:4324192 (archive.org mirror: https://archive.org/details/thingiverse-4324192)",
   "substitute": false,
   "triangles": 10679,
-  "bytes": 321064,
+  "bytes": 644660,
   "class": "mbt",
   "realName": "AMX-56 Leclerc",
   "origin": "FRA",
-  "realLengthM": 9.87
+  "realLengthM": 9.87,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_challenger2": {
   "file": "mbt_challenger2.glb",
@@ -690,11 +704,13 @@
   "source": "https://www.thingiverse.com/thing:4324185 (archive.org mirror: https://archive.org/details/thingiverse-4324185)",
   "substitute": false,
   "triangles": 11998,
-  "bytes": 336032,
+  "bytes": 646936,
   "class": "mbt",
   "realName": "Challenger 2",
   "origin": "GBR",
-  "realLengthM": 11.55
+  "realLengthM": 11.55,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_t72": {
   "file": "mbt_t72.glb",
@@ -711,11 +727,13 @@
   "source": "https://www.thingiverse.com/thing:4324265 (archive.org mirror: https://archive.org/details/thingiverse-4324265)",
   "substitute": false,
   "triangles": 11999,
-  "bytes": 336856,
+  "bytes": 694632,
   "class": "mbt",
   "realName": "T-72",
   "origin": "RUS",
-  "realLengthM": 9.53
+  "realLengthM": 9.53,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_t90": {
   "file": "mbt_t90.glb",
@@ -732,11 +750,13 @@
   "source": "https://www.thingiverse.com/thing:4334951 (archive.org mirror: https://archive.org/details/thingiverse-4334951)",
   "substitute": false,
   "triangles": 11998,
-  "bytes": 361072,
+  "bytes": 759284,
   "class": "mbt",
   "realName": "T-90",
   "origin": "RUS",
-  "realLengthM": 9.63
+  "realLengthM": 9.63,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_type99": {
   "file": "mbt_type99.glb",
@@ -753,11 +773,13 @@
   "source": "https://www.thingiverse.com/thing:4324227 (archive.org mirror: https://archive.org/details/thingiverse-4324227)",
   "substitute": false,
   "triangles": 11998,
-  "bytes": 391080,
+  "bytes": 745744,
   "class": "mbt",
   "realName": "ZTZ-99A (Type 99A)",
   "origin": "CHN",
-  "realLengthM": 11
+  "realLengthM": 11,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mbt_strv103": {
   "file": "mbt_strv103.glb",
@@ -774,11 +796,13 @@
   "source": "https://opengameart.org/content/stridsvagn-103",
   "substitute": false,
   "triangles": 12442,
-  "bytes": 317780,
+  "bytes": 993712,
   "class": "mbt",
   "realName": "Stridsvagn 103 (S-tank)",
   "origin": "SWE",
-  "realLengthM": 9
+  "realLengthM": 9,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "apc_btr80": {
   "file": "apc_btr80.glb",
@@ -795,11 +819,13 @@
   "source": "https://www.thingiverse.com/thing:5662670 (archive.org mirror: https://archive.org/details/thingiverse-5662670)",
   "substitute": false,
   "triangles": 11999,
-  "bytes": 534676,
+  "bytes": 992708,
   "class": "apc",
   "realName": "BTR-80",
   "origin": "RUS",
-  "realLengthM": 7.65
+  "realLengthM": 7.65,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "ifv_puma": {
   "file": "ifv_puma.glb",
@@ -816,11 +842,13 @@
   "source": "https://www.thingiverse.com/thing:4961768 (archive.org mirror: https://archive.org/details/thingiverse-4961768)",
   "substitute": false,
   "triangles": 11999,
-  "bytes": 430204,
+  "bytes": 856740,
   "class": "ifv",
-  "realName": "Schützenpanzer Puma",
+  "realName": "Sch\u00fctzenpanzer Puma",
   "origin": "DEU",
-  "realLengthM": 7.6
+  "realLengthM": 7.6,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "apc_boxer": {
   "file": "apc_boxer.glb",
@@ -837,11 +865,13 @@
   "source": "https://www.thingiverse.com/thing:4957830 (archive.org mirror: https://archive.org/details/thingiverse-4957830)",
   "substitute": false,
   "triangles": 11999,
-  "bytes": 406544,
+  "bytes": 897256,
   "class": "apc",
   "realName": "GTK Boxer",
   "origin": "DEU",
-  "realLengthM": 7.88
+  "realLengthM": 7.88,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "ifv_bradley": {
   "file": "ifv_bradley.glb",
@@ -858,11 +888,13 @@
   "source": "https://www.thingiverse.com/thing:5496813 (archive.org mirror: https://archive.org/details/thingiverse-5496813)",
   "substitute": false,
   "triangles": 28562,
-  "bytes": 1071788,
+  "bytes": 1126228,
   "class": "ifv",
   "realName": "M2 Bradley",
   "origin": "USA",
-  "realLengthM": 6.55
+  "realLengthM": 6.55,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "apc_fennek": {
   "file": "apc_fennek.glb",
@@ -879,11 +911,13 @@
   "source": "https://www.thingiverse.com/thing:4943700 (archive.org mirror: https://archive.org/details/thingiverse-4943700)",
   "substitute": false,
   "triangles": 12000,
-  "bytes": 393032,
+  "bytes": 845180,
   "class": "apc",
   "realName": "Fennek",
   "origin": "DEU",
-  "realLengthM": 5.71
+  "realLengthM": 5.71,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "spg_m109": {
   "file": "spg_m109.glb",
@@ -900,11 +934,13 @@
   "source": "https://www.thingiverse.com/thing:5373940 (archive.org mirror: https://archive.org/details/thingiverse-5373940)",
   "substitute": false,
   "triangles": 14898,
-  "bytes": 879452,
+  "bytes": 1473364,
   "class": "spg",
   "realName": "M109A3G",
   "origin": "USA",
-  "realLengthM": 9.1
+  "realLengthM": 9.1,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "spg_pzh2000": {
   "file": "spg_pzh2000.glb",
@@ -921,11 +957,13 @@
   "source": "https://www.thingiverse.com/thing:5022607 (archive.org mirror: https://archive.org/details/thingiverse-5022607)",
   "substitute": false,
   "triangles": 11998,
-  "bytes": 325260,
+  "bytes": 732508,
   "class": "spg",
   "realName": "Panzerhaubitze 2000",
   "origin": "DEU",
-  "realLengthM": 11.7
+  "realLengthM": 11.7,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "spg_2s1": {
   "file": "spg_2s1.glb",
@@ -942,11 +980,13 @@
   "source": "https://www.thingiverse.com/thing:4974140 (archive.org mirror: https://archive.org/details/thingiverse-4974140)",
   "substitute": false,
   "triangles": 12000,
-  "bytes": 310156,
+  "bytes": 673988,
   "class": "spg",
   "realName": "2S1 Gvozdika",
   "origin": "RUS",
-  "realLengthM": 7.26
+  "realLengthM": 7.26,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "spg_2s3": {
   "file": "spg_2s3.glb",
@@ -963,11 +1003,13 @@
   "source": "https://www.thingiverse.com/thing:4944605 (archive.org mirror: https://archive.org/details/thingiverse-4944605)",
   "substitute": false,
   "triangles": 12000,
-  "bytes": 344436,
+  "bytes": 750400,
   "class": "spg",
   "realName": "2S3 Akatsiya",
   "origin": "RUS",
-  "realLengthM": 8.4
+  "realLengthM": 8.4,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "spg_rch155": {
   "file": "spg_rch155.glb",
@@ -984,11 +1026,13 @@
   "source": "https://www.thingiverse.com/thing:5351925 (archive.org mirror: https://archive.org/details/thingiverse-5351925)",
   "substitute": false,
   "triangles": 12000,
-  "bytes": 490000,
+  "bytes": 936688,
   "class": "spg",
   "realName": "RCH 155",
   "origin": "DEU",
-  "realLengthM": 9.5
+  "realLengthM": 9.5,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mlrs_m270": {
   "file": "mlrs_m270.glb",
@@ -1005,11 +1049,13 @@
   "source": "https://www.thingiverse.com/thing:5023390 (archive.org mirror: https://archive.org/details/thingiverse-5023390)",
   "substitute": false,
   "triangles": 12000,
-  "bytes": 372136,
+  "bytes": 467188,
   "class": "mlrs",
   "realName": "M270 MLRS",
   "origin": "USA",
-  "realLengthM": 6.96
+  "realLengthM": 6.96,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mlrs_tos1": {
   "file": "mlrs_tos1.glb",
@@ -1026,11 +1072,13 @@
   "source": "https://www.thingiverse.com/thing:5338294 (archive.org mirror: https://archive.org/details/thingiverse-5338294)",
   "substitute": false,
   "triangles": 11995,
-  "bytes": 522868,
+  "bytes": 763528,
   "class": "mlrs",
   "realName": "TOS-1 Buratino",
   "origin": "RUS",
-  "realLengthM": 9.5
+  "realLengthM": 9.5,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "mlrs_iskander": {
   "file": "mlrs_iskander.glb",
@@ -1047,11 +1095,13 @@
   "source": "https://www.thingiverse.com/thing:5343360 (archive.org mirror: https://archive.org/details/thingiverse-5343360)",
   "substitute": false,
   "triangles": 11999,
-  "bytes": 446980,
+  "bytes": 915232,
   "class": "mlrs",
   "realName": "9K720 Iskander (SS-26)",
   "origin": "RUS",
-  "realLengthM": 12
+  "realLengthM": 12,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "sam_pantsir": {
   "file": "sam_pantsir.glb",
@@ -1068,11 +1118,13 @@
   "source": "https://www.thingiverse.com/thing:4956994 (archive.org mirror: https://archive.org/details/thingiverse-4956994)",
   "substitute": false,
   "triangles": 12000,
-  "bytes": 339232,
+  "bytes": 732900,
   "class": "sam",
   "realName": "Pantsir-S1",
   "origin": "RUS",
-  "realLengthM": 9
+  "realLengthM": 9,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "sam_tor": {
   "file": "sam_tor.glb",
@@ -1089,11 +1141,13 @@
   "source": "https://www.thingiverse.com/thing:4968754 (archive.org mirror: https://archive.org/details/thingiverse-4968754)",
   "substitute": false,
   "triangles": 11996,
-  "bytes": 448716,
+  "bytes": 959424,
   "class": "sam",
   "realName": "9K330 Tor (SA-15)",
   "origin": "RUS",
-  "realLengthM": 7.5
+  "realLengthM": 7.5,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "sam_s300": {
   "file": "sam_s300.glb",
@@ -1110,11 +1164,13 @@
   "source": "https://www.thingiverse.com/thing:5496828 (archive.org mirror: https://archive.org/details/thingiverse-5496828)",
   "substitute": false,
   "triangles": 11994,
-  "bytes": 499788,
+  "bytes": 979280,
   "class": "sam",
   "realName": "S-300 (Favorit)",
   "origin": "RUS",
-  "realLengthM": 11
+  "realLengthM": 11,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "sam_tunguska": {
   "file": "sam_tunguska.glb",
@@ -1131,11 +1187,13 @@
   "source": "https://www.thingiverse.com/thing:2920050 (archive.org mirror: https://archive.org/details/thingiverse-2920050)",
   "substitute": false,
   "triangles": 11689,
-  "bytes": 562244,
+  "bytes": 1034452,
   "class": "sam",
   "realName": "2K22 Tunguska",
   "origin": "RUS",
-  "realLengthM": 7.9
+  "realLengthM": 7.9,
+  "textures": 3,
+  "notes": "Repainted: UV + baked 1024px colour/AO, 512px roughness/normal from CC0 Poly Haven textures."
  },
  "fighter_j20": {
   "file": "fighter_j20.glb",

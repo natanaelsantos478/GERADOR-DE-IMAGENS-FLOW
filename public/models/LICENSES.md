@@ -147,3 +147,6 @@ Each model below is a real vehicle/aircraft/ship/person modelled by third-party 
 | amphib_lpd17 | San Antonio-class (LPD-17) | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
 | soldier_camo | Modern camo infantryman (Elite Soldier) | - | hc | CC-BY-3.0 |  | https://opengameart.org/content/elite-soldier-model |
 <!-- VARIANTS:END -->
+
+## Textures (CC0-1.0, Poly Haven, https://polyhaven.com)
+Used as sources for the baked paint/wear/mud/rubber textures of the ground vehicles (mbt*, ifv*, apc*, spg*, mlrs*, sam*): green_metal_rust, rusty_painted_metal, metal_plate_02, rubber_tiles, brown_mud_dry. Camouflage patterns are procedural (Blender noise).
