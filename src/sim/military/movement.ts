@@ -2,7 +2,7 @@
 import type { CommandResult, Ctx, LonLat } from '../../core/contracts';
 import { bearingDeg, destination, interpolateGreatCircle } from '../../core/geo';
 import { UNITS } from './catalog';
-import { type Apis3, clamp, dist, envOf, type LegGeo, mayEnter, r3, r4 } from './env';
+import { type Apis3, clamp, dist, envOf, type LegGeo, locateMoving, mayEnter, r3, r4 } from './env';
 import { allForms, S } from './forces';
 import {
   airRadius, edgeSpeedFactor, legCount, legPoints, planAir, planLand, planSea, reliefFactor, speedOf, type Budget,
@@ -79,10 +79,16 @@ function legGeo(ctx: Ctx, f: Formation, rt: Route): LegGeo {
   const env = envOf(ctx.world);
   let g = env.legs.get(f.id);
   if (!g || g.rt !== rt || g.i !== rt.i) {
-    const pts = legPoints(ctx, rt, rt.i);
-    const cum = [0];
-    for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + dist(pts[k - 1], pts[k]));
-    g = { rt, i: rt.i, pts, cum };
+    const road = rt.m === 'road' && rt.i >= 1 && rt.i <= rt.ed.length;
+    let shared = road ? env.edgeLegs.get(rt.ed[rt.i - 1]) : undefined;
+    if (!shared) {
+      const pts = legPoints(ctx, rt, rt.i);
+      const cum = [0];
+      for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + dist(pts[k - 1], pts[k]));
+      shared = { pts, cum };
+      if (road) env.edgeLegs.set(rt.ed[rt.i - 1], shared);
+    }
+    g = { rt, i: rt.i, pts: shared.pts, cum: shared.cum };
     env.legs.set(f.id, g);
   }
   return g;
@@ -92,20 +98,28 @@ function posAt(g: LegGeo, km: number): { pos: LonLat; hd: number } {
   const { pts, cum } = g;
   const n = pts.length;
   if (n === 1) return { pos: pts[0], hd: 0 };
-  let k = 1;
-  while (k < n - 1 && cum[k] < km) k++;
+  let lo = 1, hi = n - 1; // first k in [1, n-1] with cum[k] >= km (else n-1)
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (cum[mid] < km) lo = mid + 1;
+    else hi = mid;
+  }
+  const k = lo;
   const seg = cum[k] - cum[k - 1];
   const t = seg > 0 ? clamp((km - cum[k - 1]) / seg, 0, 1) : 1;
   return { pos: interpolateGreatCircle(pts[k - 1], pts[k], t), hd: bearingDeg(pts[k - 1], pts[k]) };
 }
 
+/** Base speeds of the formation being stepped, computed lazily once per tick (a fast column crosses many road legs per hour). */
+const spd = { road: -1, off: -1, fly: -1, sea: -1 };
+const baseSpeed = (A: Apis3, f: Formation, k: 'road' | 'off' | 'fly' | 'sea'): number => (spd[k] < 0 ? (spd[k] = speedOf(A, f, k)) : spd[k]);
 function legSpeed(ctx: Ctx, A: Apis3, f: Formation, rt: Route): number {
-  if (rt.m === 'air') return speedOf(A, f, 'fly');
-  if (rt.m === 'sea') return speedOf(A, f, 'sea');
-  if (rt.m === 'offroad') return speedOf(A, f, 'off') * reliefFactor(ctx, f.pr);
+  if (rt.m === 'air') return baseSpeed(A, f, 'fly');
+  if (rt.m === 'sea') return baseSpeed(A, f, 'sea');
+  if (rt.m === 'offroad') return baseSpeed(A, f, 'off') * reliefFactor(ctx, f.pr);
   const i = rt.i;
-  if (i === 0 || i > rt.ed.length) return speedOf(A, f, 'off') * reliefFactor(ctx, f.pr);
-  return speedOf(A, f, 'road') * Math.max(0.04, edgeSpeedFactor(ctx, rt.ed[i - 1] >> 1));
+  if (i === 0 || i > rt.ed.length) return baseSpeed(A, f, 'off') * reliefFactor(ctx, f.pr);
+  return baseSpeed(A, f, 'road') * Math.max(0.04, edgeSpeedFactor(ctx, rt.ed[i - 1] >> 1));
 }
 
 /** Advances every moving formation by `dt` hours. */
@@ -124,6 +138,7 @@ export function stepMovers(ctx: Ctx, A: Apis3, dt: number): void {
     const mul = (0.55 + 0.45 * f.o) * (0.5 + 0.5 * fuel) * (f.s < 0.15 ? 0.5 : 1);
     let left = dt;
     let moved = false;
+    spd.road = spd.off = spd.fly = spd.sea = -1;
     while (left > 1e-6 && f.rt === rt) {
       const g = legGeo(ctx, f, rt);
       const total = g.cum[g.cum.length - 1];
@@ -153,7 +168,7 @@ export function stepMovers(ctx: Ctx, A: Apis3, dt: number): void {
       moved = true;
     }
     if (moved && f.d !== 'air') {
-      const pr = ctx.world.locateProvince(f.p[0], f.p[1]);
+      const pr = locateMoving(ctx.world, f.pr, f.p[0], f.p[1]);
       if (pr !== f.pr) {
         f.pr = pr;
         if (pr && f.d === 'land' && !f.reb && !mayEnter(A, f.c, ctx.state.world.controller[pr] ?? f.c) && f.rt) {

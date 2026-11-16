@@ -22,13 +22,9 @@ const GROUP_DEF: Record<string, string> = {
 };
 
 class ModCache {
-  private m = new Map<string, number>();
   constructor(private A: Apis3) {}
   get(c: CountryId, key: string): number {
-    const k = c + key;
-    let v = this.m.get(k);
-    if (v === undefined) this.m.set(k, (v = mod(this.A, c, key)));
-    return v;
+    return mod(this.A, c, key);
   }
 }
 
@@ -100,14 +96,27 @@ function applyLoss(ctx: Ctx, b: Battle, forms: Formation[], lam: number, selfBal
   }
 }
 
+const SUPPORT_MAX_KM = 120; // longest indirect-fire range (MLRS 70 km) with generous research bonus
+
+/** Artillery of the battle's countries within range of `pos`, found through the contact hash of this tick. */
 function supportSlots(ctx: Ctx, side: CountryId[], pos: LonLat, mc: ModCache, exclude: Set<string>): Slot[] {
   const out: Slot[] = [];
-  for (const c of side) for (const f of formationsOf(ctx, c)) {
-    if (f.d !== 'land' || f.bt || f.cr || exclude.has(f.id) || f.s < 0.2) continue;
-    for (const s of f.u) {
-      const t = UNITS[s.t];
-      if (t.group !== 'artillery' || s.s < 0.1) continue;
-      if (dist(f.p, pos) <= t.range * mc.get(c, 'mil.artillery.range')) out.push({ t: s.t, k: s.k * 0.5, s: s.s });
+  const st = S(ctx);
+  const cx = Math.floor((pos[0] + 180) / CELL), cy = Math.floor((pos[1] + 90) / CELL);
+  const ry = Math.ceil(SUPPORT_MAX_KM / (111 * CELL));
+  const rx = Math.min(16, Math.ceil(SUPPORT_MAX_KM / (111 * CELL * Math.max(0.2, Math.cos((pos[1] * Math.PI) / 180)))));
+  for (let dx = -rx; dx <= rx; dx++) for (let dy = -ry; dy <= ry; dy++) {
+    const l = hash.get((cx + dx) * 2000 + cy + dy);
+    if (!l) continue;
+    for (const f of l) {
+      if (f.d !== 'land' || f.bt || f.cr || exclude.has(f.id) || f.s < 0.2 || !side.includes(f.c) || st.forms[f.id] !== f) continue;
+      for (const s of f.u) {
+        const t = UNITS[s.t];
+        if (t.group !== 'artillery' || s.s < 0.1) continue;
+        const rng = t.range * mc.get(f.c, 'mil.artillery.range');
+        if (Math.abs(f.p[1] - pos[1]) * 111 > rng) continue;
+        if (dist(f.p, pos) <= rng) out.push({ t: s.t, k: s.k * 0.5, s: s.s });
+      }
     }
   }
   return out;

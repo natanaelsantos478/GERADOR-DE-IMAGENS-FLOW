@@ -51,6 +51,14 @@ export const rivalries = (ctx: Ctx): Map<CountryId, CountryId[]> => sidx(ctx.wor
 export const rivalryLevel = (ctx: Ctx, a: CountryId, b: CountryId): number => sidx(ctx.world).rivalry.get(pairKey(a, b)) ?? 0;
 
 /** Shared alliance summary: best defense membership and number of other shared blocs (economic/political). */
+/** Allocation-free `sharedBlocs(...).defense`. */
+function sharedDefense(ctx: Ctx, a: CountryId, b: CountryId): boolean {
+  const ix = sidx(ctx.world);
+  const la = ix.memberOf.get(a);
+  if (!la) return false;
+  for (const i of la) if (ix.sets[i].has(b) && ctx.world.alliances.alliances[i].kind === 'defense') return true;
+  return false;
+}
 export function sharedBlocs(ctx: Ctx, a: CountryId, b: CountryId): { defense: boolean; economic: boolean; other: number } {
   const ix = sidx(ctx.world);
   const la = ix.memberOf.get(a);
@@ -100,11 +108,12 @@ export function setCooldown(ctx: Ctx, a: CountryId, b: CountryId, action: string
 interface WarIdx {
   state: DiplomacyState | null;
   n: number;
-  sig: string;
+  sig: number;
+  last: string;
   enemies: Map<CountryId, Set<CountryId>>;
   byCountry: Map<CountryId, WarState[]>;
 }
-const warIdx: WarIdx = { state: null, n: -1, sig: '', enemies: new Map(), byCountry: new Map() };
+const warIdx: WarIdx = { state: null, n: -1, sig: -1, last: '', enemies: new Map(), byCountry: new Map() };
 export function invalidateWars(): void {
   warIdx.state = null;
 }
@@ -113,10 +122,12 @@ function wIdx(ctx: Ctx): WarIdx {
   // Cheap validity key: same slice object, same war count and same member totals.
   let sig = 0;
   for (const w of s.wars) sig += w.attackers.length * 7 + w.defenders.length * 13 + w.capitulated.length;
-  const key = `${s.wars.length}:${sig}:${s.wars.length ? s.wars[s.wars.length - 1].id : ''}`;
-  if (warIdx.state === s && warIdx.sig === key) return warIdx;
+  const n = s.wars.length, last = n ? s.wars[n - 1].id : '';
+  if (warIdx.state === s && warIdx.sig === sig && warIdx.n === n && warIdx.last === last) return warIdx;
   warIdx.state = s;
-  warIdx.sig = key;
+  warIdx.sig = sig;
+  warIdx.n = n;
+  warIdx.last = last;
   warIdx.enemies.clear();
   warIdx.byCountry.clear();
   for (const w of s.wars) {
@@ -203,7 +214,7 @@ export function allied(ctx: Ctx, a: CountryId, b: CountryId): boolean {
   if (a === b) return true;
   if (atWar(ctx, a, b)) return false;
   if (puppetLink(ctx, a, b)) return true;
-  if (sharedBlocs(ctx, a, b).defense) return true;
+  if (sharedDefense(ctx, a, b)) return true;
   return flagOn(ctx, a, b, 'alliance');
 }
 export function access(ctx: Ctx, a: CountryId, b: CountryId): boolean {

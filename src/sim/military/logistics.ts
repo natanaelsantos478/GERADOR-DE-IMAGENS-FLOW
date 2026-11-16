@@ -186,17 +186,17 @@ export function powerOfCountry(ctx: Ctx, c: CountryId): number {
 
 interface Vision {
   until: number;
-  cells: Map<number, true>;
+  cells: Set<number>;
 }
 const visCache = new WeakMap<object, Map<CountryId, Vision>>();
 const vcell = (lon: number, lat: number) => Math.floor(lon) * 1000 + Math.floor(lat);
 
 function buildVision(ctx: Ctx, A: Apis3, viewer: CountryId): Vision {
-  const cells = new Map<number, true>();
+  const cells = new Set<number>();
   const add = (p: LonLat, km: number) => {
     const dLat = km / 111, dLon = km / (111 * Math.max(0.2, Math.cos((p[1] * Math.PI) / 180)));
     for (let x = Math.floor(p[0] - dLon); x <= Math.floor(p[0] + dLon); x++)
-      for (let y = Math.floor(p[1] - dLat); y <= Math.floor(p[1] + dLat); y++) cells.set(vcell(((x + 180) % 360 + 360) % 360 - 180, y), true);
+      for (let y = Math.floor(p[1] - dLat); y <= Math.floor(p[1] + dLat); y++) cells.add(vcell(((x + 180) % 360 + 360) % 360 - 180, y));
   };
   const vm = mod(A, viewer, 'mil.vision');
   for (const f of formationsOf(ctx, viewer)) {
@@ -204,11 +204,12 @@ function buildVision(ctx: Ctx, A: Apis3, viewer: CountryId): Vision {
     for (const s of f.u) r = Math.max(r, UNITS[s.t].vis);
     add(f.p, r * vm);
   }
-  for (const ally of ctx.world.countries) if (ally.id !== viewer && A.dip?.allied(viewer, ally.id)) for (const f of formationsOf(ctx, ally.id)) add(f.p, 15 * vm);
+  // Only countries that have formations can contribute (the byCountry index is fresh after the formationsOf call above).
+  for (const [cid, list] of envOf(ctx.world).byCountry) if (cid !== viewer && list.length && A.dip?.allied(viewer, cid)) for (const f of list) add(f.p, 15 * vm);
   if (A.eco) for (const s of A.eco.structures({ country: viewer, kind: 'radar', includeUnfinished: false })) add([s.lon, s.lat], 300 * mod(A, viewer, 'mil.radar.range'));
   for (const pid of ctx.api.worldDyn.provincesControlledBy(viewer)) {
     const p = ctx.world.provinceById.get(pid);
-    if (p) cells.set(vcell(p.centroid[0], p.centroid[1]), true);
+    if (p) cells.add(vcell(p.centroid[0], p.centroid[1]));
   }
   return { until: ctx.state.time.hours + 6, cells };
 }

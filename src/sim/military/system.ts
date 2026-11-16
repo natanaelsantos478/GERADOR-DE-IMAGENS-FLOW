@@ -2,7 +2,7 @@
 import type { CommandResult, CountryId, Ctx, GameEvent, MilitaryApi } from '../../core/contracts';
 import { defineSystem } from '../../core/registry';
 import { battleView, detectContacts, occupationTick, retreatFormation, runBattles } from './combat';
-import { type Apis3, apisOf, dist, envOf, mod } from './env';
+import { type Apis3, apisOf, dist, envOf, mod, warmRoadProvinces } from './env';
 import {
   emptyState, formationsOf, initForces, listFormations, mergeFormations, S, spawnUnit, splitFormation, stockOf, touch, viewOf,
 } from './forces';
@@ -137,6 +137,7 @@ export const militarySystem = defineSystem({
     return slice;
   },
   init(ctx) {
+    warmRoadProvinces(ctx.world);
     ctx.bus.onPrefix('eco', (e: GameEvent) => {
       if (e.type === 'eco.revolt') {
         const r = e as unknown as { country: string; province: string; lon: number; lat: number; strength: number };
@@ -157,8 +158,12 @@ export const militarySystem = defineSystem({
     stepMovers(ctx, A, dt);
     processFlights(ctx, A, dt);
     detectContacts(ctx, A);
-    runBattles(ctx, A, dt);
-    occupationTick(ctx, A, dt);
+    // Slow processes run on a clock-derived cadence (never on an accumulator, so save→load replays identically): battle rounds every 2 h, occupation every 3 h.
+    const end = ctx.state.time.hours + dt, hr = Math.round(end);
+    if (Math.abs(end - hr) < 1e-6) {
+      if (hr % 2 === 0) runBattles(ctx, A, 2);
+      if (hr % 3 === 0) occupationTick(ctx, A, 3);
+    }
   },
   onDay(ctx) {
     const A = apisOf(ctx);

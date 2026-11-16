@@ -83,8 +83,74 @@ export interface AStarResult {
   expanded: number;
 }
 
-/** A* from one or many start nodes; ties broken by insertion order (deterministic). */
+interface Pool {
+  n: number;
+  stamp: number;
+  seen: Int32Array; // == stamp when g/p/h are valid for this search
+  closed: Int32Array; // == stamp when closed
+  g: Float64Array;
+  h: Float64Array;
+  p: Int32Array;
+}
+let pool: Pool | null = null;
+
+/** A* from one or many start nodes; ties broken by insertion order (deterministic). With `nodeCount` the typed buffers are reused across searches (stamped, never cleared). */
 export function aStar(graph: AStarGraph, start: number | readonly number[], opts: AStarOptions = {}): AStarResult | null {
+  const n = opts.nodeCount;
+  if (!n) return aStarMap(graph, start, opts);
+  const maxExpanded = opts.maxExpanded ?? 1_000_000;
+  const maxCost = opts.maxCost ?? Infinity;
+  if (!pool || pool.n !== n) pool = { n, stamp: 0, seen: new Int32Array(n), closed: new Int32Array(n), g: new Float64Array(n), h: new Float64Array(n), p: new Int32Array(n) };
+  const P = pool;
+  const st = ++P.stamp;
+  const { seen, closed, g: gArr, h: hArr, p: pArr } = P;
+  const heur = (x: number) => {
+    if (seen[x] !== st) { seen[x] = st; gArr[x] = Infinity; pArr[x] = -1; hArr[x] = graph.heuristic(x); }
+    return hArr[x];
+  };
+  const getG = (x: number) => (seen[x] === st ? gArr[x] : Infinity);
+
+  const open = new MinHeap<number>();
+  const starts = typeof start === 'number' ? [start] : start;
+  for (const s of starts) {
+    if (getG(s) === 0) continue;
+    const h = heur(s);
+    gArr[s] = 0;
+    pArr[s] = -1;
+    open.push(h, s);
+  }
+  let expanded = 0;
+  let cur = -1;
+  let curG = 0;
+  const relax = (next: number, cost: number) => {
+    if (closed[next] === st) return;
+    const g = curG + cost;
+    if (g > maxCost) return;
+    const h = heur(next);
+    if (g >= gArr[next]) return;
+    gArr[next] = g;
+    pArr[next] = cur;
+    open.push(g + h, next);
+  };
+  while (open.size > 0) {
+    const node = open.pop()!;
+    if (closed[node] === st) continue;
+    if (graph.isGoal(node)) {
+      const path: number[] = [];
+      for (let x = node; x !== -1; x = pArr[x]) path.push(x);
+      path.reverse();
+      return { path, cost: gArr[node], expanded };
+    }
+    closed[node] = st;
+    if (++expanded > maxExpanded) return null;
+    cur = node;
+    curG = gArr[node];
+    graph.neighbors(node, relax);
+  }
+  return null;
+}
+
+function aStarMap(graph: AStarGraph, start: number | readonly number[], opts: AStarOptions = {}): AStarResult | null {
   const maxExpanded = opts.maxExpanded ?? 1_000_000;
   const maxCost = opts.maxCost ?? Infinity;
   const n = opts.nodeCount;

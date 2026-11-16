@@ -1,11 +1,12 @@
 /** Route planning: land (A* on the road graph + off-road), sea (A* on the navgrid, cached) and air (great circle). */
 import { aStar } from '../../core/astar';
 import type { Ctx, LonLat, PathPreview } from '../../core/contracts';
-import { greatCirclePoints, interpolateGreatCircle } from '../../core/geo';
+import { EARTH_RADIUS_KM, greatCirclePoints, interpolateGreatCircle } from '../../core/geo';
 import { UNITS } from './catalog';
-import { type Apis3, clamp, dist, envOf, mayEnter, mod, nodeProvince, roadComponents } from './env';
+import { type Apis3, clamp, dist, envOf, mayEnter, mod, nearestRoadNode200, nodeProvArr, nodeProvince, roadComponents } from './env';
 import type { Formation, Route } from './types';
 
+const RAD = Math.PI / 180;
 export const CLS_FAC = [1, 0.85, 0.6, 0.95, 0.25];
 
 export interface Budget {
@@ -60,6 +61,8 @@ function straightLand(ctx: Ctx, A: Apis3, f: Formation, a: LonLat, b: LonLat): {
 /** Same-hour cache of road searches (hour-exact so reloaded saves replay identically) shared by formations of one country with the same endpoints (groups ordered together). */
 /** Search counters (read by the forced-war perf scenario). */
 const MAX_NODES = 60_000;
+/** Weighted A*: 1.5 expands ~5x fewer road nodes; measured routes are on average 1.6% (worst 17%) slower than optimal. */
+const HEUR_W = 1.5;
 const NEG_TTL_H = 96;
 export const pathStats = { searches: 0, failed: 0, expanded: 0, hits: 0, negHits: 0 };
 let pathDay = -1;
@@ -81,24 +84,30 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
   }
   let roadRoute: Route | null = null;
   let roadHours = Infinity;
-  const na = w.nearestRoadNode(f.p[0], f.p[1], 200), nz = w.nearestRoadNode(to[0], to[1], 200);
+  const na = nearestRoadNode200(w, f.p[0], f.p[1]), nz = nearestRoadNode200(w, to[0], to[1]);
   if (na !== null && nz !== null && vRoad > 0 && offHours > 8) {
     const comp = roadComponents(w);
     if (comp[na] === comp[nz]) {
       const zLon = g.nodeLon[nz], zLat = g.nodeLat[nz];
-      const access = new Map<number, boolean>();
+      const env = envOf(w);
+      const prov = nodeProvArr(w), accSt = env.accStamp, accVal = env.accVal, stamp = ++env.accN;
+      const ctlMap = ctx.state.world.controller, provs = w.provinces, dmg = ctx.state.world.roadDamage;
       const okNode = (n: number) => {
         if (f.reb) return true;
-        const pi = nodeProvince(w, n);
+        let pi = prov[n];
+        if (pi === -2) { nodeProvince(w, n); pi = prov[n]; }
         if (pi < 0) return true;
-        let v = access.get(pi);
-        if (v === undefined) {
-          v = mayEnter(A, f.c, ctx.state.world.controller[w.provinces[pi].id] ?? f.c);
-          access.set(pi, v);
+        if (accSt[pi] !== stamp) {
+          accSt[pi] = stamp;
+          accVal[pi] = mayEnter(A, f.c, ctlMap[provs[pi].id] ?? f.c) ? 1 : 0;
         }
-        return v;
+        return accVal[pi] === 1;
       };
-      const edgeHours = (e: number) => g.edgeKm[e] / (vRoad * Math.max(0.04, edgeSpeedFactor(ctx, e)));
+      const vr = vRoad, edgeKm = g.edgeKm, edgeCls = g.edgeCls;
+      const edgeHours = (e: number) => edgeKm[e] / (vr * Math.max(0.04, CLS_FAC[edgeCls[e]] * (1 - 0.95 * (dmg[e] ?? 0))));
+      const cosLat = env.cosLat ?? (env.cosLat = Float64Array.from(g.nodeLat, (v) => Math.cos(v * RAD)));
+      const adjStart = g.adjStart, adjEdge = g.adjEdge, eA = g.edgeA, eB = g.edgeB;
+      const cz = cosLat[nz], twoR = 2 * EARTH_RADIUS_KM, nLon = g.nodeLon, nLat = g.nodeLat;
       const day = ctx.state.time.hours;
       if (day !== pathDay || pathCache.size > 600) (pathDay = day), pathCache.clear();
       const ck = `${f.c}|${na}|${nz}|${Math.round(vRoad)}|${f.reb ? 1 : 0}`;
@@ -111,23 +120,29 @@ export function planLand(ctx: Ctx, A: Apis3, f: Formation, to: LonLat, budget: B
       if (hit !== undefined) { res = hit; pathStats.hits++; if (!hit) pathStats.negHits++; }
       else if (until !== undefined && until > day) { res = null; pathStats.negHits++; }
       else {
+        // Real routes need ≤ ~4 expansions per straight-line km; a generous 15/km bound keeps short impossible trips (blocked border) from flooding 60k nodes.
+        const cap = Math.max(2000, Math.floor(Math.min(MAX_NODES, budget.left, 2000 + 15 * total)));
         res = aStar(
           {
             neighbors(n, visit) {
-              for (let k = g.adjStart[n]; k < g.adjStart[n + 1]; k++) {
-                const e = g.adjEdge[k], o = g.otherEnd(e, n);
+              for (let k = adjStart[n], kEnd = adjStart[n + 1]; k < kEnd; k++) {
+                const e = adjEdge[k], o = eA[e] === n ? eB[e] : eA[e];
                 if (okNode(o)) visit(o, edgeHours(e));
               }
             },
-            heuristic: (n) => dist([g.nodeLon[n], g.nodeLat[n]], [zLon, zLat]) / vRoad,
+            heuristic: (n) => {
+              const dLat = (zLat - nLat[n]) * RAD, dLon = (zLon - nLon[n]) * RAD;
+              const a = Math.sin(dLat / 2) ** 2 + cosLat[n] * cz * Math.sin(dLon / 2) ** 2;
+              return (HEUR_W * twoR * Math.asin(Math.min(1, Math.sqrt(a)))) / vRoad;
+            },
             isGoal: (n) => n === nz,
           },
           na,
-          { nodeCount: g.nodeCount, maxExpanded: Math.max(2000, Math.min(MAX_NODES, budget.left)) },
+          { nodeCount: g.nodeCount, maxExpanded: cap },
         );
         pathStats.searches++;
-        pathStats.expanded += res ? res.expanded : MAX_NODES;
-        budget.left -= res ? res.expanded : MAX_NODES;
+        pathStats.expanded += res ? res.expanded : cap;
+        budget.left -= res ? res.expanded : cap;
         if (!res) {
           pathStats.failed++;
           neg[ck] = day + NEG_TTL_H;

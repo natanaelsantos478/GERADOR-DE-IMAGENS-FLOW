@@ -57,8 +57,16 @@ export function createFormation(
     u: slots, o: 1, m: r3(0.7 + ctx.rng.next() * 0.2), x: r3(opts.exp ?? ctx.rng.next() * 0.4), s: 1, e: 0,
     od: { k: 'idle' }, rt: null, home: home ? { ...home } : null, bt: null,
   };
+  const env = envOf(ctx.world);
+  const fresh = env.stateRef === st && env.byCountryVer === env.ver;
   st.forms[id] = f;
   touch(ctx);
+  if (fresh) {
+    // Keep the per-country index current (same order a rebuild would give) instead of rebuilding it on the next query.
+    env.all = [...env.all, f];
+    env.byCountry.set(f.c, [...(env.byCountry.get(f.c) ?? []), f]);
+    env.byCountryVer = env.ver;
+  }
   ctx.bus.emit({ type: 'mil.formationCreated', formation: id, country: c });
   return f;
 }
@@ -73,9 +81,16 @@ export function removeFormation(ctx: Ctx, f: Formation, destroyed: boolean): voi
     }
   }
   for (const o of Object.values(st.forms)) if (o.cr === f.id) delete o.cr;
+  const env = envOf(ctx.world);
+  const fresh = env.stateRef === st && env.byCountryVer === env.ver;
   delete st.forms[f.id];
-  envOf(ctx.world).legs.delete(f.id);
+  env.legs.delete(f.id);
   touch(ctx);
+  if (fresh) {
+    env.all = env.all.filter((x) => x !== f);
+    env.byCountry.set(f.c, (env.byCountry.get(f.c) ?? []).filter((x) => x !== f));
+    env.byCountryVer = env.ver;
+  }
   if (destroyed) {
     ctx.bus.emit({ type: 'mil.formationDestroyed', formation: f.id, country: f.c, pos: f.p });
     if (f.reb && f.pr) ctx.bus.emit({ type: 'mil.rebelsDefeated', province: f.pr, country: f.reb });
