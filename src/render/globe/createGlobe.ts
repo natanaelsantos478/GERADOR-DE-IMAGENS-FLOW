@@ -246,6 +246,7 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
   void markers.build().then(() => {
     if (destroyed) return;
     markers.syncDamage(getGame()?.state.world ?? null);
+    markers.declutter();
     for (const l of ['countryLabels', 'cities', 'cityLabels', 'plants', 'airports', 'ports'] as LayerId[]) markers.setVisible(l, vis[l]);
   });
 
@@ -289,6 +290,7 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
       if (destroyed) return;
       const s = cameraState(viewer);
       markers.ensureLazyLabels(s.height);
+      markers.declutter();
       if (s.height < 5e6) ensureRoads();
       minimap.redraw();
       camListeners.forEach((f) => f(s));

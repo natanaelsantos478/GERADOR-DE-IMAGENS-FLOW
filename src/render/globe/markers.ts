@@ -80,6 +80,7 @@ export class Markers {
   private cityLabels: (Cesium.Label | null)[] = [];
   private lazyQueue: number[] = [];
   private lazyBusy = false;
+  private countryLbl: { l: Cesium.Label; prio: number; px: number }[] = [];
   private cityLabelCol!: Cesium.LabelCollection;
   private disposed = false;
 
@@ -125,7 +126,7 @@ export class Markers {
       if (!c.sovereign) far = Math.min(far, 2.2e6);
       if (diag < 6e3) continue;
       const big = diag > 2e6;
-      countryLabels.add({
+      const lbl = countryLabels.add({
         position: Cesium.Cartesian3.fromDegrees(c.centroid[0], c.centroid[1], 0),
         text: (this.lang === 'pt' ? c.namePt || c.name : c.name).toUpperCase(),
         font: `${big ? 600 : 500} ${big ? 15 : 12}px system-ui, sans-serif`,
@@ -138,6 +139,7 @@ export class Markers {
         distanceDisplayCondition: new DDC(near, far),
         id: mk('country', w.countries.indexOf(c), c.id),
       });
+      this.countryLbl.push({ l: lbl, prio: diag * (c.sovereign ? 2 : 1), px: big ? 15 : 12 });
     }
 
     // ---- cities
@@ -243,6 +245,31 @@ export class Markers {
       distanceDisplayCondition: new DDC(0, Math.max(reach, c.capital === 1 ? 2.5e5 : 0)),
       id: mk('city', i),
     });
+  }
+
+  /** Screen-space declutter: bigger countries win; a label overlapping an already-placed one is hidden. */
+  declutter() {
+    if (this.disposed || !this.countryLbl.length) return;
+    const scene = this.viewer.scene, cam = scene.camera.positionWC, R2 = 6.3e6 * 6.3e6;
+    const items: { e: { l: Cesium.Label; prio: number; px: number }; x: number; y: number; w: number }[] = [];
+    for (const e of this.countryLbl) {
+      const p = e.l.position, d = Cesium.Cartesian3.distance(cam, p), dc = e.l.distanceDisplayCondition;
+      if (dc && (d < dc.near || d > dc.far)) continue;
+      if (Cesium.Cartesian3.dot(cam, p) < R2) { e.l.show = false; continue; }
+      const sp = Cesium.SceneTransforms.worldToWindowCoordinates(scene, p);
+      if (!sp) { e.l.show = false; continue; }
+      items.push({ e, x: sp.x, y: sp.y, w: e.l.text.length * e.px * 0.68 + 10 });
+    }
+    items.sort((a, b) => b.e.prio - a.e.prio);
+    const placed: typeof items = [];
+    let changed = false;
+    for (const it of items) {
+      const h = it.e.px + 6;
+      const hit = placed.some((q) => Math.abs(q.x - it.x) < (q.w + it.w) / 2 && Math.abs(q.y - it.y) < (it.e.px + h) / 2);
+      if (!hit) placed.push(it);
+      if (it.e.l.show === hit) { it.e.l.show = !hit; changed = true; }
+    }
+    if (changed) scene.requestRender();
   }
 
   /** Creates the small-city labels once the camera is close enough for them to matter. */
