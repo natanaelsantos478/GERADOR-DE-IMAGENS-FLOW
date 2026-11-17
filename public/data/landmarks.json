@@ -481,9 +481,15 @@
    "groundElevM": 35,
    "headingDeg": 262,
    "scale": 1,
-   "model": null,
+   "model": "models/landmarks/notredame.glb",
    "heightM": 69,
-   "footprintRadiusM": 90
+   "footprintRadiusM": 90,
+   "license": "CC-BY-4.0",
+   "author": "yoon jang (bun9191)",
+   "source": "https://www.thingiverse.com/thing:1571593",
+   "mirror": "https://archive.org/details/thingiverse-1571593",
+   "sizeBytes": 661632,
+   "note": "orientação (headingDeg) a conferir no jogo"
   },
   {
    "id": "kaaba",
@@ -561,16 +567,15 @@
    "groundElevM": 65,
    "headingDeg": 270,
    "scale": 1,
-   "model": null,
+   "model": "models/landmarks/angkor.glb",
    "heightM": 65,
    "footprintRadiusM": 250,
-   "license": "CC-BY-SA-3.0",
-   "author": "Siddhant Gautam (dodo2000)",
-   "source": "https://www.thingiverse.com/thing:936045",
-   "mirror": "https://archive.org/details/thingiverse-936045",
-   "sizeBytes": 775008,
-   "shareAlike": true,
-   "note": "modelo descartado na revisão (impressão 3D desmontada/achatada)"
+   "license": "CC-BY-4.0",
+   "author": "pcn3d print (pcn3dprinting)",
+   "source": "https://www.thingiverse.com/thing:4625138",
+   "mirror": "https://archive.org/details/thingiverse-4625138",
+   "sizeBytes": 984160,
+   "note": "orientação (headingDeg) a conferir no jogo"
   },
   {
    "id": "petra",
@@ -684,9 +689,15 @@
    "groundElevM": 20,
    "headingDeg": 0,
    "scale": 1,
-   "model": null,
+   "model": "models/landmarks/lotte.glb",
    "heightM": 555,
-   "footprintRadiusM": 100
+   "footprintRadiusM": 100,
+   "license": "CC-BY-4.0",
+   "author": "Fe li (fenyu0717)",
+   "source": "https://www.thingiverse.com/thing:3831438",
+   "mirror": "https://archive.org/details/thingiverse-3831438",
+   "sizeBytes": 52592,
+   "note": "orientação (headingDeg) a conferir no jogo"
   },
   {
    "id": "azadi",
@@ -905,15 +916,21 @@
   {
    "id": "kremlin",
    "name": "Moscow Kremlin",
-   "namePt": "Kremlin de Moscou",
-   "lon": 37.61773,
-   "lat": 55.75204,
+   "namePt": "Kremlin de Moscou (Torre Spasskaya)",
+   "lon": 37.62138,
+   "lat": 55.75253,
    "groundElevM": 130,
    "headingDeg": 0,
    "scale": 1,
-   "model": null,
-   "heightM": 80,
-   "footprintRadiusM": 350
+   "model": "models/landmarks/kremlin.glb",
+   "heightM": 71,
+   "footprintRadiusM": 40,
+   "license": "CC-BY-4.0",
+   "author": "(eligreen)",
+   "source": "https://www.thingiverse.com/thing:2804354",
+   "mirror": "https://archive.org/details/thingiverse-2804354",
+   "sizeBytes": 1139880,
+   "note": "só a Torre Spasskaya; posição e altura do OSM (relation 1360656); orientação a conferir no jogo"
   }
  ]
 }

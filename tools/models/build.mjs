@@ -1,16 +1,19 @@
-// usage: node build.mjs [modelId ...]   -> public/models/<id>.glb  (+ writes tools/.cache/models/build-info.json)
+// usage: node build.mjs [--meshopt] [modelId ...]   -> public/models/<id>.glb  (+ writes tools/.cache/models/build-info.json)
+// --meshopt: EXT_meshopt_compression (geometria 3-5x menor; o Cesium decodifica nativamente)
 import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 import { Document, NodeIO, Logger } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { mergeDocuments, getBounds, weld, simplify, unpartition, prune, dedup, textureCompress, resample } from '@gltf-transform/functions';
-import { MeshoptSimplifier } from 'meshoptimizer'; import sharp from 'sharp';
+import { mergeDocuments, getBounds, weld, simplify, unpartition, prune, dedup, textureCompress, resample, meshopt } from '@gltf-transform/functions';
+import { MeshoptSimplifier, MeshoptEncoder } from 'meshoptimizer'; import sharp from 'sharp';
 import { defs } from './defs.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const CACHE = path.join(here, '../.cache/models'); const OUT = path.join(here, '../../public/models');
 fs.mkdirSync(OUT, { recursive: true });
-const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
-await MeshoptSimplifier.ready;
-const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(defs);
+await MeshoptSimplifier.ready; await MeshoptEncoder.ready;
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
+const args = process.argv.slice(2); const useMeshopt = args.includes('--meshopt');
+const argIds = args.filter((a) => !a.startsWith('--'));
+const ids = argIds.length ? argIds : Object.keys(defs);
 const info = fs.existsSync(path.join(CACHE, 'build-info.json')) ? JSON.parse(fs.readFileSync(path.join(CACHE, 'build-info.json'))) : {};
 
 function quatEuler(rx, ry, rz) { const d = Math.PI / 180, [cx, sx, cy, sy, cz, sz] = [Math.cos(rx * d / 2), Math.sin(rx * d / 2), Math.cos(ry * d / 2), Math.sin(ry * d / 2), Math.cos(rz * d / 2), Math.sin(rz * d / 2)]; return [sx * cy * cz + cx * sy * sz, cx * sy * cz - sx * cy * sz, cx * cy * sz + sx * sy * cz, cx * cy * cz - sx * sy * sz]; }
@@ -71,6 +74,7 @@ for (const id of ids) {
   const fb = boundsOf(scene);
   top.setTranslation([-(fb.min[0] + fb.max[0]) / 2, -fb.min[1], -(fb.min[2] + fb.max[2]) / 2]);
   const fb2 = boundsOf(scene);
+  if (useMeshopt) await doc.transform(meshopt({ encoder: MeshoptEncoder, level: 'medium' }));
   const outFile = path.join(OUT, id + '.glb'); await io.write(outFile, doc);
   let tris = 0; root.listMeshes().forEach((me) => me.listPrimitives().forEach((p) => { tris += (p.getIndices()?.getCount() || p.getAttribute('POSITION').getCount()) / 3; }));
   info[id] = { nativeSize: size(fb2).map((v) => +v.toFixed(3)), triangles: Math.round(tris), bytes: fs.statSync(outFile).size, animations: root.listAnimations().map((a) => a.getName()) };
