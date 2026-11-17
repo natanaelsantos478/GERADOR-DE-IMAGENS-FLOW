@@ -1,5 +1,6 @@
 /** UI shell: boot screens, globe, then menu or HUD. Panels/inspectors plug in through ./registry. */
 import './theme.css';
+import './mobile.css';
 import { useEffect } from 'react';
 import { bootText } from '../app/bootText';
 import { useAppHost } from '../app/host';
@@ -48,6 +49,7 @@ export default function App() {
           <h1 style={{ fontSize: 22 }}>{bootText('title')}</h1>
           <p>{progress?.phase === 'index' ? bootText('indexing') : bootText('loading')}</p>
           <div className="bar"><i style={{ width: `${pct}%` }} /></div>
+          {progress?.bytes ? <p className="dim mono" data-testid="boot-mb">{(progress.bytes / 1048576).toFixed(1)} MB</p> : null}
         </div>
       </div>
     );

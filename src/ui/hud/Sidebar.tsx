@@ -19,7 +19,7 @@ export function Sidebar() {
           {gi > 0 && <div className="sb-sep" />}
           {panels.filter((p) => p.group === g).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((p) => (
             <Tip key={p.id} tip={t(p.titleKey)}>
-              <button className={`sb-item ${wins[p.id] ? 'on' : ''}`} data-testid={`sb-${p.id}`} onClick={() => { playSound(wins[p.id] ? 'ui_close' : 'ui_open'); useUi.getState().toggleWin(p.id); }}>
+              <button aria-label={t(p.titleKey)} className={`sb-item ${wins[p.id] ? 'on' : ''}`} data-testid={`sb-${p.id}`} onClick={() => { playSound(wins[p.id] ? 'ui_close' : 'ui_open'); useUi.getState().toggleWin(p.id); }}>
                 <Icon name={p.icon} /><span style={{ maxWidth: 58, overflow: 'hidden', textOverflow: 'ellipsis' }}>{t(hasText(p.titleKey + '.short') ? p.titleKey + '.short' : p.titleKey)}</span>
               </button>
             </Tip>

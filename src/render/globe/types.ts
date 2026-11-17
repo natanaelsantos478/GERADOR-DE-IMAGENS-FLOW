@@ -187,6 +187,11 @@ export interface Globe {
   /** Drive the sun by the game clock (hours since 2026-01-01T00:00Z). */
   setGameHours(hours: number): void;
   setDayNight(on: boolean): void;
+  /** Applies a quality profile (resolution, tile error, atmosphere, fog, lighting). */
+  applyQuality(p: import('./quality').QualityProfile, o?: { resolutionScale?: number; dayNight?: boolean }): void;
+  /** Touch "box mode": one-finger drag draws a selection box instead of spinning the globe. */
+  setBoxMode(on: boolean): void;
+  isBoxMode(): boolean;
   /** Re-read the current Game (after new game / load): rebinds events, damage tint and fills. */
   refreshGame(): void;
   /** Optional providers needing keys (stored in localStorage). */

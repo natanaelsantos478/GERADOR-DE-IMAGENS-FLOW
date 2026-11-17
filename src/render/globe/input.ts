@@ -1,6 +1,9 @@
 /** Pointer input: click / right-click / hover / box select on top of the Cesium canvas. */
 import type { BoxInfo, GlobeEvents, PickResult, PointerInfo } from './types';
 
+const LONG_PRESS_MS = 450;
+const TOUCH_SLOP = 10;
+
 type Handlers = { [K in keyof GlobeEvents]?: Set<(e: GlobeEvents[K]) => void> };
 
 export class GlobeInput {
@@ -9,6 +12,12 @@ export class GlobeInput {
   private boxEl: HTMLDivElement;
   private boxing = false;
   private lastHover = 0;
+  boxMode = false;
+  /** Active touch pointers; a second finger cancels long-press / box (camera gesture takes over). */
+  private touches = new Set<number>();
+  private longTimer: ReturnType<typeof setTimeout> | null = null;
+  private longFired = false;
+  private multi = false;
   private offs: (() => void)[] = [];
 
   constructor(private canvas: HTMLCanvasElement, container: HTMLElement, private pick: (x: number, y: number) => PickResult) {
@@ -22,8 +31,31 @@ export class GlobeInput {
     on(canvas, 'contextmenu', (e) => e.preventDefault());
     on(canvas, 'pointerdown', (e) => {
       const p = this.rel(e);
+      if (e.pointerType === 'touch') {
+        this.touches.add(e.pointerId);
+        if (this.touches.size > 1) {
+          this.multi = true;
+          this.cancelLong();
+          this.cancelBox();
+          return;
+        }
+        this.multi = false;
+        this.longFired = false;
+        this.down = { ...p, button: 0 };
+        this.cancelLong();
+        this.longTimer = setTimeout(() => {
+          this.longTimer = null;
+          const d = this.down;
+          if (!d || this.boxing || this.multi) return;
+          this.longFired = true;
+          try { navigator.vibrate?.(18); } catch { /* unsupported */ }
+          this.emit('rightclick', { x: d.x, y: d.y, shift: false, ctrl: false, alt: false, pick: this.pick(d.x, d.y) });
+        }, LONG_PRESS_MS);
+        return;
+      }
       this.down = { ...p, button: e.button };
     });
+    on(window, 'pointercancel', (e) => { this.touches.delete(e.pointerId); if (!this.touches.size) { this.cancelLong(); this.cancelBox(); this.down = null; } });
     on(canvas, 'pointermove', (e) => this.move(e));
     on(window, 'pointerup', (e) => this.up(e));
     on(canvas, 'dblclick', (e) => {
@@ -52,7 +84,12 @@ export class GlobeInput {
     const p = this.rel(e);
     const d = this.down;
     if (d) {
-      if (d.button === 0 && e.shiftKey && (this.boxing || Math.hypot(p.x - d.x, p.y - d.y) > 5)) {
+      const touch = e.pointerType === 'touch';
+      if (touch && !this.boxing && Math.hypot(p.x - d.x, p.y - d.y) > TOUCH_SLOP) this.cancelLong();
+      if (touch && this.multi) return;
+      const wantBox = touch ? this.boxMode : e.shiftKey;
+      if (d.button === 0 && wantBox && (this.boxing || Math.hypot(p.x - d.x, p.y - d.y) > (touch ? TOUCH_SLOP : 5))) {
+        this.cancelLong();
         this.boxing = true;
         const s = this.boxEl.style;
         s.display = 'block';
@@ -69,7 +106,30 @@ export class GlobeInput {
     this.emit('hover', this.info(e, p.x, p.y));
   }
 
+  private cancelLong() {
+    if (this.longTimer) clearTimeout(this.longTimer);
+    this.longTimer = null;
+  }
+  private cancelBox() {
+    this.boxing = false;
+    this.boxEl.style.display = 'none';
+  }
+  setBoxMode(on: boolean) {
+    this.boxMode = on;
+    if (!on) this.cancelBox();
+  }
+
   private up(e: PointerEvent) {
+    const touch = e.pointerType === 'touch';
+    if (touch) {
+      this.touches.delete(e.pointerId);
+      this.cancelLong();
+      if (this.multi) {
+        if (!this.touches.size) { this.multi = false; this.down = null; }
+        return;
+      }
+      if (this.longFired) { this.longFired = false; this.down = null; return; }
+    }
     const d = this.down;
     this.down = null;
     if (!d) return;
@@ -81,12 +141,13 @@ export class GlobeInput {
       this.emit('box', b);
       return;
     }
-    if (e.target !== this.canvas || Math.hypot(p.x - d.x, p.y - d.y) > 5) return;
+    if (e.target !== this.canvas || Math.hypot(p.x - d.x, p.y - d.y) > (touch ? TOUCH_SLOP : 5)) return;
     if (d.button === 0) this.emit('click', this.info(e, p.x, p.y));
     else if (d.button === 2) this.emit('rightclick', this.info(e, p.x, p.y));
   }
 
   destroy() {
+    this.cancelLong();
     this.offs.forEach((f) => f());
     this.boxEl.remove();
   }

@@ -81,6 +81,10 @@ export const uiPt: Record<string, string> = {
   'ui.trade.blockaded': 'Seu comércio exterior está bloqueado.', 'ui.trade.qty': 'Quantidade', 'ui.trade.fees': 'Compra com 8% de ágio; venda com 8% de deságio.', 'ui.trade.resource': 'Recurso',
   'ui.trade.stock': 'Estoque', 'ui.trade.netDay': 'Saldo/dia', 'ui.trade.unmet': 'Falta', 'ui.trade.price': 'Preço', 'ui.trade.buy': 'Comprar', 'ui.trade.sell': 'Vender',
   'ui.trade.embargoes': 'Embargos impostos por você', 'ui.trade.noEmbargo': 'Nenhum embargo.', 'ui.trade.embargo': 'Embargar',
+  'ui.mobile.pausedBg': 'Jogo pausado enquanto o app estava em segundo plano.', 'ui.mobile.install': 'Instalar app', 'ui.mobile.installHelp': 'Instala o Meridiano como app (tela cheia, abre offline o menu).',
+  'ui.mobile.more': 'Mais', 'ui.mobile.boxSelect': 'Seleção em caixa', 'ui.mobile.handle': 'Arraste ou toque para fechar', 'ui.mobile.map': 'Mapa',
+  'ui.settings.quality': 'Qualidade gráfica', 'ui.settings.q.mobile': 'Móvel', 'ui.settings.q.low': 'Baixo', 'ui.settings.q.mid': 'Médio', 'ui.settings.q.high': 'Alto',
+  'ui.settings.qHelp': 'Móvel: menos resolução, sem dia/noite e sem atmosfera, menos marcadores. Marcadores mudam ao reabrir o jogo.', 'ui.settings.fps': 'Mostrar medidor de FPS',
   // core errors
   'err.command.badArgs': 'Comando inválido.', 'err.command.notPlayer': 'Só o país do jogador pode usar este comando.', 'err.command.systemMissing': 'Sistema indisponível.',
   'err.command.unknown': 'Comando desconhecido: {type}', 'err.command.unknownCountry': 'País desconhecido: {country}', 'err.command.unknownPrefix': 'Comando desconhecido.', 'err.game.badSpeed': 'Velocidade inválida.',

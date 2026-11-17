@@ -11,6 +11,7 @@
     "dev": "vite --port 5173 --strictPort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173 --strictPort",
+    "build:deploy": "npm run build && node tools/deploy/split-large-data.mjs dist",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "e2e": "playwright test --trace off",

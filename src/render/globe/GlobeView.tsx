@@ -1,6 +1,7 @@
 /** Full-screen globe host. Mounts once the world is loaded; follows game replacement (new/load). */
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useMobile } from '../../ui/platform';
 import { appHost, useAppHost } from '../../app/host';
 import { createGlobe } from './createGlobe';
 import { attachTacticalLayer } from '../tactical';
@@ -21,6 +22,9 @@ export default function GlobeView() {
   const host = useRef<HTMLDivElement>(null);
   const minimapSlot = useRef<HTMLDivElement>(null);
   const globeRef = useRef<ReturnType<typeof createGlobe> | null>(null);
+  const mobile = useMobile();
+  const [mini, setMini] = useState(false);
+  const miniEl = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     if (!world || !host.current) return;
@@ -34,8 +38,12 @@ export default function GlobeView() {
     window.__units = units;
     window.__tactical = tactical;
     const el = g.minimap.element;
-    Object.assign(el.style, { pointerEvents: 'auto', position: 'absolute', right: '12px', bottom: '28px', borderRadius: '4px', boxShadow: '0 2px 10px #0008' });
+    miniEl.current = el;
     minimapSlot.current?.appendChild(el);
+    el.style.pointerEvents = 'auto';
+    el.style.borderRadius = '4px';
+    el.style.boxShadow = '0 2px 10px #0008';
+    el.style.touchAction = 'none';
     return () => {
       tactical.destroy();
       units.destroy();
@@ -46,6 +54,14 @@ export default function GlobeView() {
     };
   }, [world]);
 
+  // Desktop: bottom-right corner. Phones: smaller, inside a column above the box-select button, collapsible.
+  useEffect(() => {
+    const el = miniEl.current;
+    if (!el) return;
+    if (mobile) Object.assign(el.style, { position: 'static', width: '132px', height: '66px', display: mini ? 'block' : 'none' });
+    else Object.assign(el.style, { position: 'absolute', right: '12px', bottom: '28px', width: '', height: '', display: 'block' });
+  }, [mobile, mini, world]);
+
   useEffect(() => {
     globeRef.current?.refreshGame();
   }, [gameVersion]);
@@ -53,7 +69,9 @@ export default function GlobeView() {
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       <div ref={host} style={{ position: 'absolute', inset: 0 }} data-testid="globe" />
-      <div ref={minimapSlot} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}></div>
+      <div ref={minimapSlot} className={mobile ? 'mini-slot' : undefined} style={mobile ? undefined : { position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        {mobile && <button className={`fab ${mini ? 'on' : ''}`} style={{ position: 'static', width: 44, height: 44, order: 2, display: 'flex' }} data-testid="btn-minimap" aria-label="Mapa" onClick={() => setMini(!mini)}>🌐</button>}
+      </div>
     </div>
   );
 }

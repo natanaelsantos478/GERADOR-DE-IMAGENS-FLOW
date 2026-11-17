@@ -126,3 +126,20 @@ determinístico (RNG semeado, sem `Date.now`).
 - **Som:** o navegador só libera áudio após o primeiro clique; efeitos posicionais são atenuados pela distância da câmera
   e limitados a um disparo a cada 60 ms por tipo.
 - **Navegadores:** testado só em Chromium. Safari/Firefox não foram verificados (WebGL2 é obrigatório).
+
+## Jogar no celular
+
+O jogo tem layout responsivo e controles de toque (arrastar = mover, pinça = zoom, dois dedos = girar/inclinar, toque = selecionar, toque longo = ordem contextual, botão flutuante = seleção em caixa). Em celulares o perfil gráfico "Móvel" é o padrão (Configurações → Gráficos: Móvel/Baixo/Médio/Alto, medidor de FPS opcional).
+
+Instalar como app no Android Chrome: abra o endereço do jogo, depois Menu ⋮ → **Instalar app** (ou o botão "Instalar app" em Configurações → Jogo). O app abre em tela cheia, mantém a tela ligada durante a partida, pausa ao ir para segundo plano e salva automaticamente ao sair.
+
+## Publicar no Cloudflare Pages
+
+O Pages limita cada arquivo a 25 MiB; `public/data/roads.json` passa disso. O script `tools/deploy/split-large-data.mjs` divide arquivos grandes em partes (`roads.json.p0.json`…) e o jogo as remonta ao carregar.
+
+```
+npm run build:deploy
+npx wrangler pages deploy dist --project-name=meridiano
+```
+
+`build:deploy` = build + divisão dos dados; falha se algum arquivo em `dist/` ficar acima de 25 MiB. Funciona também em subcaminho (base `./`).

@@ -22,12 +22,15 @@ export interface LoadProgress {
   total: number;
   file: string;
   phase: 'fetch' | 'index';
+  /** Bytes downloaded so far (browser only). */
+  bytes?: number;
 }
 
 export const DATA_FILES = [
   'countries.json', 'countries.geo.json', 'provinces.json', 'provinces.geo.json', 'cities.json', 'powerplants.json',
   'airports.json', 'ports.json', 'roads.json', 'navgrid.json', 'elev.json', 'stats.json', 'military.json', 'alliances.json',
 ] as const;
+const HEAVY: DataFile[] = ['roads.json', 'provinces.geo.json', 'elev.json', 'countries.geo.json'];
 export type DataFile = (typeof DATA_FILES)[number];
 
 export class MissingDataError extends Error {
@@ -40,16 +43,65 @@ export class MissingDataError extends Error {
   }
 }
 
-/** Browser fetcher relative to `baseUrl` (e.g. `new URL('data/', document.baseURI)`). */
-export function browserFetchJson(baseUrl: string | URL): FetchJson {
-  return async (file) => {
-    const res = await fetch(new URL(file, baseUrl));
+/**
+ * Browser fetcher relative to `baseUrl` (e.g. `new URL('data/', document.baseURI)`).
+ * Deploy builds may ship `_parts.json` ({ "roads.json": ["roads.json.p0.json", …] }) for files above the host's
+ * per-file limit (tools/deploy/split-large-data.mjs): those are downloaded in parallel and their bytes concatenated.
+ * `onBytes` receives every downloaded chunk size (honest progress).
+ */
+export function browserFetchJson(baseUrl: string | URL, onBytes?: (n: number) => void): FetchJson {
+  let partsP: Promise<Record<string, string[]>> | null = null;
+  const parts = (): Promise<Record<string, string[]>> =>
+    (partsP ??= fetch(new URL('_parts.json', baseUrl))
+      .then(async (r) => {
+        if (!r.ok) return {};
+        const text = await r.text();
+        if (text.trimStart().startsWith('<')) return {}; // dev servers answer unknown paths with index.html
+        const j = JSON.parse(text) as unknown;
+        return j && typeof j === 'object' ? (j as Record<string, string[]>) : {};
+      })
+      .catch(() => ({})));
+  const bytesOf = async (name: string): Promise<Uint8Array> => {
+    const res = await fetch(new URL(name, baseUrl));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
+    if (!res.body) {
+      const b = new Uint8Array(await res.arrayBuffer());
+      onBytes?.(b.length);
+      return b;
+    }
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let n = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      n += value.length;
+      onBytes?.(value.length);
+    }
+    return concatBytes(chunks, n);
+  };
+  return async (file) => {
+    const listed = (await parts())[file];
+    const buf = listed?.length
+      ? concatBytes(await Promise.all(listed.map(bytesOf)))
+      : await bytesOf(file);
+    const text = new TextDecoder('utf-8').decode(buf);
     // Dev servers answer unknown paths with index.html: treat that as missing too.
     if (text.trimStart().startsWith('<')) throw new Error('resposta não é JSON');
     return JSON.parse(text);
   };
+}
+
+function concatBytes(chunks: Uint8Array[], total = chunks.reduce((a, c) => a + c.length, 0)): Uint8Array {
+  if (chunks.length === 1) return chunks[0];
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.length;
+  }
+  return out;
 }
 
 const ASSOC_MAX_KM = 100;
@@ -58,8 +110,10 @@ const HINT_BORDER_KM = 10;
 export async function loadWorldStatic(fetchJson: FetchJson, onProgress?: (p: LoadProgress) => void): Promise<WorldStatic> {
   let loaded = 0;
   const raw = {} as Record<DataFile, unknown>;
+  // Largest files first: they are the long pole, the small ones fit in the gaps.
+  const order = [...DATA_FILES].sort((a, b) => (HEAVY.indexOf(a) + 1 || 99) - (HEAVY.indexOf(b) + 1 || 99));
   await Promise.all(
-    DATA_FILES.map(async (file) => {
+    order.map(async (file) => {
       try {
         raw[file] = await fetchJson(file);
       } catch (e) {

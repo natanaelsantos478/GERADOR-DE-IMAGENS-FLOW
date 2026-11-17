@@ -50,7 +50,7 @@ export function MapControls() {
         </div>
       )}
       {mode?.legend && mode.legend.items.length > 0 && (
-        <div className="legend pe" style={{ position: 'fixed', right: 12, bottom: 166 }} data-testid="legend">
+        <div className="legend legend-fix pe" style={{ position: 'fixed', right: 12, bottom: 166 }} data-testid="legend">
           <b>{tr(mode.legend.titleKey, mode.legend.title)}</b>
           {mode.legend.items.map((it, i) => <div key={i}><i style={{ background: it.color }} />{tr(it.labelKey, it.label)}</div>)}
         </div>

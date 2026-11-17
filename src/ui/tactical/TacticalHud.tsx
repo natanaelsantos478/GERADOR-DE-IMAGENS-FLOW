@@ -40,11 +40,12 @@ function Card({ q, selected, onClick, mine }: { q: SquadCard; selected: boolean;
 
 function B({ icon, label, on, id, dis, extra }: { icon: string; label: string; on(): void; id: string; dis?: boolean; extra?: string }): JSX.Element {
   return (
-    <button className="btn sm tac-btn" title={label} data-testid={`tac-ord-${id}`} disabled={dis} onClick={on}><Icon name={icon} /><span>{label}{extra ? ` ${extra}` : ''}</span></button>
+    <button className="btn sm tac-btn" title={label} data-testid={`tac-ord-${id}`} disabled={dis} onClick={on}><Icon name={icon} /><span className="tl">{label}</span>{extra ? <span className="tx">{extra}</span> : null}</button>
   );
 }
 
-function OrderBar({ m }: { m: TacModel }) {
+type Strip = 'mine' | 'foes' | 'off';
+function OrderBar({ m, strip, setStrip }: { m: TacModel; strip: Strip; setStrip(s: Strip): void }) {
   const sel = useTacSelection((s) => s.selected);
   const err = useTacSelection((s) => s.lastError);
   const ps = m.player ?? 0;
@@ -77,7 +78,8 @@ function OrderBar({ m }: { m: TacModel }) {
   return (
     <div className="tac-bar pe" data-testid="tac-orderbar">
       {err && <div className="bad" style={{ fontSize: 12, textAlign: 'center' }}>{t(err)}</div>}
-      <div className="row wrap" style={{ justifyContent: 'center', gap: 4 }}>
+      <div className="row wrap tac-orders" style={{ justifyContent: 'center', gap: 4 }}>
+        <button className="btn sm tac-btn m-only" data-testid="tac-strip-toggle" aria-label={t('ui.tac.yourSide')} onClick={() => setStrip(strip === 'mine' ? 'foes' : strip === 'foes' ? 'off' : 'mine')}><Icon name="forces" /><span className="tx">{strip === 'mine' ? '1' : strip === 'foes' ? '2' : '–'}</span></button>
         <B id="move" icon="move" label={t('tac.order.move')} on={point('ui.tac.pickDest', (x, y) => ({ kind: 'move', x, y }))} />
         <B id="attackMove" icon="attack_move" label={t('tac.order.attackMove')} dis={!combat} on={point('ui.tac.pickDest', (x, y) => ({ kind: 'attackMove', x, y }))} />
         <B id="attack" icon="attack" label={t('tac.order.attack')} dis={!combat} on={attack} />
@@ -105,6 +107,7 @@ export function TacticalHud() {
   const m = useTacModel();
   const sel = useTacSelection((s) => s.selected);
   const [confirmW, setConfirmW] = useState(false);
+  const [strip, setStrip] = useState<Strip>('mine');
   useEffect(() => { if (m?.phase === 'ended') useTacSelection.getState().clear(); }, [m?.phase]);
   if (!m) return null;
   const ps = m.player ?? 0;
@@ -120,16 +123,16 @@ export function TacticalHud() {
   return (
     <>
       <div className="tac-top pe" data-testid="tac-top">
-        <div className="row" style={{ gap: 10 }}>
+        <div className="row tac-info" style={{ gap: 10 }}>
           <b><Icon name="war" /> {t('tac.title')}</b>
           <span className={`chip ${m.phase === 'combat' ? 'warn' : ''}`} data-testid="tac-phase">{t(`tac.phase.${m.phase}`)}</span>
           <span className="dim" title={t('ui.tac.timeLeft')}>{clock(m.t)} · {t('ui.tac.left')} {clock(left)}</span>
           <span className="row gap4" title={t('ui.tac.scoreHelp')}><span className="dim">{t('ui.tac.score')}</span><Flag id={m.countries[ps][0]} width={18} /><b className="good">{m.score[ps]}</b><span className="dim">×</span><b className="bad">{m.score[1 - ps]}</b><Flag id={m.countries[1 - ps][0]} width={18} /></span>
         </div>
-        <div className="row wrap gap4" style={{ justifyContent: 'center' }}>
+        <div className="row wrap gap4 tac-objs" style={{ justifyContent: 'center' }}>
           {m.objs.map((o) => <span key={o.id} className={`chip ${o.owner === ps ? 'good' : o.owner === -1 ? '' : 'bad'}`} title={`${t('ui.tac.objective')}: ${fmtInt(o.cap * 100)}%`}>{o.name || t('ui.tac.objective')} {o.owner === ps ? '●' : o.owner === -1 ? '○' : '◆'}</span>)}
         </div>
-        <div className="row" style={{ justifyContent: 'center', gap: 4 }}>
+        <div className="row tac-ctl" style={{ justifyContent: 'center', gap: 4 }}>
           {m.phase === 'deploy' && !m.ready && <button className="btn primary" data-testid="tac-ready" onClick={() => send('tac.ready')}><Icon name="check" />{t('ui.tac.ready')}</button>}
           {m.phase === 'deploy' && m.ready && <span className="chip">{t('ui.tac.waiting')}</span>}
           {SPEEDS.map((s) => <button key={s} className={`btn sm ${m.timeScale === s ? 'on' : ''}`} data-testid={`tac-speed-${s}`} onClick={() => send('tac.speed', { scale: s })}>×{s}</button>)}
@@ -145,15 +148,15 @@ export function TacticalHud() {
         </div>
         {m.phase === 'deploy' && <div className="dim" style={{ fontSize: 12, textAlign: 'center' }}>{t('ui.tac.deployHelp')}</div>}
       </div>
-      <div className="tac-left pe" data-testid="tac-squads">
+      <div className={`tac-left pe ${strip !== 'mine' ? 'm-off' : ''}`} data-testid="tac-squads">
         <div className="sect-title" style={{ margin: 0 }}>{t('ui.tac.yourSide')} · {alive(mine)}/{n0(mine)}</div>
         {mine.map((q) => <Card key={q.id} q={q} mine selected={sel.includes(q.id)} onClick={clickMine(q.id)} />)}
       </div>
-      <div className="tac-right pe" data-testid="tac-foes">
+      <div className={`tac-right pe ${strip !== 'foes' ? 'm-off' : ''}`} data-testid="tac-foes">
         <div className="sect-title" style={{ margin: 0 }}>{t('ui.tac.enemy')} · {alive(foes)}/{n0(foes)}</div>
         {foes.map((q) => <Card key={q.id} q={q} mine={false} selected={false} onClick={() => clickFoe(q.id)} />)}
       </div>
-      <OrderBar m={m} />
+      <OrderBar m={m} strip={strip} setStrip={setStrip} />
       {m.phase === 'ended' && m.result && <TacResult m={m} onExit={() => send('tac.exit')} />}
     </>
   );

@@ -68,6 +68,7 @@ export function InspectorDock() {
   if (!C) return null;
   return (
     <div className="inspector pe" data-testid={`inspector-${sel.kind}`}>
+      <button className="btn ghost sm m-only insp-close" aria-label={t('ui.close')} data-testid="insp-close" onClick={() => ui().select(null)}>✕</button>
       <div className="win-body"><C sel={sel as Selection} /></div>
     </div>
   );

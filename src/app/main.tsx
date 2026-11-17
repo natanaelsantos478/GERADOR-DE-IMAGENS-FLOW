@@ -7,6 +7,7 @@ import { browserFetchJson, loadWorldStatic } from '../data/loadWorld';
 import App from '../ui/App';
 import { appHost, type AppHostState } from './host';
 import { startLoop } from './loop';
+import { initPlatform } from '../ui/platform';
 
 declare global {
   interface Window {
@@ -30,7 +31,11 @@ async function boot() {
     </StrictMode>,
   );
   try {
-    const world = await loadWorldStatic(browserFetchJson(new URL('data/', document.baseURI)), (p) => appHost.getState().setProgress(p));
+    let bytes = 0;
+    const fetchJson = browserFetchJson(new URL('data/', document.baseURI), (n) => { bytes += n; });
+    const tick = setInterval(() => { const p = appHost.getState().progress; if (p) appHost.getState().setProgress({ ...p, bytes }); }, 250);
+    const world = await loadWorldStatic(fetchJson, (p) => appHost.getState().setProgress({ ...p, bytes })).finally(() => clearInterval(tick));
+    (window as unknown as { __dataBytes?: number }).__dataBytes = bytes;
     appHost.getState().setWorld(world);
     startLoop();
   } catch (e) {
@@ -39,4 +44,5 @@ async function boot() {
   }
 }
 
+initPlatform();
 void boot();

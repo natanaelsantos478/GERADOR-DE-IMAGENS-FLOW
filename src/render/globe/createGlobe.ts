@@ -6,6 +6,7 @@ import { createCanvasImagery } from './canvasProvider';
 import { createTerrariumTerrain } from './terrain';
 import { chooseSource, offlineProvider, onlineProvider, type ImageryKind } from './imagery';
 import { GlobeInput } from './input';
+import { effectiveResolution, getQuality, type QualityProfile } from './quality';
 import { createBuiltinModes, toMode } from './mapModes';
 import { markerFeature, Markers } from './markers';
 import { createMinimap } from './minimap';
@@ -45,16 +46,17 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
   });
   const scene = viewer.scene;
   const globe = scene.globe;
-  viewer.resolutionScale = opts.resolutionScale ?? Math.min(2, window.devicePixelRatio || 1);
+  viewer.resolutionScale = opts.resolutionScale ?? effectiveResolution();
   globe.baseColor = Cesium.Color.fromCssColorString('#0c2133');
-  globe.showGroundAtmosphere = true;
+  globe.showGroundAtmosphere = getQuality().atmosphere;
   globe.depthTestAgainstTerrain = false; // markers stay readable over relief; model layers may override
-  globe.maximumScreenSpaceError = 2.2;
-  globe.enableLighting = !!opts.dayNight;
+  globe.maximumScreenSpaceError = getQuality().maxScreenSpaceError;
+  globe.enableLighting = opts.dayNight ?? getQuality().dayNight;
   scene.backgroundColor = Cesium.Color.fromCssColorString('#020409');
   scene.highDynamicRange = false;
-  if (scene.skyAtmosphere) scene.skyAtmosphere.show = true;
-  scene.fog.enabled = true;
+  if (scene.skyAtmosphere) scene.skyAtmosphere.show = getQuality().atmosphere;
+  scene.fog.enabled = getQuality().fog;
+  viewer.canvas.style.touchAction = 'none';
   configureCamera(viewer);
   for (const c of CREDITS) viewer.creditDisplay.addStaticCredit(new Cesium.Credit(c, false));
   viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-35, 12, 2.4e7) });
@@ -460,6 +462,19 @@ export function createGlobe(container: HTMLElement, world: WorldStatic, opts: Gl
       viewer.clock.currentTime = Cesium.JulianDate.addHours(SIM_EPOCH, h, new Cesium.JulianDate());
       scene.requestRender();
     },
+    applyQuality(p: QualityProfile, opts2: { resolutionScale?: number; dayNight?: boolean } = {}) {
+      viewer.resolutionScale = opts2.resolutionScale ?? effectiveResolution(p);
+      globe.maximumScreenSpaceError = p.maxScreenSpaceError;
+      globe.showGroundAtmosphere = p.atmosphere;
+      if (scene.skyAtmosphere) scene.skyAtmosphere.show = p.atmosphere;
+      scene.fog.enabled = p.fog;
+      api.setDayNight(opts2.dayNight ?? p.dayNight);
+    },
+    setBoxMode(on) {
+      input.setBoxMode(on);
+      viewer.scene.screenSpaceCameraController.enableRotate = !on;
+    },
+    isBoxMode: () => input.boxMode,
     setDayNight(on) {
       globe.enableLighting = on;
       globe.dynamicAtmosphereLighting = on;

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isMobileLayout } from '../platform';
 import type { NewsItem, NewsKind } from '../../core/contracts';
 import { appHost } from '../../app/host';
 import { fmtDate } from '../fmt';
@@ -20,7 +21,7 @@ export function newsText(n: NewsItem): string {
 const isMine = (n: NewsItem, c: string) => !!n.countries?.includes(c) || (!!n.where && 'country' in n.where && n.where.country === c);
 
 export function Feed() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => !isMobileLayout());
   const filter = useUi((s) => s.feedFilter);
   const items = useGame((g) => g.state.news.slice(-80));
   const mine = filter.mine;
@@ -28,9 +29,9 @@ export function Feed() {
   return (
     <div className={`feed pe ${open ? '' : 'collapsed'}`} data-testid="feed">
       <div className="row" style={{ padding: '6px 10px', borderBottom: open ? '1px solid var(--line)' : 'none' }}>
-        <Icon name="news" /><b className="grow">{t('ui.feed.title')}</b>
-        <button className={`btn sm ${mine ? 'on' : ''}`} onClick={() => useUi.getState().setFeed('mine', !mine)}>{mine ? t('ui.feed.mine') : t('ui.feed.all')}</button>
-        <button className="btn sm ghost" onClick={() => setOpen(!open)}>{open ? '▾' : '▴'}</button>
+        <Icon name="news" /><b className="grow f-x">{t('ui.feed.title')}</b>
+        <button className={`btn sm f-x ${mine ? 'on' : ''}`} onClick={() => useUi.getState().setFeed('mine', !mine)}>{mine ? t('ui.feed.mine') : t('ui.feed.all')}</button>
+        <button className="btn sm ghost" data-testid="feed-toggle" aria-label={t('ui.feed.title')} onClick={() => setOpen(!open)}>{open ? '▾' : '▴'}</button>
       </div>
       {open && (
         <>

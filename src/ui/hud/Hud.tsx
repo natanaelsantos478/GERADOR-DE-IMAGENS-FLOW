@@ -11,6 +11,7 @@ import { ui, useUi } from '../store';
 import { dispatch, me, theGame, useGame } from '../useGame';
 import { Alerts, Feed, Toasts } from './Feed';
 import { MapControls } from './MapControls';
+import { BoxSelectFab, FpsMeter } from './MobileHud';
 import { InspectorDock, SelectionController } from './Selection';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -110,6 +111,8 @@ export function GameHud() {
           <Tutorial />
         </>
       )}
+      <BoxSelectFab />
+      <FpsMeter />
       <UnitSelectionBridge />
       {!tactical && <EventModal />}
       <SelectionController />

@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { accessKeys, type LayerId } from '../../render/globe';
+import { useEffect, useState } from 'react';
+import { accessKeys, QUALITY, effectiveResolution, setQuality, type LayerId, type QualityId } from '../../render/globe';
 import { getGlobe } from '../../render/globe/registry';
 import { setVolumes } from '../../audio';
 import { fmtPct } from '../fmt';
 import { t } from '../i18n';
 import { Slider, Tabs, Toggle } from '../kit/controls';
+import { promptInstall, useInstall } from '../platform';
 import { useSettings } from '../settings';
 import { Modal } from './Modal';
 
@@ -16,8 +17,7 @@ export function applySettings() {
   setVolumes({ master: s.volMaster, music: s.volMusic, sfx: s.volSfx });
   const g = getGlobe();
   if (!g) return;
-  g.viewer.resolutionScale = s.resolutionScale;
-  g.setDayNight(s.dayNight);
+  g.applyQuality(setQuality(s.quality), { resolutionScale: s.resolutionScale, dayNight: s.dayNight });
   for (const [id, v] of Object.entries(s.layers)) g.setLayerVisible(id as LayerId, !!v);
   g.requestRender();
 }
@@ -29,11 +29,28 @@ export function SettingsDialog({ onClose }: { onClose(): void }) {
   const [goog, setGoog] = useState(accessKeys.googleKey());
   const upd = (p: Parameters<typeof s.set>[0]) => { s.set(p); applySettings(); };
   const g = getGlobe();
+  const canInstall = useInstall((x) => x.can);
+  const pickQuality = (q: QualityId) => {
+    const p = QUALITY[q];
+    setQuality(q);
+    s.set({ quality: q, resolutionScale: effectiveResolution(p), dayNight: p.dayNight });
+    applySettings();
+  };
   return (
     <Modal titleKey="ui.settings.title" onClose={onClose} width={560}>
       <Tabs value={tab} onChange={setTab} tabs={[['gfx', t('ui.settings.gfx')], ['audio', t('ui.settings.audio')], ['keys', t('ui.settings.keys')], ['game', t('ui.settings.game')]]} />
       {tab === 'gfx' && (
         <div className="col">
+          <div>
+            <div className="dim">{t('ui.settings.quality')}</div>
+            <div className="row" data-testid="quality-picker">
+              {(['mobile', 'low', 'mid', 'high'] as QualityId[]).map((q) => (
+                <button key={q} data-testid={`quality-${q}`} className={`btn grow ${s.quality === q ? 'on' : ''}`} onClick={() => pickQuality(q)}>{t(`ui.settings.q.${q}`)}</button>
+              ))}
+            </div>
+            <div className="dim" style={{ fontSize: 12, marginTop: 4 }}>{t('ui.settings.qHelp')}</div>
+          </div>
+          <Toggle on={s.showFps} onChange={(v) => s.set({ showFps: v })} label={t('ui.settings.fps')} />
           <div><div className="dim">{t('ui.settings.resScale')}</div><Slider value={s.resolutionScale} min={0.5} max={2} step={0.25} onChange={(v) => upd({ resolutionScale: v })} format={(v) => `${v}×`} /></div>
           <Toggle on={s.dayNight} onChange={(v) => upd({ dayNight: v })} label={t('ui.settings.dayNight')} />
           <div className="sect-title">{t('ui.settings.layers')}</div>
@@ -62,6 +79,7 @@ export function SettingsDialog({ onClose }: { onClose(): void }) {
       {tab === 'game' && (
         <div className="col">
           <Toggle on={s.autosave} onChange={(v) => s.set({ autosave: v })} label={t('ui.settings.autosave')} />
+          {canInstall && <div className="col gap4"><button className="btn primary" data-testid="btn-install" onClick={() => void promptInstall()}>{t('ui.mobile.install')}</button><span className="dim" style={{ fontSize: 12 }}>{t('ui.mobile.installHelp')}</span></div>}
           <p className="dim">{t('ui.settings.shortcuts')}</p>
         </div>
       )}

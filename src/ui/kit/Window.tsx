@@ -3,6 +3,7 @@ import { useUi } from '../store';
 import { t } from '../i18n';
 import { playSound } from '../../audio';
 import { Icon } from './Icon';
+import { isMobileLayout } from '../platform';
 
 /** Draggable floating window. Position/z-order live in the UI store so windows survive re-renders. */
 export function Window({ id, titleKey, icon, width = 460, children }: { id: string; titleKey: string; icon?: string; width?: number; children: ReactNode }) {
@@ -10,7 +11,7 @@ export function Window({ id, titleKey, icon, width = 460, children }: { id: stri
   const drag = useRef<{ dx: number; dy: number } | null>(null);
   if (!w) return null;
   const onDown = (e: React.PointerEvent) => {
-    if ((e.target as HTMLElement).closest('button')) return;
+    if ((e.target as HTMLElement).closest('button') || isMobileLayout()) return;
     drag.current = { dx: e.clientX - w.x, dy: e.clientY - w.y };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -22,6 +23,7 @@ export function Window({ id, titleKey, icon, width = 460, children }: { id: stri
   };
   return (
     <div className={`win${w.z === useUi.getState().zTop ? ' front' : ''}`} data-testid={`win-${id}`} style={{ left: w.x, top: w.y, width, zIndex: w.z, maxHeight: Math.max(200, window.innerHeight - w.y - 12) }} onPointerDown={() => useUi.getState().focusWin(id)}>
+      <button className="sheet-grab m-only" aria-label={t('ui.close')} onClick={() => { playSound('ui_close'); useUi.getState().closeWin(id); }}><i /></button>
       <div className="win-head" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={() => (drag.current = null)}>
         {icon && <Icon name={icon} size={16} />}
         <h3>{t(titleKey)}</h3>

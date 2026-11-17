@@ -13,6 +13,7 @@ const FUEL_ICON: Record<Fuel, string> = {
   wind: 'wind', solar: 'solar', biomass: 'biomass', geothermal: 'geothermal', other: 'energy',
 };
 
+import { getQuality } from './quality';
 const MARK = Symbol('globe-marker');
 export interface MarkerId {
   [MARK]: true;
@@ -151,7 +152,7 @@ export class Markers {
       const c = w.cities[i];
       const nat = c.capital === 2;
       const reach = nat ? 7e6 : c.pop >= 5e6 ? 9e6 : c.pop >= 1.5e6 ? 4.5e6 : c.pop >= 5e5 ? 1.8e6 : c.pop >= 2e5 ? 7e5 : c.pop >= 8e4 ? 2.6e5 : 8e4;
-      const maxD = c.capital === 1 ? Math.max(reach, 3.5e5) : reach;
+      const maxD = (c.capital === 1 ? Math.max(reach, 3.5e5) : reach) * getQuality().markerLod;
       const b = cityBb.add({
         position: pos(c.lon, c.lat),
         scale: nat ? 0.36 : Math.max(0.3, Math.min(0.62, 0.3 + 0.07 * Math.log10(Math.max(1e4, c.pop) / 1e4))),
@@ -186,7 +187,7 @@ export class Markers {
         position: pos(p.lon, p.lat),
         scale: Math.max(0.2, Math.min(0.6, 0.1 + 0.12 * Math.log10(mw + 1))),
         scaleByDistance: new Cesium.NearFarScalar(2e4, 1.5, 2.5e6, 0.6),
-        distanceDisplayCondition: new DDC(0, far),
+        distanceDisplayCondition: new DDC(0, far * getQuality().markerLod),
         id: mk('plant', i),
       });
       b.setImage(`plant-${p.fuel}`, plantImg[p.fuel] ?? plantImg.other);
@@ -242,7 +243,7 @@ export class Markers {
       horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
       verticalOrigin: Cesium.VerticalOrigin.CENTER,
       pixelOffset: new Cesium.Cartesian2(nat ? 14 : 8, 0),
-      distanceDisplayCondition: new DDC(0, Math.max(reach, c.capital === 1 ? 2.5e5 : 0)),
+      distanceDisplayCondition: new DDC(0, Math.max(reach, c.capital === 1 ? 2.5e5 : 0) * getQuality().markerLod),
       id: mk('city', i),
     });
   }

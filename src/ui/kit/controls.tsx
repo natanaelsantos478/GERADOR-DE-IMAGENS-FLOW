@@ -51,6 +51,7 @@ export function Table<R>({ columns, rows, rowKey, onRow, initialSort, empty }: {
       })
     : rows;
   return (
+    <div className="tbl-wrap">
     <table className="tbl">
       <thead>
         <tr>
@@ -70,5 +71,6 @@ export function Table<R>({ columns, rows, rowKey, onRow, initialSort, empty }: {
         {!rows.length && empty && <tr><td colSpan={columns.length} className="dim">{empty}</td></tr>}
       </tbody>
     </table>
+    </div>
   );
 }
