@@ -1,9 +1,10 @@
 /** Strategic map units & world effects. `attachUnitsLayer(globe, getGame)` mounts everything; returns a disposer + test handles. */
 import type { Game } from '../../core/game';
 import type { Globe } from '../globe/types';
+import { attachCity3D, type City3D } from '../city3d';
 import { ModelPool, loadModelData } from './common';
 import { useUnitSelection } from './store';
-import { attachStrategic, type StrategicApi } from './strategic';
+import { attachStrategic, nearClusterDebug, type StrategicApi } from './strategic';
 import { attachWorldLayer, type WorldLayerApi } from './world';
 
 export { renderEvents, type RenderEvent } from './common';
@@ -13,11 +14,16 @@ export interface UnitsLayer {
   strategic: StrategicApi | null;
   world: WorldLayerApi | null;
   pool: ModelPool | null;
+  /** Real 3D buildings, roads and trees of the visible area. */
+  city: City3D;
+  nearCluster: typeof nearClusterDebug;
   destroy(): void;
 }
 
 export function attachUnitsLayer(globe: Globe, getGame: () => Game | null): UnitsLayer {
-  const layer: UnitsLayer = { strategic: null, world: null, pool: null, destroy() { dead = true; layer.world?.destroy(); layer.strategic?.destroy(); layer.pool?.destroy(); } };
+  const city = attachCity3D(globe);
+  (window as unknown as { __city3d?: City3D }).__city3d = city;
+  const layer: UnitsLayer = { strategic: null, world: null, pool: null, city, nearCluster: nearClusterDebug, destroy() { dead = true; city.destroy(); layer.world?.destroy(); layer.strategic?.destroy(); layer.pool?.destroy(); } };
   let dead = false;
   (window as unknown as { __unitSel?: typeof useUnitSelection }).__unitSel = useUnitSelection;
   void loadModelData().then((mf) => {

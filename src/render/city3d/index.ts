@@ -1,0 +1,166 @@
+/** City 3D by visible area: real buildings (extruded footprints), roads draped on the terrain and instanced trees, loaded per z14 tile around the camera focus. */
+import * as Cesium from 'cesium';
+import { getQuality } from '../globe/quality';
+import type { Globe } from '../globe/types';
+import { mode } from '../units/common';
+import { ATTRIBUTION, CITY_CONFIG } from './config';
+import { tileRef, tileXY, TZ } from './geo';
+import { landmarks, LandmarkLayer, loadLandmarks } from './landmarks';
+import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
+import { cachedTiles, CityTile } from './tile';
+
+export interface City3DStats {
+  active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
+  buildings: number; trees: number; treeModels: number; roadSegments: number; bridges: number; tris: number;
+  landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
+}
+export interface City3D {
+  active(): boolean;
+  stats(): City3DStats;
+  /** Resolves when no tile is loading or being built (tests). */
+  idle(timeoutMs?: number): Promise<boolean>;
+  /** Re-evaluate the visible area now. */
+  update(): void;
+  /** Re-read public/data/styles/*.json now and regenerate the visible tiles (also automatic in dev when a file changes). */
+  reloadStyles(force?: boolean): Promise<boolean>;
+  destroy(): void;
+}
+
+export function attachCity3D(globe: Globe): City3D {
+  const viewer = globe.viewer, scene = viewer.scene, cam = viewer.camera;
+  const tiles = new Map<string, CityTile>();
+  const credit = new Cesium.Credit(ATTRIBUTION, true);
+  let ready = false, on = false, offSince = 0, destroyed = false, hidRoads = false, agl = Infinity, running = 0;
+  const loadMs: number[] = [];
+  const queue: CityTile[] = [];
+  const lm = new LandmarkLayer(viewer, (lo, la) => globe.heightAt(lo, la));
+  const cfg = () => CITY_CONFIG[getQuality().id];
+  const c2 = new Cesium.Cartesian2(), cg = new Cesium.Cartographic();
+
+  function focus(): { lon: number; lat: number; dist: number } | null {
+    c2.x = scene.canvas.clientWidth / 2; c2.y = scene.canvas.clientHeight / 2;
+    const ray = cam.getPickRay(c2);
+    const hit = (ray && scene.globe.pick(ray, scene)) || (ray && cam.pickEllipsoid(c2, scene.globe.ellipsoid)) || undefined;
+    const p = cam.positionCartographic;
+    if (!p) return null;
+    if (hit) { const q = Cesium.Cartographic.fromCartesian(hit, undefined, cg); return { lon: Cesium.Math.toDegrees(q.longitude), lat: Cesium.Math.toDegrees(q.latitude), dist: Cesium.Cartesian3.distance(cam.positionWC, hit) }; }
+    return { lon: Cesium.Math.toDegrees(p.longitude), lat: Cesium.Math.toDegrees(p.latitude), dist: p.height };
+  }
+
+  function setActive(v: boolean) {
+    if (v === on) return;
+    on = v;
+    if (v) {
+      viewer.creditDisplay.addStaticCredit(credit);
+      // the stylised globe road layer would draw wide misaligned stripes under the real roads
+      if (globe.isLayerVisible('roads')) { globe.setLayerVisible('roads', false); hidRoads = true; }
+    } else {
+      viewer.creditDisplay.removeStaticCredit(credit);
+      if (hidRoads) { globe.setLayerVisible('roads', true); hidRoads = false; }
+      for (const t of tiles.values()) t.dispose();
+      tiles.clear(); queue.length = 0;
+    }
+    scene.requestRender();
+  }
+
+  function pump() {
+    const c = cfg();
+    const st = styles();
+    while (st && running < c.concurrency && queue.length) {
+      const t = queue.shift()!;
+      if (t.dead) continue;
+      running++;
+      void t.load(st).then(() => { running--; if (t.state === 'ready') loadMs.push(t.stats.loadMs); applyLod(); pump(); });
+    }
+  }
+
+  function update() {
+    if (destroyed) return;
+    const c = cfg(), p = cam.positionCartographic;
+    if (!p || !Number.isFinite(p.height)) return;
+    agl = p.height - Math.max(0, globe.heightAt(Cesium.Math.toDegrees(p.longitude), Cesium.Math.toDegrees(p.latitude)));
+    const limit = mode.tactical ? c.enableHTac : c.enableH, now = performance.now();
+    if (ready) lm.update(15_000 * (getQuality().id === 'mobile' ? 0.5 : getQuality().id === 'low' ? 0.7 : 1));
+    if (!styles() || !ready) return;
+    if (agl > limit) { if (!offSince) offSince = now; if (on && now - offSince > 2500) setActive(false); return; }
+    offSince = 0;
+    if (!on) setActive(true);
+    const f = focus();
+    if (!f) return;
+    const R = Math.min(6500, Math.max(900, f.dist * 0.95)), [fx, fy] = tileXY(f.lon, f.lat, TZ);
+    const mPer = (2 * Math.PI * 6378137 * Math.cos((f.lat * Math.PI) / 180)) / 2 ** TZ, rt = Math.ceil(R / mPer) + 1;
+    const cand: { x: number; y: number; d: number }[] = [];
+    for (let y = Math.floor(fy) - rt; y <= Math.floor(fy) + rt; y++) for (let x = Math.floor(fx) - rt; x <= Math.floor(fx) + rt; x++) {
+      const dx = Math.max(0, Math.abs(x + 0.5 - fx) - 0.5) * mPer, dy = Math.max(0, Math.abs(y + 0.5 - fy) - 0.5) * mPer, d = Math.hypot(dx, dy);
+      if (d <= R) cand.push({ x, y, d: Math.hypot((x + 0.5 - fx) * mPer, (y + 0.5 - fy) * mPer) });
+    }
+    cand.sort((a, b) => a.d - b.d);
+    const want = new Set(cand.slice(0, c.maxTiles).map((q) => `${q.x}/${q.y}`));
+    for (const q of cand.slice(0, c.maxTiles)) {
+      const k = `${q.x}/${q.y}`;
+      let t = tiles.get(k);
+      if (!t) { t = new CityTile(tileRef(q.x, q.y), viewer, c.roadPx, c.maxTreesPerTile); tiles.set(k, t); queue.push(t); }
+      t.lastSeen = now;
+    }
+    // drop what left the view (grace period so small camera moves do not thrash), and cancel queued loads of unwanted tiles
+    for (const [k, t] of tiles) if (t.state === 'failed' && now - t.lastSeen > 6000 && !t.failedAt) t.failedAt = now;
+    for (const [k, t] of tiles) if ((t.failedAt && now - t.failedAt > 6000) || (!want.has(k) && now - t.lastSeen > 2500)) { t.dispose(); tiles.delete(k); }
+    for (let i = queue.length - 1; i >= 0; i--) if (!want.has(queue[i].ref.key)) { queue[i].dispose(); tiles.delete(queue[i].ref.key); queue.splice(i, 1); }
+    const order = (t: CityTile) => cand.find((q) => `${q.x}/${q.y}` === t.ref.key)?.d ?? 1e9;
+    queue.sort((a, b) => order(a) - order(b));
+    pump();
+    applyLod();
+  }
+
+  /** Per-tile distance LOD: small buildings and the full tree set only near the camera. */
+  function applyLod() {
+    if (!on) return;
+    const c = cfg(), cp = cam.positionWC;
+    for (const t of tiles.values()) {
+      if (t.state !== 'ready') continue;
+      const d = Math.max(0, Cesium.Cartesian3.distance(cp, t.ref.origin) - t.ref.sizeM * 0.4);
+      if (t.minor) t.minor.show = d < c.lodMinor;
+      if (d < c.treeDist * 1.1) void t.ensureTrees(styles()!); else if (t.trees && d > c.treeDist * 1.8) t.dropTrees();
+      if (t.trees) for (const m of t.trees.models) m.model.show = m.far ? d < c.treeDist : d < c.treeDist * 0.55;
+    }
+    scene.requestRender();
+  }
+
+  const off = globe.onCamera(() => { update(); });
+  const timer = setInterval(update, 900);
+  const stop = scene.camera.moveEnd.addEventListener(update);
+  const offStyles = onStylesChange((st) => { for (const t of tiles.values()) void t.regenerate(st).then(applyLod); });
+  void Promise.all([loadLandmarks(), loadStyles()]).then(() => { ready = true; update(); }).catch((e) => console.warn('[city3d] styles unavailable, layer stays off:', (e as Error).message));
+  const hot = import.meta.env.DEV ? setInterval(() => { if (on) void reloadStyles(); }, 2000) : 0;
+
+  return {
+    reloadStyles: (force = true) => reloadStyles(force),
+    active: () => on,
+    update,
+    stats() {
+      const all = [...tiles.values()];
+      const sum = (f: (t: CityTile) => number) => all.reduce((s, t) => s + f(t), 0);
+      return {
+        active: on, agl: Math.round(agl), tiles: all.length, ready: all.filter((t) => t.state === 'ready').length, loading: all.filter((t) => t.state === 'loading').length, failed: all.filter((t) => t.state === 'failed').length,
+        buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.stats.trees), treeModels: sum((t) => t.trees?.models.length ?? 0), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
+        landmarks: lm.count(), loadMs: loadMs.slice(-12), genMs: all.map((t) => t.stats.genMs).filter(Boolean), source: [...new Set(all.map((t) => t.stats.source).filter(Boolean))], cachedTiles: cachedTiles(), timings: all.map((t) => t.stats.t).filter((x) => x.bld !== undefined), stylesLoaded: !!styles(),
+        styleUse: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.styles)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
+      };
+    },
+    async idle(timeoutMs = 120_000) {
+      const end = performance.now() + timeoutMs;
+      while (performance.now() < end) {
+        update();
+        const busy = [...tiles.values()].some((t) => t.state === 'loading' || t.treeBusy) || queue.length;
+        if (!busy && on) { await new Promise((r) => setTimeout(r, 400)); if (![...tiles.values()].some((t) => t.state === 'loading' || t.treeBusy)) return true; }
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      return false;
+    },
+    destroy() {
+      destroyed = true; lm.destroy(); off(); offStyles(); if (hot) clearInterval(hot); clearInterval(timer); stop();
+      setActive(false);
+    },
+  };
+}
+export { CITY_CONFIG } from './config';

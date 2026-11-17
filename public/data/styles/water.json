@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "doc": "Water tint drawn on the vector raster (colour per neutral water type) and waterway line widths in metres. Types: deep (lakes, sea, wide rivers) / stream / river / canal.",
+  "areas": { "deep": { "color": "rgba(52,96,150,0.55)" }, "stream": { "color": "rgba(90,140,190,0.5)" } },
+  "waterways": { "river": { "width": 14, "color": "rgba(60,108,160,0.6)" }, "canal": { "width": 9, "color": "rgba(70,112,150,0.6)" }, "stream": { "width": 2.5, "color": "rgba(90,140,190,0.6)" } }
+}

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "doc": "Road profiles per neutral class (motorway trunk primary secondary tertiary minor service track path steps rail runway taxiway). width = carriageway width in real metres (or lanes x laneWidth + shoulder); fill/casing = CSS colours; sidewalk = band on each side; marking = dashed|none; unpaved = soil look. `default` is used for classes not listed.",
+  "default": { "width": 5, "fill": "#6b6e73", "casing": "rgba(30,31,34,0.5)", "marking": "none" },
+  "classes": {
+    "motorway": { "lanes": 6, "laneWidth": 3.6, "shoulder": 0.4, "fill": "#4b4e54ee", "casing": "rgba(30,31,34,0.5)", "marking": "dashed" },
+    "trunk": { "lanes": 4, "laneWidth": 3.6, "shoulder": 3.6, "fill": "#4b4e54ee", "casing": "rgba(30,31,34,0.5)", "marking": "dashed" },
+    "primary": { "width": 13, "fill": "#52555bee", "casing": "rgba(30,31,34,0.5)", "marking": "dashed", "sidewalk": { "width": 2, "color": "rgba(190,188,182,0.55)" } },
+    "secondary": { "width": 10, "fill": "#5a5d63ee", "casing": "rgba(30,31,34,0.5)", "marking": "dashed", "sidewalk": { "width": 1.8, "color": "rgba(190,188,182,0.5)" } },
+    "tertiary": { "width": 8, "fill": "#62656bee", "casing": "rgba(30,31,34,0.5)", "marking": "none", "sidewalk": { "width": 1.6, "color": "rgba(190,188,182,0.45)" } },
+    "minor": { "width": 6.5, "fill": "#6b6e73ee", "casing": "rgba(30,31,34,0.5)", "marking": "none", "sidewalk": { "width": 1.4, "color": "rgba(190,188,182,0.4)" } },
+    "service": { "width": 4.2, "fill": "#74777bee", "casing": "rgba(30,31,34,0.5)", "marking": "none" },
+    "track": { "width": 3.2, "fill": "#8d7a5ecc", "unpaved": true, "marking": "none" },
+    "path": { "width": 1.8, "fill": "#a99d86cc", "unpaved": true, "marking": "none" },
+    "steps": { "width": 1.8, "fill": "#a99d86cc", "unpaved": true, "marking": "none" },
+    "rail": { "width": 3.4, "fill": "rgba(70,64,58,0.8)", "marking": "none", "rails": true },
+    "runway": { "width": 45, "fill": "#5c5f66ee", "casing": "rgba(30,31,34,0.4)", "marking": "none" },
+    "taxiway": { "width": 16, "fill": "#5c5f66ee", "casing": "rgba(30,31,34,0.4)", "marking": "none" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "doc": "Bridge styles by length (m) and road class (first match wins, last is a catch-all): girder depth, parapet height, pier spacing/width, colours (rgb).",
+  "patterns": [
+    { "id": "rail-bridge", "match": { "classes": ["rail"] }, "girder": 1.8, "parapet": 0.9, "pierSpacing": 20, "pierWidth": 0.3, "deck": [60, 60, 62], "concrete": [150, 148, 144], "margin": 1.4 },
+    { "id": "motorway-viaduct", "match": { "classes": ["motorway", "trunk"], "minLength": 60 }, "girder": 2.2, "parapet": 0.9, "pierSpacing": 30, "pierWidth": 0.2, "deck": [74, 76, 82], "concrete": [180, 178, 172], "margin": 1 },
+    { "id": "long-bridge", "match": { "minLength": 90 }, "girder": 1.8, "parapet": 0.5, "pierSpacing": 26, "pierWidth": 0.3, "deck": [78, 80, 85], "concrete": [172, 170, 164], "margin": 1 },
+    { "id": "generic", "match": {}, "girder": 1.2, "parapet": 0.45, "pierSpacing": 18, "pierWidth": 0.35, "deck": [78, 80, 85], "concrete": [172, 170, 164], "margin": 1 }
+  ]
+}

@@ -129,11 +129,11 @@ export class ModelPool {
     h.model = null;
   }
   /** Position `h` at lon/lat/height; `headingDeg` clockwise from north; `mul` exaggeration. */
-  place(h: ModelHandle, lon: number, lat: number, height: number, headingDeg: number, mul: number, roll = 0, show = true) {
+  place(h: ModelHandle, lon: number, lat: number, height: number, headingDeg: number, mul: number, roll = 0, show = true, pitch = 0) {
     const info = this.mf[h.modelId];
     Cesium.Cartesian3.fromDegrees(lon, lat, height + (info?.zOffsetM ?? 0) * mul, undefined, SCRATCH);
     HPR.heading = rad(headingDeg - 90 + (info?.yawOffsetDeg ?? 0));
-    HPR.pitch = 0;
+    HPR.pitch = rad(pitch);
     HPR.roll = rad(roll);
     const m = Cesium.Transforms.headingPitchRollToFixedFrame(SCRATCH, HPR, undefined, undefined, h.pend ?? new Cesium.Matrix4());
     h.pend = m;

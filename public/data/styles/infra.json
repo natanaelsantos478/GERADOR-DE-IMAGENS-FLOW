@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "doc": "Infrastructure objects as simple solids (first match wins): match.kinds = neutral infra kinds (power comm tower dam station helipad). shape = mast (tapered square prism) | box; sizes in metres, colour rgb.",
+  "patterns": [
+    { "id": "power-pylon", "match": { "kinds": ["power"] }, "shape": "mast", "height": 32, "width": 5, "top": 1.2, "color": [150, 156, 162] },
+    { "id": "comm-mast", "match": { "kinds": ["comm", "tower"] }, "shape": "mast", "height": 45, "width": 3.2, "top": 0.6, "color": [200, 70, 60] },
+    { "id": "station", "match": { "kinds": ["station"] }, "shape": "box", "height": 5, "width": 14, "color": [190, 186, 178] },
+    { "id": "generic", "match": {}, "shape": "box", "height": 4, "width": 6, "color": [170, 170, 170] }
+  ]
+}

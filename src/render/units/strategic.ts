@@ -10,6 +10,10 @@ import { useUnitSelection } from './store';
 
 export const NEAR_H = 30_000;
 export const MAX_MODELS = 300;
+const CLUSTER_PX = 44;
+let clusterOn = true, drawn = 0, nGrouped = 0;
+/** Test/debug: toggle the screen-space grouping and read how many formations/models it saved. */
+export const nearClusterDebug = { set: (on: boolean) => { clusterOn = on; }, stats: () => ({ on: clusterOn, modelsDrawn: drawn, formationsGrouped: nGrouped }) };
 const REL_COLOR = { own: '#4da3ff', ally: '#5ee08a', enemy: '#ff5a4d', neutral: '#d0d4dc', rebel: '#ffb02e' } as const;
 type Rel = keyof typeof REL_COLOR;
 const FAR = Number.POSITIVE_INFINITY;
@@ -29,6 +33,9 @@ interface FS {
   handles: ModelHandle[];
   modelSig: string;
   cluster: FS | null;
+  /** Screen-space group while close: models of members are not drawn, one icon with the count stands for the group. */
+  nearCl: FS | null;
+  nearN?: number;
 }
 
 export interface StrategicApi {
@@ -101,7 +108,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       icon: mk({ width: 38, height: 38 }),
       flag: mk({ width: 22, height: 15, pixelOffset: V(-17, -17), image: iso ? assetUrl(`data/flags/${iso}.svg`) : undefined }),
       bar: mk({ width: 36, height: 9, pixelOffset: V(0, 26) }),
-      keys: { icon: '', bar: '', flag: iso ?? '' }, handles: [], modelSig: '', cluster: null,
+      keys: { icon: '', bar: '', flag: iso ?? '' }, handles: [], modelSig: '', cluster: null, nearCl: null,
     };
     return fs;
   }
@@ -201,9 +208,23 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       for (const fs of states.values()) if (fs.lon > w - padX && fs.lon < e + padX && fs.lat > s - padY && fs.lat < n + padY && fs.cluster === null) cand.push(fs);
       cand.sort((a, b) => (a.lon - cam.lon) ** 2 + (a.lat - cam.lat) ** 2 - ((b.lon - cam.lon) ** 2 + (b.lat - cam.lat) ** 2));
     }
+    // screen-space grouping of overlapping / tiny formations: one icon with a count instead of N models
+    for (const fs of states.values()) fs.nearCl = null;
+    if (clusterOn) {
+      const cells = new Map<string, FS[]>();
+      for (const fs of cand) {
+        const p = globe.toScreen(fs.lon, fs.lat, 0);
+        if (!p) continue;
+        const k = `${Math.floor(p.x / CLUSTER_PX)}:${Math.floor(p.y / CLUSTER_PX)}:${fs.rel}`;
+        (cells.get(k) ?? cells.set(k, []).get(k)!).push(fs);
+      }
+      for (const l of cells.values()) if (l.length >= 2) { l.sort((a, b) => b.v.strength - a.v.strength); for (const f of l) f.nearCl = l[0]; l[0].nearN = l.length; }
+    }
+    let grouped = 0;
     const keep = new Set<FS>();
     for (const fs of cand) {
       if (budget <= 0) break;
+      if (fs.nearCl) { grouped++; continue; }
       const want = desired(fs).slice(0, budget);
       const sig = want.join(',');
       if (sig !== fs.modelSig) {
@@ -215,6 +236,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       keep.add(fs);
       applyPos(fs);
     }
+    drawn = keep.size ? [...keep].reduce((a, f) => a + f.handles.length, 0) : 0; nGrouped = grouped;
     for (const fs of states.values()) {
       if (keep.has(fs)) continue;
       if (fs.handles.length) { fs.handles.forEach((h) => pool.release(h)); fs.handles = []; fs.modelSig = ''; applyPos(fs); }
@@ -222,7 +244,15 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     // markers: hide the badge once a model is on screen
     for (const fs of states.values()) {
       const hasModel = fs.handles.some((h) => h.model);
-      if (fs.cluster === null) { fs.icon.show = !hasModel; fs.flag.show = true; fs.bar.show = true; }
+      if (fs.cluster === null) {
+        const member = fs.nearCl !== null && fs.nearCl !== fs;
+        fs.icon.show = !hasModel && !member; fs.flag.show = !member; fs.bar.show = !member;
+        if (fs.nearCl === fs) { // lead of a near group: count badge
+          const n = fs.nearN ?? 2;
+          if (!fs.count) fs.count = bills.add({ position: Cesium.Cartesian3.ZERO, id: fs.tag, width: 24, height: 16, pixelOffset: V(17, -17), disableDepthTestDistance: FAR });
+          fs.count.position = fs.icon.position; setImg(fs.count, `c:${Math.min(n, 99)}`, () => textBadge(n > 99 ? '99+' : `${n}`, '#c0392b')); fs.count.show = true;
+        } else if (fs.count && near) fs.count.show = false;
+      }
       const f = hasModel ? 1 : 0;
       fs.flag.pixelOffset = V(-17, -17 - f * 10); fs.bar.pixelOffset = V(0, f ? 14 : 26);
     }

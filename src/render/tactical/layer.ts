@@ -10,24 +10,38 @@ import type { Globe } from '../globe/types';
 import { M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
 import { useTacSelection } from './store';
 import { sampleGrid } from './terrain';
+import { prepareTacticalVector } from '../../data/vector/prepare';
+import type { NavData } from '../../data/vector/nav';
+import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
 
 const SIDE_COLOR = ['#4da3ff', '#ff5a4d'] as const;
 const C = Cesium.Color;
 const V = (x: number, y: number) => new Cesium.Cartesian2(x, y);
 const INF = Number.POSITIVE_INFINITY;
 const SOLDIER_KINDS = new Set(['infantry', 'special', 'engineer']);
-const MAX_ENTS = 300;
+const MAX_ENTS = 900;
 
 export interface TacticalLayer {
   active(): boolean;
-  stats(): { models: number; ents: number; proj: number; fx: number };
+  stats(): { shown: number; models: number; ents: number; proj: number; fx: number; clusters: number; clustered: number };
+  /** Screen-space grouping of overlapping units into one count icon (default on). */
+  setCluster(on: boolean): void;
   sample(n?: number): unknown[];
   /** Resolves when terrain heights for every current strategic battle are cached. */
   prefetch(): Promise<void>;
+  /** Fly the camera to an entity, a squad or a battle point (metres from the centre). */
+  focus(target: FocusTarget, o?: FocusOpts | number): boolean;
+  frameField(durationS?: number): void;
+  /** Test/debug: fire a muzzle flash / an explosion at battle coordinates, and slow effect lifetimes (k>1) so they can be captured. */
+  muzzleAt(x: number, y: number, big?: number): void;
+  explodeAt(x: number, y: number, r?: number): void;
+  pinFx(on: boolean): void;
+  tracerAt(x0: number, y0: number, x1: number, y1: number): void;
+  ents(): { id: number; sq: number; side: number; kind: string; x: number; y: number; alive: boolean; shown: boolean; ready: boolean }[];
   destroy(): void;
 }
-interface E { styled?: boolean; wreckAt?: number; smokeT?: number; dustT?: number; dot?: Cesium.Billboard; h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
-type FxKind = 'flame' | 'smoke' | 'dust' | 'flash' | 'debris';
+interface E { cl?: boolean; mul?: number; pitch?: number; styled?: boolean; wreckAt?: number; smokeT?: number; dustT?: number; dot?: Cesium.Billboard; h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
+type FxKind = 'fire' | 'flame' | 'smoke' | 'dust' | 'flash' | 'debris';
 interface Fx { b: Cesium.Billboard; t0: number; size: number; grow: number; life: number; lon: number; lat: number; h0: number; z: number; vx: number; vy: number; vz: number; kind: FxKind }
 const MAX_FX = 240, MAX_CRATERS = 36;
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -55,6 +69,14 @@ function flashCanvas(): HTMLCanvasElement {
   g.fillStyle = gr; g.fillRect(-32, -32, 64, 64);
   return c;
 }
+/** Fireball: white-hot core, yellow/orange body, red rim with a few licks; opaque enough to read over satellite imagery. */
+function fireCanvas(): HTMLCanvasElement {
+  const [c, g] = canvas(96);
+  const blob = (x: number, y: number, r: number, stops: [number, string][]) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); stops.forEach(([o, col]) => gr.addColorStop(o, col)); g.fillStyle = gr; g.fillRect(0, 0, 96, 96); };
+  for (let i = 0; i < 6; i++) { const a = i * 1.05; blob(48 + Math.cos(a) * 16, 46 + Math.sin(a) * 14, 26, [[0, 'rgba(255,140,30,0.95)'], [0.6, 'rgba(220,70,10,0.7)'], [1, 'rgba(120,20,0,0)']]); }
+  blob(48, 48, 28, [[0, 'rgba(255,255,230,1)'], [0.3, 'rgba(255,220,110,0.95)'], [1, 'rgba(255,120,20,0)']]);
+  return c;
+}
 function debrisCanvas(): HTMLCanvasElement {
   const [c, g] = canvas(16);
   g.fillStyle = '#2b2622'; g.beginPath(); g.moveTo(3, 2); g.lineTo(13, 5); g.lineTo(10, 14); g.lineTo(2, 10); g.closePath(); g.fill();
@@ -77,20 +99,26 @@ function craterCanvas(): HTMLCanvasElement {
 
 export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): TacticalLayer {
   const viewer = globe.viewer, scene = viewer.scene;
-  const cache = new Map<string, number[]>();
+  const cache = new Map<string, { heights: number[]; nav?: NavData | null }>();
   const key = (lon: number, lat: number) => `${lon.toFixed(3)},${lat.toFixed(3)}`;
   const pending = new Map<string, Promise<void>>();
   const prefetchAt = (lon: number, lat: number) => {
     const k = key(lon, lat);
     if (cache.has(k)) return Promise.resolve();
     let p = pending.get(k);
-    if (!p) { p = sampleGrid(lon, lat).then((h) => { if (h) cache.set(k, h); }).finally(() => pending.delete(k)); pending.set(k, p); }
+    if (!p) { p = sampleGrid(lon, lat).then(async (h) => {
+      if (!h) return;
+      cache.set(k, { heights: h });
+      // real vector map (Overture / OpenFreeMap) BEFORE tac.start: the sim reads it synchronously from this cache
+      const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: 64 });
+      cache.set(k, { heights: h, nav });
+    }).finally(() => pending.delete(k)); pending.set(k, p); }
     return p;
   };
   // The sim asks for heights synchronously at `tac.start`; fall back to the rendered globe when the cache is cold.
   setTacticalMapProvider((lon, lat) => {
     const hit = cache.get(key(lon, lat));
-    if (hit) return { heights: hit };
+    if (hit) return { heights: hit.heights, vectorArea: hit.nav ?? undefined };
     void prefetchAt(lon, lat);
     const n = 64, sizeM = 8000, cs = sizeM / n, mPer = M_PER_DEG * Math.cos((lat * Math.PI) / 180), cg = new Cesium.Cartographic();
     const hs: number[] = [];
@@ -108,16 +136,21 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   // ------------------------------------------------------------ per-battle state
   let cur: { id: string; b: Battle; pool: ModelPool | null; ents: Map<number, E>; clat: number; clon: number; mPerLon: number } | null = null;
   let bills: Cesium.BillboardCollection, lines: Cesium.PolylineCollection, labels: Cesium.LabelCollection;
+  const testLines: Cesium.Polyline[] = [];
   let fxs: Fx[] = [], craters: Cesium.Entity[] = [], wreckSmoke = 0, dustT = 0, projLines: Cesium.Polyline[] = [], seenProj = new Map<number, { x1: number; y1: number; kind: string; side: 0 | 1 }>();
   let objs: { pole: Cesium.Polyline; ring: Cesium.Polyline; flag: Cesium.Billboard; label: Cesium.Label; sig: string }[] = [];
   let deployLines: Cesium.Polyline[] = [];
   let hoverSq = -1, groundC = 0;
+  let navB: Map<number, import('../../data/vector/nav').NavBuilding> | null = null;
+  const garrLines = new Map<number, { l: Cesium.Polyline; side: number }>();
   let squadLabels = new Map<number, Cesium.Label>(), selLines = new Map<number, { ring: Cesium.Polyline; ord: Cesium.Polyline }>();
   let smokeZones = new Map<string, Cesium.Billboard[]>();
   const squadMarks = new Map<number, Cesium.Billboard>();
-  let saved: { mode: string; fill: boolean } | null = null;
+  let saved: { mode: string; fill: boolean; light: Cesium.Light; roads: boolean } | null = null;
+  let tcam: ReturnType<typeof createTacCamera> | null = null, pinned = false;
+  const PIN_AGE: Record<FxKind, number> = { flash: 0.12, fire: 0.18, flame: 0.25, smoke: 0.4, dust: 0.35, debris: 0.3 };
   let mul = 1, last = performance.now(), nextShotEv = 0, wrecks = 0;
-  const imgs = { flame: spriteCanvas([255, 190, 90], 1), smoke: puffCanvas([78, 76, 74]), dark: spriteCanvas([30, 30, 30], 0.9), dust: puffCanvas([168, 146, 112]), flash: flashCanvas(), debris: debrisCanvas() };
+  const imgs = { flame: spriteCanvas([255, 190, 90], 1), smoke: puffCanvas([78, 76, 74]), dark: spriteCanvas([30, 30, 30], 0.9), dust: puffCanvas([168, 146, 112]), flash: flashCanvas(), fire: fireCanvas(), debris: debrisCanvas() };
   const craterImg = craterCanvas();
   const neutralFlag = (() => { const c = document.createElement('canvas'); c.width = 30; c.height = 20; const g = c.getContext('2d')!; g.fillStyle = '#d6d6d6'; g.fillRect(0, 0, 30, 20); g.strokeStyle = '#555'; g.strokeRect(0.5, 0.5, 29, 19); return c; })();
 
@@ -139,6 +172,12 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     return [k, c];
   }
 
+  function resolveTarget(t: FocusTarget): { x: number; y: number } | null {
+    if (!cur) return null;
+    if ('ent' in t) { const e = cur.b.ents.find((q) => q.id === t.ent); return e ? { x: e.x, y: e.y } : null; }
+    if ('squad' in t) { const q = cur.b.squads[t.squad]; return q ? { x: q.x, y: q.y } : null; }
+    return t;
+  }
   const ll = (x: number, y: number): [number, number] => [cur!.clon + x / cur!.mPerLon, cur!.clat + y / M_PER_DEG];
   const cg = new Cesium.Cartographic();
   function mapH(x: number, y: number): number {
@@ -171,15 +210,21 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     bills = scene.primitives.add(new Cesium.BillboardCollection({ scene })) as Cesium.BillboardCollection;
     lines = scene.primitives.add(new Cesium.PolylineCollection()) as Cesium.PolylineCollection;
     labels = scene.primitives.add(new Cesium.LabelCollection({ scene })) as Cesium.LabelCollection;
-    saved = { mode: globe.currentMapMode(), fill: globe.isLayerVisible('fill') };
+    saved = { mode: globe.currentMapMode(), fill: globe.isLayerVisible('fill'), light: scene.light, roads: globe.isLayerVisible('roads') };
+    // the stylised globe road layer draws wide misaligned stripes over the real roads (the orange band across the river)
+    if (saved.roads) globe.setLayerVisible('roads', false);
+    {
+      // Fixed bright daylight so models read at any game hour.
+      const m = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(b.center[0], b.center[1], 0));
+      scene.light = new Cesium.DirectionalLight({ direction: Cesium.Matrix4.multiplyByPointAsVector(m, new Cesium.Cartesian3(-0.45, 0.3, -0.85), new Cesium.Cartesian3()), intensity: 3 });
+    }
+    tcam = createTacCamera({ viewer, hAt: (x, y) => hAt(x, y), ll, resolve: resolveTarget });
     if (saved.mode !== 'satellite') globe.setMapMode('satellite');
     globe.setLayerVisible('fill', false);
     renderLock(globe, 'tac', true);
     useTacSelection.getState().clear();
-    const ground = mapH(0, 0);
-    viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(b.center[0], b.center[1] + 250 / M_PER_DEG, ground), 1), {
-      offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-50), 13500), duration: 2.2,
-    });
+    navB = b.map.nav ? new Map(b.map.nav.buildings.map((x) => [x.id, x])) : null;
+    frameForces(2.2);
     objs = b.objs.map((o) => {
       const ring = lines.add({ positions: circle(o.x, o.y, o.r, 4, 48), width: 3, material: mat('#ffd54a', 0.9) });
       const pole = lines.add({ positions: [P(o.x, o.y), P(o.x, o.y, 45)], width: 3, material: mat('#eeeeee') });
@@ -192,12 +237,14 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   }
   function leave() {
     if (!cur) { mode.tactical = false; return; }
+    clBills.length = 0; clGroups = clMembers = 0;
     cur.pool?.destroy();
     for (const c of [bills, lines, labels]) scene.primitives.remove(c);
     for (const e of craters) viewer.entities.remove(e);
-    craters = []; cur = null; fxs = []; projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); smokeZones.clear(); wrecks = 0;
+    craters = []; cur = null; fxs = []; projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); garrLines.clear(); navB = null; smokeZones.clear(); wrecks = 0;
     renderLock(globe, 'tac', false);
-    if (saved) { if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); saved = null; }
+    tcam?.destroy(); tcam = null;
+    if (saved) { scene.light = saved.light; if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); if (saved.roads) globe.setLayerVisible('roads', true); saved = null; }
     mode.tactical = false;
     useTacSelection.getState().clear();
     globe.requestRender();
@@ -207,7 +254,15 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   const squadSide = (sq: number) => cur!.b.squads[sq]?.side ?? 0;
   interface FxOpt { grow?: number; life?: number; up?: number; vx?: number; vy?: number; vz?: number }
   /** Pooled sprite effect; positions are in battle metres, velocities in m/s (render-only ballistics). */
+  /** Metres that cover `px` pixels at the ground point (so effects stay readable from far away). */
+  function pxM(x: number, y: number, px: number): number {
+    const [lo, la] = ll(x, y), d = Math.max(20, Cesium.Cartesian3.distance(viewer.camera.positionWC, Cesium.Cartesian3.fromDegrees(lo, la, hAt(x, y))));
+    return (px * 2 * d * Math.tan(((viewer.camera.frustum as Cesium.PerspectiveFrustum).fovy ?? 1) / 2)) / (scene.canvas.clientHeight || 900);
+  }
+  let testFx = false;
   function spawnFx(x: number, y: number, size: number, kind: FxKind, o: FxOpt = {}) {
+    if (pinned && !testFx) return; // frozen-effects capture: only the effects the caller fires explicitly
+    size = Math.max(size, pxM(x, y, kind === 'flash' ? 20 : kind === 'debris' ? 5 : kind === 'smoke' || kind === 'dust' ? 40 : 52));
     let f = fxs.find((q) => !q.b.show);
     if (!f && fxs.length < MAX_FX) {
       const b = bills.add({ position: Cesium.Cartesian3.ZERO, sizeInMeters: true, show: false, disableDepthTestDistance: 0 });
@@ -230,7 +285,8 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   /** Fireball + smoke column + debris + scorch decal. `r` is blast scale in metres. */
   function explode(x: number, y: number, r: number, decal = true) {
     const m = mul;
-    spawnFx(x, y, r * 1.1 * m, 'flash', { grow: 1.2, life: 0.22, up: r * 0.4 * m });
+    spawnFx(x, y, r * 1.5 * m, 'flash', { grow: 1.2, life: 0.22, up: r * 0.4 * m });
+    spawnFx(x, y, r * 1.9 * m, 'fire', { grow: 1.5, life: 0.55, up: r * 0.5 * m, vz: 2 });
     spawnFx(x, y, r * 1.6 * m, 'flame', { grow: 1.8, life: 0.7, up: r * 0.5 * m, vz: 3 });
     spawnFx(x, y, r * 1.2 * m, 'flame', { grow: 1.4, life: 0.5, up: r * 0.8 * m, vz: 8 });
     spawnFx(x, y, r * 2.2 * m, 'dust', { grow: 2.4, life: 1.8, up: r * 0.3 * m, vz: 1.5 });
@@ -240,9 +296,21 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     if (decal) crater(x, y, r * 0.55);
   }
 
+  /** Frame both sides: centre on the live units, range from their spread (never beyond the whole field). */
+  function frameForces(durationS: number) {
+    const b = cur?.b;
+    if (!b || !tcam) return;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const e of b.ents) if (e.alive && !e.gone) { x0 = Math.min(x0, e.x); x1 = Math.max(x1, e.x); y0 = Math.min(y0, e.y); y1 = Math.max(y1, e.y); }
+    if (!Number.isFinite(x0)) { tcam.frameField(durationS); return; }
+    const ext = Math.max(x1 - x0, y1 - y0);
+    tcam.focus({ x: (x0 + x1) / 2, y: (y0 + y1) / 2 }, { range: clamp(ext * 1.35 + 500, 800, 10500), pitchDeg: -48, headingDeg: 0, durationS });
+  }
+
   function updateEnts(b: Battle, now: number, dt: number) {
     const c = cur!, pool = c.pool!, k = 1 - Math.exp(-dt * 9);
     let n = 0;
+    const camPos = viewer.camera.positionWC, tanH = Math.tan(((viewer.camera.frustum as Cesium.PerspectiveFrustum).fovy ?? 1) / 2), viewH = scene.canvas.clientHeight || 900;
     for (const e of b.ents) {
       if (e.gone || n++ >= MAX_ENTS) continue;
       let s = c.ents.get(e.id);
@@ -272,19 +340,31 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
         }
       } else if (!soldier && e.moving && now > (s.dustT ?? 0) && mul < 9) { s.dustT = now + 260; spawnFx(s.x - Math.sin(e.h) * 3, s.y - Math.cos(e.h) * 3, 7 * mul, 'dust', { grow: 2.2, life: 1.5, up: 1.2 * mul, vz: 1.2 }); }
       if (e.alive && soldier) pool.setAnim(s.h, s.shoot > now ? 'shoot' : e.moving ? 'run' : 'idle');
-      const m = soldier ? mul * 2.6 : mul;
+      // Exaggeration from the distance to the camera so every unit keeps a readable on-screen size (soldiers ~22 px, vehicles ~34 px).
+      const info = pool.info(s.h.modelId), len = info?.lengthM ?? 3;
+      const gh = hAt(s.x, s.y), [slon, slat] = ll(s.x, s.y);
+      const dist = Math.max(20, Cesium.Cartesian3.distance(camPos, Cesium.Cartesian3.fromDegrees(slon, slat, gh)));
+      const want = clamp((soldier ? 46 : 70) / (len * (viewH / (2 * dist * tanH))), 1, soldier ? 70 : 90);
+      s.mul = s.mul === undefined ? want : s.mul + (want - s.mul) * k;
+      const m = s.mul;
       if (!s.dot) { const [k, img] = markImg(e.side, e.kind, true); s.dot = bills.add({ position: Cesium.Cartesian3.ZERO, width: 15, height: 15, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, disableDepthTestDistance: INF }); s.dot.setImage(k, img); }
-      s.dot.show = e.alive && mul > 1.15;
-      if (s.dot.show) s.dot.position = P(s.x, s.y, (soldier ? 3 : 4) * m);
+      const inside = soldier && sq.gar !== undefined;
+      s.dot.show = e.alive && !s.cl && (m > 6 || inside);
+      if (s.dot.show) s.dot.position = Cesium.Cartesian3.fromDegrees(slon, slat, gh + (inside ? (navB?.get(sq.gar!)?.h ?? 8) + 2 : len * m * 1.15));
       const mdl = s.h.model;
       if (mdl && !s.styled && e.alive) {
         s.styled = true;
         // Readable at any distance: brighter light, faint side tint, never smaller than a few pixels on screen.
-        mdl.lightColor = new Cesium.Cartesian3(2.6, 2.6, 2.6);
-        mdl.color = C.fromCssColorString(SIDE_COLOR[e.side]); mdl.colorBlendMode = Cesium.ColorBlendMode.MIX; mdl.colorBlendAmount = 0.16;
-        mdl.minimumPixelSize = soldier ? 16 : 30;
+        mdl.lightColor = new Cesium.Cartesian3(3.2, 3.2, 3.2);
+        mdl.color = C.fromCssColorString(SIDE_COLOR[e.side]); mdl.colorBlendMode = Cesium.ColorBlendMode.MIX; mdl.colorBlendAmount = 0.08;
+        try { mdl.imageBasedLighting.imageBasedLightingFactor = new Cesium.Cartesian2(1.5, 1.5); } catch { /* older Cesium */ }
+        mdl.silhouetteColor = C.fromCssColorString(SIDE_COLOR[e.side]); mdl.silhouetteSize = soldier ? 2 : 2.5;
       }
-      pool.place(s.h, ll(s.x, s.y)[0], ll(s.x, s.y)[1], hAt(s.x, s.y), s.hd, m, soldier && s.dead ? 90 : 0, true);
+      // Vehicles pitch with the ground slope under hull length.
+      let pt = 0;
+      if (!soldier) { const dx = Math.sin((s.hd * Math.PI) / 180) * len * 0.35, dy = Math.cos((s.hd * Math.PI) / 180) * len * 0.35; pt = clamp((Math.atan2(mapH(s.x + dx, s.y + dy) - mapH(s.x - dx, s.y - dy), len * 0.7) * 180) / Math.PI, -18, 18); }
+      s.pitch = (s.pitch ?? pt) + (pt - (s.pitch ?? pt)) * k;
+      pool.place(s.h, slon, slat, gh, s.hd, m, soldier && s.dead ? 90 : 0, !(soldier && sq.gar !== undefined && e.alive) && !s.cl, s.pitch);
     }
     if (c.ents.size > n) {
       const live = new Set(b.ents.filter((e) => !e.gone).map((e) => e.id));
@@ -332,14 +412,15 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   function updateFx(now: number, dt: number) {
     for (const f of fxs) {
       if (!f.b.show) continue;
-      const a = (now - f.t0) / 1000 / f.life;
+      const a = pinned ? PIN_AGE[f.kind] : (now - f.t0) / 1000 / f.life;
       if (a >= 1) { f.b.show = false; continue; }
+      if (pinned) f.t0 = now - f.life * 1000 * a;
       if (f.vx || f.vy || f.vz) {
         f.lon += f.vx * dt; f.lat += f.vy * dt; f.z = Math.max(0, f.z + f.vz * dt);
         if (f.kind === 'debris') f.vz -= 40 * dt * clamp(mul * 0.5, 1, 6); else f.vz *= 1 - dt * 0.8;
         f.b.position = Cesium.Cartesian3.fromDegrees(f.lon, f.lat, f.h0 + f.z);
       }
-      f.b.width = f.b.height = f.kind === 'debris' ? f.size : f.size * (0.45 + a * f.grow * 0.55);
+      f.b.width = f.b.height = f.kind === 'debris' ? f.size : f.size * (0.6 + a * f.grow * 0.5);
       const fade = f.kind === 'smoke' ? Math.min(1, a * 6) * (1 - a) : f.kind === 'flash' ? 1 - a * a : Math.min(1, (1 - a) * 2.2);
       f.b.color = C.WHITE.withAlpha(Math.max(0, fade));
     }
@@ -398,17 +479,84 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     } else if (b.phase !== 'deploy' && deployLines.length) { deployLines.forEach((l) => lines.remove(l)); deployLines = []; }
   }
 
+  // ------------------------------------------------------------ screen-space clustering (fewer models drawn)
+  let clusterOn = true, clNext = 0;
+  const clBills: Cesium.Billboard[] = [], clImgs = new Map<string, HTMLCanvasElement>();
+  let clGroups = 0, clMembers = 0;
+  function clusterImg(side: number, kind: string, n: number): [string, HTMLCanvasElement] {
+    const k = `cl${side}${kind}${n}`;
+    let c = clImgs.get(k);
+    if (!c) {
+      c = document.createElement('canvas'); c.width = c.height = 64;
+      const g = c.getContext('2d')!;
+      g.beginPath(); g.arc(32, 32, 27, 0, Math.PI * 2); g.fillStyle = SIDE_COLOR[side]; g.fill(); g.lineWidth = 4; g.strokeStyle = '#fff'; g.stroke();
+      g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 4;
+      g.font = '700 26px system-ui'; g.strokeText(String(n), 32, 27); g.fillText(String(n), 32, 27);
+      g.font = '700 15px system-ui'; g.strokeText(KIND_LETTER[kind] ?? '?', 32, 47); g.fillText(KIND_LETTER[kind] ?? '?', 32, 47);
+      clImgs.set(k, c);
+    }
+    return [k, c];
+  }
+  function updateClusters(now: number) {
+    if (now < clNext) return;
+    clNext = now + 150;
+    const c = cur!, groups = new Map<string, E[]>();
+    for (const [, s] of c.ents) s.cl = false;
+    if (clusterOn) {
+      for (const [, s] of c.ents) {
+        if (!s.ent.alive || s.ent.gone) continue;
+        const [lo, la] = ll(s.x, s.y), p = globe.toScreen(lo, la, hAt(s.x, s.y));
+        if (!p) continue;
+        const k = `${Math.floor(p.x / 44)}:${Math.floor(p.y / 44)}:${s.ent.side}`;
+        (groups.get(k) ?? groups.set(k, []).get(k)!).push(s);
+      }
+    }
+    let gi = 0; clMembers = 0;
+    for (const l of groups.values()) {
+      if (l.length < 3) continue;
+      let x = 0, y = 0; const kinds = new Map<string, number>();
+      for (const s of l) { s.cl = true; x += s.x; y += s.y; kinds.set(s.ent.kind, (kinds.get(s.ent.kind) ?? 0) + 1); }
+      const top = [...kinds].sort((a, b) => b[1] - a[1])[0][0];
+      let bb = clBills[gi];
+      if (!bb) { bb = bills.add({ position: Cesium.Cartesian3.ZERO, width: 38, height: 38, disableDepthTestDistance: INF }); clBills[gi] = bb; }
+      const [k, img] = clusterImg(l[0].ent.side, top, l.length);
+      bb.setImage(k, img); bb.position = P(x / l.length, y / l.length, 6); bb.show = true;
+      gi++; clMembers += l.length;
+    }
+    clGroups = gi;
+    for (; gi < clBills.length; gi++) clBills[gi].show = false;
+  }
+
+  /** Occupied buildings: a glowing roof outline in the occupying side's colour. */
+  function updateGarrison(b: Battle) {
+    if (!navB) return;
+    const live = new Set<number>();
+    for (const [k, sqs] of Object.entries(b.garr ?? {})) {
+      const id = Number(k), q = sqs.map((i) => b.squads[i]).find((x) => x && x.n0 > 0);
+      const nb = navB.get(id);
+      if (!q || !nb) continue;
+      live.add(id);
+      if (garrLines.get(id)?.side === q.side) continue;
+      if (garrLines.has(id)) lines.remove(garrLines.get(id)!.l);
+      const roof = hAt(nb.cx, nb.cy) + nb.h + 0.6, pts: Cesium.Cartesian3[] = [];
+      for (let i = 0; i <= nb.poly.length / 2; i++) { const j = i % (nb.poly.length / 2); pts.push(P(nb.poly[j * 2], nb.poly[j * 2 + 1], roof - hAt(nb.poly[j * 2], nb.poly[j * 2 + 1]))); }
+      garrLines.set(id, { side: q.side, l: lines.add({ positions: pts, width: 5, material: Cesium.Material.fromType('PolylineGlow', { color: C.fromCssColorString(SIDE_COLOR[q.side]), glowPower: 0.3 }) }) });
+    }
+    for (const [id, g] of garrLines) if (!live.has(id)) { lines.remove(g.l); garrLines.delete(id); }
+  }
+
   function updateSquads(b: Battle) {
     const sel = new Set(useTacSelection.getState().selected);
     for (const s of b.squads) {
-      let alive = 0;
-      for (const [, e] of cur!.ents) if (e.ent.sq === s.id && e.ent.alive) alive++;
+      let alive = 0, mx = 0, my = 0, up = 0;
+      for (const [, e] of cur!.ents) if (e.ent.sq === s.id && e.ent.alive) { alive++; mx += e.x; my += e.y; up = Math.max(up, (cur!.pool?.info(e.h.modelId)?.lengthM ?? 2) * (e.mul ?? mul) * 0.9 + 3); }
+      if (alive) { mx /= alive; my /= alive; } else { mx = s.x; my = s.y; }
       let l = squadLabels.get(s.id);
       if (!l) { l = labels.add({ position: Cesium.Cartesian3.ZERO, font: '600 12px system-ui', style: Cesium.LabelStyle.FILL_AND_OUTLINE, outlineWidth: 3, outlineColor: C.BLACK, pixelOffset: V(0, -50), disableDepthTestDistance: INF, fillColor: C.fromCssColorString(SIDE_COLOR[s.side]) }); squadLabels.set(s.id, l); }
       const focus = sel.has(s.id) || hoverSq === s.id;
       l.show = alive > 0 && (focus || s.routed);
       l.text = focus ? `${s.name ? s.name.slice(0, 18) + ' ' : ''}${alive}/${s.n0}${s.routed ? ' !' : ''}` : '!';
-      l.position = P(s.x, s.y, 14 * mul);
+      l.position = P(mx, my, up + 10);
       let mk = squadMarks.get(s.id);
       if (!mk) { const [k, img] = markImg(s.side, s.kind); mk = bills.add({ position: Cesium.Cartesian3.ZERO, width: 34, height: 34, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, disableDepthTestDistance: INF }); mk.setImage(k, img); squadMarks.set(s.id, mk); }
       mk.show = alive > 0;
@@ -438,9 +586,11 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     if (!g || !b || !cur || cur.id !== b.id) return;
+    if (!pinned && testLines.length) { for (const l of testLines) lines.remove(l); testLines.length = 0; }
     mul = clamp((globe.cameraHeight() - groundC) / 450, 1, 22); // above the battlefield, not above sea level (Rwanda sits at 1700 m)
     cur.b = b;
     groundC = mapH(0, 0);
+    updateClusters(now);
     updateEnts(b, now, dt);
     updateProjectiles(b, now);
     updateFx(now, dt);
@@ -448,6 +598,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     updateObjectives(b);
     updateDeploy(b);
     updateSquads(b);
+    updateGarrison(b);
   };
   scene.preRender.addEventListener(onPre);
 
@@ -513,16 +664,25 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     renderEvents.emit({ type: 'tacOrder', ok: r.ok });
   });
 
+  const unFocus = useTacSelection.subscribe((st, prev) => { if (st.focusRequest && st.focusRequest !== prev.focusRequest) tcam?.focus({ squad: st.focusRequest.sq }, { range: 380, pitchDeg: -40 }); });
   (window as unknown as { __tacSel?: typeof useTacSelection }).__tacSel = useTacSelection;
   return {
     active: () => !!cur,
+    focus: (t, o) => tcam?.focus(t, typeof o === 'number' ? { range: o } : o) ?? false,
+    frameField: (d) => frameForces(d ?? 2.2),
+    muzzleAt: (x, y, big = 3) => { testFx = true; spawnFx(x, y, big * Math.max(1, mul * 0.7), 'flash', { grow: 0.8, life: 0.16, up: 2 * clamp(mul * 0.7, 1, 10) }); testFx = false; },
+    explodeAt: (x, y, r = 12) => { testFx = true; explode(x, y, r); testFx = false; },
+    pinFx: (on) => { pinned = on; if (on) for (const f of fxs) f.b.show = false; },
+    tracerAt: (x0, y0, x1, y1) => { const l = lines.add({ positions: [P(x0, y0, 2.5), P(x1, y1, 2.5)], width: 5, material: Cesium.Material.fromType('PolylineGlow', { color: C.fromCssColorString('#ffd060'), glowPower: 0.4, taperPower: 0.9 }) }); testLines.push(l); },
+    ents: () => [...(cur?.ents.values() ?? [])].map((e) => ({ id: e.ent.id, sq: e.ent.sq, side: e.ent.side, kind: e.ent.kind, x: e.ent.x, y: e.ent.y, alive: e.ent.alive, shown: !!e.h.model?.show, ready: !!e.h.model?.ready })),
     sample: (n = 5) => [...(cur?.ents.values() ?? [])].slice(0, n).map((e) => { const [lo, la] = ll(e.x, e.y); return { id: e.ent.id, x: Math.round(e.x), y: Math.round(e.y), h: Math.round(hAt(e.x, e.y)), shown: !!e.h.model?.show, ready: !!e.h.model?.ready, scale: e.h.model?.scale, screen: globe.toScreen(lo, la, hAt(e.x, e.y)) }; }),
-    stats: () => ({ models: cur?.pool?.liveCount ?? 0, ents: cur?.ents.size ?? 0, proj: cur?.b.proj.length ?? 0, fx: fxs.filter((f) => f.b.show).length }),
+    stats: () => ({ shown: [...(cur?.ents.values() ?? [])].filter((e) => e.h.model?.show).length, models: cur?.pool?.liveCount ?? 0, ents: cur?.ents.size ?? 0, proj: cur?.b.proj.length ?? 0, fx: fxs.filter((f) => f.b.show).length, clusters: clGroups, clustered: clMembers }),
+    setCluster: (on) => { clusterOn = on; clNext = 0; },
     prefetch: async () => { const g = getGame(); if (g) await Promise.all(battlePreviews(g.ctx).map((b) => prefetchAt(b.pos[0], b.pos[1]))); },
     destroy() {
       clearInterval(timer); clearInterval(timerPre); clearInterval(simTimer);
       scene.preRender.removeEventListener(onPre);
-      unPick(); unHover(); unClick(); unBox(); unRight();
+      unFocus(); unPick(); unHover(); unClick(); unBox(); unRight();
       leave();
       setTacticalMapProvider(null);
     },
