@@ -150,3 +150,17 @@ Each model below is a real vehicle/aircraft/ship/person modelled by third-party 
 
 ## Textures (CC0-1.0, Poly Haven, https://polyhaven.com)
 Used as sources for the baked paint/wear/mud/rubber textures of the ground vehicles (mbt*, ifv*, apc*, spg*, mlrs*, sam*): green_metal_rust, rusty_painted_metal, metal_plate_02, rubber_tiles, brown_mud_dry. Camouflage patterns are procedural (Blender noise).
+
+## Added models pending manifest/variants integration (CC-BY-4.0, Thingiverse via archive.org mirror)
+Converted with tools/models/landmarks/convert.py (bpy); mbt_merkava and transport_heli_ka27 voxel-remeshed + decimated. Orientation (yawOffsetDeg) not yet set.
+
+| file | real name | author | licence | source |
+|---|---|---|---|---|
+| mbt_merkava.glb | Merkava Mk1 | Steve Smigielski (Ssmigielski) | CC-BY-4.0 | https://www.thingiverse.com/thing:4597608 |
+| fighter_rafale.glb | Dassault Rafale B | Jack Dueri (JackTheTinkerer) | CC-BY-4.0 | https://www.thingiverse.com/thing:5523718 |
+| fighter_su34.glb | Sukhoi Su-34 Fullback | Jack Dueri (JackTheTinkerer) | CC-BY-4.0 | https://www.thingiverse.com/thing:5496533 |
+| transport_heli_ka27.glb | Kamov Ka-27 Helix | Jack Dueri (JackTheTinkerer) | CC-BY-4.0 | https://www.thingiverse.com/thing:5496538 |
+| carrier_liaoning.glb | CV-16 Liaoning | Feng Yu (54dashayu) | CC-BY-4.0 | https://www.thingiverse.com/thing:2219283 |
+
+## Nature (`nature/*.glb`, CC0-1.0)
+Stylized Nature MegaKit (standard/free) by Quaternius, https://opengameart.org/content/stylized-nature-megakit (https://quaternius.com). Normal maps dropped, bark re-encoded to 256 px JPEG, leaves 512 px, meshes quantized: commontree_1..5, pine_1..5, deadtree_1, deadtree_3, fern_1, bush_common.

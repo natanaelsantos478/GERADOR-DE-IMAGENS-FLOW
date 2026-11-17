@@ -30,7 +30,7 @@ Source: Thingiverse designs (mirrored on archive.org), converted to glb (merged,
 | kaaba | Kaaba | mustafa faris (mustafa21) | CC-BY-4.0 | https://www.thingiverse.com/thing:2037074 | 56244 |
 | dome | Dome of the Rock | Ahmad Udwan (MrcodeShow) | CC-BY-4.0 | https://www.thingiverse.com/thing:2937300 | 300216 |
 | chichen | El Castillo (Chichen Itza) | akhil deo (adeo1) | CC-BY-4.0 | https://www.thingiverse.com/thing:1852864 | 268608 |
-| angkor | Angkor Wat | Siddhant Gautam (dodo2000) | CC-BY-SA-3.0 | https://www.thingiverse.com/thing:936045 | 775008 |
+| angkor | Angkor Wat | pcn3d print (pcn3dprinting) | CC-BY-4.0 | https://www.thingiverse.com/thing:4625138 | 984160 |
 | spaceneedle | Space Needle | Sankha Saha (sankha) | CC-BY-4.0 | https://www.thingiverse.com/thing:2425760 | 137944 |
 | mbs | Marina Bay Sands | Donghwi Kim (3D_Model_Kim) | CC-BY-4.0 | https://www.thingiverse.com/thing:3530275 | 694460 |
 | belem | Belem Tower | UTech Lab (utechlab) | CC-BY-4.0 | https://www.thingiverse.com/thing:1099449 | 300952 |
@@ -41,3 +41,6 @@ Source: Thingiverse designs (mirrored on archive.org), converted to glb (merged,
 | greatwall | Great Wall of China (Badaling) | Marc  (MJCbull) | CC-BY-4.0 | https://www.thingiverse.com/thing:22360 | 59356 |
 | sphinx | Great Sphinx of Giza | Jwo Fox-Lee (jwolee) | CC-BY-SA-3.0 | https://www.thingiverse.com/thing:9971 | 256948 |
 | tvbrasilia | Brasilia TV Tower | Rafael Guimarães (Rafa3009) | CC-BY-4.0 | https://www.thingiverse.com/thing:3728115 | 109644 |
+| kremlin | Moscow Kremlin (Spasskaya Tower) | (eligreen) | CC-BY-4.0 | https://www.thingiverse.com/thing:2804354 | 1139880 |
+| lotte | Lotte World Tower | Fe li (fenyu0717) | CC-BY-4.0 | https://www.thingiverse.com/thing:3831438 | 52592 |
+| notredame | Notre-Dame de Paris | yoon jang (bun9191) | CC-BY-4.0 | https://www.thingiverse.com/thing:1571593 | 661632 |
