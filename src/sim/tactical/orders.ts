@@ -1,6 +1,7 @@
 import { schedule } from './combat';
 import { cellFactor, cellOf, inside } from './grid';
-import { edgePoint, setPath } from './move';
+import { edgePoint, setPath, ungarrison } from './move';
+import { mainComp, navCell, navCenter, navFactor, navOf, snapCell } from './nav';
 import type { Battle, Ent, Order, OrderResult, Side, Squad } from './types';
 import { UNITS } from './units';
 import { slotPos } from './util';
@@ -10,7 +11,17 @@ const err = (reason: string): OrderResult => ({ ok: false, reason });
 /** Re-seat the alive elements of a squad on their formation slots (deployment). */
 export function layout(b: Battle, s: Squad): void {
   const ids = b.ents.filter((e) => e.sq === s.id && e.alive && !e.gone);
-  ids.forEach((e, i) => { const [x, y] = slotPos(s, i, ids.length, UNITS[s.kind].sp); e.x = x; e.y = y; e.h = s.face; });
+  const rt = navOf(b.map), mob = UNITS[s.kind].mob;
+  if (rt && mob !== 'air') {
+    // deployment only on cells the unit can stand on: move the anchor, then each element, to the nearest passable cell
+    const a = snapCell(rt, mob, navCell(rt, s.x, s.y), 120, mainComp(rt, mob));
+    if (a >= 0) [s.x, s.y] = navCenter(rt, a);
+  }
+  ids.forEach((e, i) => {
+    let [x, y] = slotPos(s, i, ids.length, UNITS[s.kind].sp);
+    if (rt && mob !== 'air' && navFactor(rt, navCell(rt, x, y), mob) === 0) { const c = snapCell(rt, mob, navCell(rt, x, y), 12, mainComp(rt, mob)); [x, y] = c >= 0 ? navCenter(rt, c) : [s.x, s.y]; }
+    e.x = x; e.y = y; e.h = s.face;
+  });
 }
 
 export function newEnt(b: Battle, s: Squad, ammo: number, x: number, y: number): Ent {
@@ -34,6 +45,7 @@ function dismount(b: Battle, s: Squad): boolean {
   b.squads.push(inf);
   for (let i = 0; i < s.cargo; i++) { const [x, y] = slotPos(inf, i, s.cargo, UNITS.infantry.sp); newEnt(b, inf, 0.85, x, y); }
   s.cargo = 0;
+  layout(b, inf); // dismounted infantry may only appear on cells it can stand on
   return true;
 }
 
@@ -63,7 +75,8 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
           s.x = Math.max(r.x - r.w / 2, Math.min(r.x + r.w / 2, o.x)); s.y = Math.max(r.y - r.h / 2, Math.min(r.y + r.h / 2, o.y));
           layout(b, s); break;
         }
-        if (cellFactor(b.map, cellOf(b.map, o.x, o.y), UNITS[s.kind].mob) === 0) return err('tac.err.impassable');
+        ungarrison(b, s);
+        if (!navOf(b.map) && cellFactor(b.map, cellOf(b.map, o.x, o.y), UNITS[s.kind].mob) === 0) return err('tac.err.impassable');
         if (!setPath(b, s, o.x, o.y)) return err('tac.err.noPath');
         s.order = o.kind === 'move' ? 'move' : 'amove'; s.ox = o.x; s.oy = o.y; s.digging = false; s.dug = 0;
         break;
@@ -72,11 +85,13 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
         const t = b.squads[o.target];
         if (b.phase !== 'combat') return err('tac.err.deployPhase');
         if (!t || t.side === side) return err('tac.err.badTarget');
+        ungarrison(b, s);
         s.order = 'attack'; s.target = t.id; s.path = []; s.digging = false; s.dug = 0;
         break;
       }
       case 'hold': s.order = 'hold'; s.path = []; break;
       case 'retreat': {
+        ungarrison(b, s);
         s.order = 'retreat'; s.path = []; s.digging = false; s.dug = 0;
         const [ex, ey] = edgePoint(b, s); setPath(b, s, ex, ey);
         break;
@@ -92,6 +107,22 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
         const d = Math.hypot(x - s.x, y - s.y);
         if (d > 450) { x = s.x + ((x - s.x) / d) * 450; y = s.y + ((y - s.y) / d) * 450; }
         b.smokes.push({ x, y, r: 38, until: b.t + 45 }); s.smoke--;
+        break;
+      }
+      case 'occupy': {
+        const rt = navOf(b.map);
+        const bd = rt?.data.buildings[o.building - 1];
+        if (!rt || !bd || UNITS[s.kind].mob !== 'foot' || !bd.enterable) return err('tac.err.notEnterable');
+        if (b.phase !== 'combat') return err('tac.err.deployPhase');
+        const live = (b.garr?.[bd.id] ?? []).filter((q) => q !== s.id && b.ents.some((e) => e.sq === q && e.alive && !e.gone));
+        if (live.length >= bd.cap) return err('tac.err.buildingFull');
+        let bc = -1, bd2 = 1e18;
+        for (const c of rt.bcells[bd.id]) { const [x, y] = navCenter(rt, c); const d = Math.hypot(x - bd.cx, y - bd.cy); if (d < bd2) { bd2 = d; bc = c; } }
+        if (bc < 0) return err('tac.err.notEnterable');
+        ungarrison(b, s);
+        const [gx, gy] = navCenter(rt, bc);
+        s.inb = bd.id; s.order = 'occupy'; s.ox = gx; s.oy = gy; s.digging = false; s.dug = 0;
+        if (!setPath(b, s, gx, gy)) { s.order = 'idle'; return err('tac.err.noPath'); }
         break;
       }
       case 'dismount': if (!dismount(b, s)) return err('tac.err.noCargo'); break;

@@ -4,6 +4,7 @@
  */
 import type { BattleId, CountryId, LonLat } from '../../core/contracts';
 import type { RngState } from '../../core/rng';
+import type { NavData } from '../../data/vector/nav';
 
 export type Side = 0 | 1;
 export type AiEngine = 'neural' | 'rules';
@@ -23,6 +24,8 @@ export interface TacticalMap {
   cover: number[];
   road: number[];
   water: number[];
+  /** Fine real-world raster (OpenStreetMap vectors): when present, it drives passability, cover, roads and line of sight. */
+  nav?: NavData;
 }
 
 /** Commander / condition modifiers computed by the strategic layer (all multipliers, 1 = neutral). */
@@ -97,7 +100,7 @@ export interface Ent {
   spotT: number;
   gone: boolean;
 }
-export type OrderKind = 'idle' | 'move' | 'amove' | 'attack' | 'hold' | 'retreat';
+export type OrderKind = 'idle' | 'move' | 'amove' | 'attack' | 'hold' | 'retreat' | 'occupy';
 export interface Squad {
   id: number; ref: string; name: string; side: Side; kind: UnitKind; modelId: string; country?: string;
   /** Mean distance (m) of its elements from their slots, measured by the last entity step; part of the saved state (drives the formation pace). */
@@ -107,6 +110,10 @@ export interface Squad {
   order: OrderKind; ox: number; oy: number; target: number;
   path: number[]; pi: number; repath: number;
   fireFree: boolean;
+  /** Building (nav id) occupied / being entered or left by this infantry squad; `gar` = garrisoned inside. */
+  inb?: number; gar?: number;
+  /** Path request deferred by the per-tick search budget (target x,y). */
+  pend?: [number, number];
   dug: number; digging: boolean;
   morale: number; routed: boolean; ai: boolean;
   n0: number; smoke: number; cargo: number;
@@ -159,6 +166,13 @@ export interface Battle {
   support: [Support, Support];
   score: [number, number];
   urbanHits: number;
+  /** Real-terrain effects: pending events for the system, bridge/structure hit points, fires, outages. */
+  ev?: ({ k: 'protectedHit'; kind: string; x: number; y: number; side: Side; t: number } | { k: 'bridgeDestroyed'; x: number; y: number; t: number } | { k: 'infraDestroyed'; kind: string; effect: string; x: number; y: number; t: number })[];
+  prot?: Record<string, number>; bhp?: Record<string, number>; infraHp?: Record<string, number>;
+  fires?: { c: number; until: number }[]; burnt?: number[];
+  blackout?: number; commsDown?: number;
+  /** Garrisoned buildings: nav building id -> squad id. */
+  garr?: Record<string, number[]>;
   nextProj: number;
   result: TacticalResult | null;
   /** Disables the tactical AI entirely (scripted scenarios/tests). */
@@ -182,6 +196,7 @@ export type Order =
   | { kind: 'face'; facing: number }
   | { kind: 'fire'; free: boolean }
   | { kind: 'dig' }
+  | { kind: 'occupy'; building: number }
   | { kind: 'smoke'; x?: number; y?: number }
   | { kind: 'dismount' }
   | { kind: 'ready' }
@@ -218,6 +233,10 @@ declare module '../../core/contracts' {
   interface EventMap {
     'tac.battleStarted': { battleId: string; tacticalId: string };
     'tac.battleEnded': { battleId: string; result: TacticalResult | null };
+    /** Area fire or direct hit on a hospital / school / place of worship / cemetery (DIP/ECO may listen: reputation, population support). */
+    'tac.protectedHit': { battleId: string; kind: string; x: number; y: number; side: 0 | 1 };
+    'tac.bridgeDestroyed': { battleId: string; x: number; y: number };
+    'tac.infraDestroyed': { battleId: string; kind: string; effect: string; x: number; y: number };
   }
   interface TacticalApi {
     /** Advance real time (seconds); applies timeScale/pause. Called by the render/UI loop each frame. */

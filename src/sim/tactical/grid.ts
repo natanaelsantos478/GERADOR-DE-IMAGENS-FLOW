@@ -1,4 +1,7 @@
 /** Terrain queries, line of sight and grid pathfinding on a TacticalMap. */
+import { SURF } from '../../data/vector/nav';
+import { navCell, navFactor, navOf, snapCell, components, type NavRT } from './nav';
+import { navPath } from './navPath';
 import type { Mobility } from './units';
 import type { Smoke, TacticalMap } from './types';
 
@@ -24,11 +27,18 @@ export function heightAt(m: TacticalMap, x: number, y: number): number {
   const h = m.heights, i = y0 * n + x0;
   return (h[i] * (1 - tx) + h[i + 1] * tx) * (1 - ty) + (h[i + n] * (1 - tx) + h[i + n + 1] * tx) * ty;
 }
-export const coverAt = (m: TacticalMap, x: number, y: number) => m.cover[cellOf(m, x, y)];
+/** Cover 0..3 at a point (3 = inside a building) — from the fine raster when the map has one. */
+export function coverAt(m: TacticalMap, x: number, y: number): number {
+  const rt = navOf(m);
+  return rt ? rt.cover[navCell(rt, x, y)] : m.cover[cellOf(m, x, y)];
+}
+export { canStand, snapPoint } from './nav';
 const OBST = [0, 8, 12];
 
 /** Line of sight over relief, trees/buildings and smoke. `e0`/`e1` are eye/target heights above ground. */
 export function los(m: TacticalMap, smokes: Smoke[], t: number, x0: number, y0: number, e0: number, x1: number, y1: number, e1: number): boolean {
+  const rt = navOf(m);
+  if (rt) return losNav(m, rt, smokes, t, x0, y0, e0, x1, y1, e1);
   const d = Math.hypot(x1 - x0, y1 - y0);
   const cs = m.sizeM / m.n;
   const steps = Math.max(1, Math.ceil(d / (cs * 0.5)));
@@ -39,6 +49,32 @@ export function los(m: TacticalMap, smokes: Smoke[], t: number, x0: number, y0: 
     for (const s of live) if ((x - s.x) ** 2 + (y - s.y) ** 2 < s.r * s.r) return false;
     if (dd < cs * 1.2 || d - dd < cs * 1.2) continue;
     if (heightAt(m, x, y) + OBST[m.cover[cellOf(m, x, y)]] > a + (b - a) * f) return false;
+  }
+  return true;
+}
+
+/** Line of sight on the fine raster: buildings block by their real height, forest by ~10 m; a shooter inside a building sees only at window range. */
+function losNav(m: TacticalMap, rt: NavRT, smokes: Smoke[], t: number, x0: number, y0: number, e0: number, x1: number, y1: number, e1: number): boolean {
+  const d = Math.hypot(x1 - x0, y1 - y0), cs = rt.cs;
+  const b0 = rt.bld[navCell(rt, x0, y0)], b1 = rt.bld[navCell(rt, x1, y1)];
+  if (b0 && d > 420) return false;
+  if (d > 60 && (rt.surf[navCell(rt, x1, y1)] === SURF.TUNNEL || rt.surf[navCell(rt, x0, y0)] === SURF.TUNNEL)) return false; // tunnels hide
+  const steps = Math.min(48, Math.max(1, Math.ceil(d / (cs * 1.5))));
+  const a = heightAt(m, x0, y0) + e0, b = heightAt(m, x1, y1) + e1;
+  const live = smokes.length ? smokes.filter((s) => s.until > t) : smokes;
+  const n = rt.n, inv = 1 / cs, half = rt.half, obs = rt.obs, gh = rt.gh, bld = rt.bld, lim = n - 1;
+  const dx = (x1 - x0) / steps, dy = (y1 - y0) / steps, slope = (b - a) / steps, near = cs * 1.2;
+  for (let i = 1; i < steps; i++) {
+    const x = x0 + dx * i, y = y0 + dy * i;
+    if (live.length) for (const s of live) if ((x - s.x) ** 2 + (y - s.y) ** 2 < s.r * s.r) return false;
+    let cx = ((x + half) * inv) | 0, cy = ((y + half) * inv) | 0;
+    if (cx > lim) cx = lim; else if (cx < 0) cx = 0;
+    if (cy > lim) cy = lim; else if (cy < 0) cy = 0;
+    const c = cy * n + cx, o = obs[c];
+    if (!o) continue;
+    const bb = bld[c];
+    if (bb ? bb === b0 || bb === b1 : (d * i) / steps < near || (d * (steps - i)) / steps < near) continue;
+    if (gh[c] + o > a + slope * i) return false;
   }
   return true;
 }
@@ -57,8 +93,10 @@ export function cellFactor(m: TacticalMap, c: number, mob: Mobility): number {
   return OFFROAD[mob] * (m.cover[c] === 1 ? FOREST[mob] : m.cover[c] === 2 ? URBAN[mob] : 1);
 }
 /** Speed multiplier at a point given slope along heading (rise over ~30 m). */
-export function moveFactor(m: TacticalMap, x: number, y: number, hx: number, hy: number, mob: Mobility): number {
+export function moveFactor(m: TacticalMap, x: number, y: number, hx: number, hy: number, mob: Mobility, inb = 0): number {
   if (mob === 'air') return 1;
+  const rt = navOf(m);
+  if (rt) return navFactor(rt, navCell(rt, x, y), mob, inb);
   const f = cellFactor(m, cellOf(m, x, y), mob);
   if (f === 0) return 0;
   const slope = (heightAt(m, x + hx * 30, y + hy * 30) - heightAt(m, x, y)) / 30;
@@ -68,8 +106,10 @@ export function moveFactor(m: TacticalMap, x: number, y: number, hx: number, hy:
 const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 
 /** A* over cells for a mobility class. Returns flat waypoints [x,y,...] (smoothed), [] if unreachable. */
-export function findPath(m: TacticalMap, mob: Mobility, x0: number, y0: number, x1: number, y1: number): number[] {
+export function findPath(m: TacticalMap, mob: Mobility, x0: number, y0: number, x1: number, y1: number, inb = 0, goalB = 0): number[] {
   if (mob === 'air') return [x1, y1];
+  const rt = navOf(m);
+  if (rt) return navPath(rt, mob, x0, y0, x1, y1, inb, goalB);
   const n = m.n, cs = m.sizeM / n, N = n * n;
   const start = cellOf(m, x0, y0);
   let goal = cellOf(m, x1, y1);
@@ -156,3 +196,5 @@ export function findPath(m: TacticalMap, mob: Mobility, x0: number, y0: number, 
   if (cellFactor(m, cellOf(m, x1, y1), mob) === 0) { pts[pts.length - 2] = gx; pts[pts.length - 1] = gy; }
   return pts;
 }
+
+export { snapCell, components };

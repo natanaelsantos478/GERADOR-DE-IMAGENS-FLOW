@@ -1,13 +1,18 @@
 /** Build a TacticalMap (~8x8 km) around a lon/lat from the real world data. */
 import type { LonLat, WorldStatic } from '../../core/contracts';
 import { hashSeed } from '../../core/rng';
+import { decodeRle, SURF, type NavData } from '../../data/vector/nav';
 import type { TacticalMap } from './types';
+import { objectiveCandidates } from './terrainFx';
+import { mainComp, navCell, navCenter, navOf, snapCell } from './nav';
 
 export interface MapOptions {
   sizeM?: number;
   n?: number;
   /** Real terrain heights sampled by the renderer (n*n, row-major from the SOUTH-west cell, metres). Replaces the elevation model. */
   heights?: number[];
+  /** Real OpenStreetMap raster from `prepareTacticalVector`; absent/mismatched (offline, failure) -> procedural map, no error. */
+  vectorArea?: NavData | null;
 }
 
 const M_PER_DEG = 111_320;
@@ -78,13 +83,48 @@ export function buildMapFromWorld(world: WorldStatic, lon: number, lat: number, 
       }
     }
   }
-  return { sizeM, n, heights: heights.map((h) => Math.round(h * 10) / 10), cover, road, water };
+  const map: TacticalMap = { sizeM, n, heights: heights.map((h) => Math.round(h * 10) / 10), cover, road, water };
+  const nav = opts.vectorArea;
+  if (nav && nav.v === 1 && Math.abs(nav.sizeM - sizeM) < 1) applyNav(map, nav);
+  return map;
+}
+
+/** Real raster replaces the procedural cover/roads/water; the coarse legacy layers are derived from it (AI features, old code paths). */
+function applyNav(map: TacticalMap, nav: NavData): void {
+  const { n, sizeM } = map, nn = nav.n, surf = decodeRle(nav.surf, nn * nn, Uint8Array), k = nn / n;
+  map.nav = nav;
+  for (let cy = 0; cy < n; cy++) for (let cx = 0; cx < n; cx++) {
+    let tot = 0, bu = 0, wood = 0, roadN = 0, deep = 0;
+    for (let j = Math.floor(cy * k); j < Math.min(nn, Math.ceil((cy + 1) * k)); j++) for (let i = Math.floor(cx * k); i < Math.min(nn, Math.ceil((cx + 1) * k)); i++) {
+      const s = surf[j * nn + i]; tot++;
+      if (s === SURF.BUILDING || s === SURF.URBAN) bu++; else if (s === SURF.WOOD) wood++; else if (s === SURF.DEEP) deep++;
+      else if ((s >= SURF.MOTORWAY && s <= SURF.SERVICE) || s === SURF.BRIDGE) roadN++;
+    }
+    const c = cy * n + cx;
+    map.cover[c] = bu / tot > 0.25 ? 2 : wood / tot > 0.4 ? 1 : 0;
+    map.water[c] = deep / tot > 0.6 ? 1 : 0;
+    map.road[c] = roadN / tot > 0.05 ? 1 : 0;
+  }
+  void sizeM;
 }
 
 /** Three control points: centre, plus two flank points in the defender's half (moved to passable cells). */
 export function defaultObjectives(map: TacticalMap, attacker: 0 | 1): { name: string; x: number; y: number }[] {
   const dy = attacker === 0 ? 1 : -1, s = map.sizeM;
   const pts = [[0, 0], [-0.26 * s, dy * 0.2 * s], [0.26 * s, dy * 0.2 * s]];
+  const rt = navOf(map);
+  if (rt) {
+    const cand = objectiveCandidates(rt), used = new Set<number>();
+    return pts.map(([x, y], i) => {
+      // prefer a real place of interest (hospital, police, bridge, peak, ...) within 500 m of the nominal point
+      let best = -1, bs = 0;
+      cand.forEach((q, k) => { const d = Math.hypot(q.x - x, q.y - y); if (d < 500 && !used.has(k)) { const sc = q.w - d / 250; if (sc > bs) { bs = sc; best = k; } } });
+      if (best >= 0) used.add(best);
+      const [tx, ty] = best >= 0 ? [cand[best].x, cand[best].y] : [x, y];
+      const c = snapCell(rt, 'wheel', navCell(rt, tx, ty), 250, mainComp(rt, 'wheel')), [cx, cy] = c >= 0 ? navCenter(rt, c) : [tx, ty];
+      return { name: ['A', 'B', 'C'][i], x: cx, y: cy };
+    });
+  }
   return pts.map(([x, y], i) => {
     let best = [x, y], bd = 1e18;
     const cs = map.sizeM / map.n;

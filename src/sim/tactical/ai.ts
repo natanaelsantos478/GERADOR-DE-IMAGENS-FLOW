@@ -1,6 +1,7 @@
 /** Tactical AI for any side (enemy, allies, "auto-command"). Runs every 2 s per side. */
 import { schedule } from './combat';
 import { decideSquad, decideSupport, observeSquad, tap, useNeural } from './aiNeural';
+import { navOf } from './nav';
 import { issueOrder } from './orders';
 import type { Battle, Side, Squad } from './types';
 import { UNITS } from './units';
@@ -13,12 +14,31 @@ const MANEUVER = new Set(['infantry', 'special', 'engineer', 'mech', 'mbt']);
 /** One order of the AI in a closed vocabulary (rules and the neural policy both produce these). */
 export interface Act { k: 'attackMove' | 'move' | 'hold' | 'dig' | 'retreat' | 'attack' | 'smoke'; x: number; y: number; target?: number; wedge?: boolean }
 
+const FOOT_KINDS = new Set(['infantry', 'special', 'engineer']);
+/** Rules: infantry settling on a position in a built-up area garrisons the nearest free enterable building (within 180 m). */
+function tryOccupy(b: Battle, side: Side, s: Squad): boolean {
+  if (!FOOT_KINDS.has(s.kind)) return false;
+  if (s.gar !== undefined || s.order === 'occupy') return true;
+  const rt = navOf(b.map);
+  if (!rt) return false;
+  const c = cacheOf(b), cx = c.sqCx[s.id], cy = c.sqCy[s.id];
+  let best = 0, bd = 180 * 180;
+  for (const bl of rt.data.buildings) {
+    if (!bl.enterable) continue;
+    const d = (bl.cx - cx) ** 2 + (bl.cy - cy) ** 2;
+    if (d >= bd) continue;
+    const occ = (b.garr?.[bl.id] ?? []).filter((q) => c.sqEnts[q]?.length).length;
+    if (occ < bl.cap) { bd = d; best = bl.id; }
+  }
+  return best > 0 && issueOrder(b, side, [s.id], { kind: 'occupy', building: best }).ok;
+}
+
 export function applyAct(b: Battle, side: Side, s: Squad, a: Act): void {
   if (a.k === 'attackMove' || a.k === 'move') {
     if (a.wedge && s.form === 'scatter' && (s.kind === 'mbt' || s.kind === 'mech')) s.form = 'wedge';
     if (s.order === (a.k === 'move' ? 'move' : 'amove') && Math.hypot(s.ox - a.x, s.oy - a.y) < 60) { s.ai = true; return; }
     issueOrder(b, side, [s.id], { kind: a.k, x: a.x, y: a.y });
-  } else if (a.k === 'dig') { if (!s.digging) issueOrder(b, side, [s.id], { kind: 'dig' }); }
+  } else if (a.k === 'dig') { if (tryOccupy(b, side, s)) { s.ai = true; return; } if (!s.digging) issueOrder(b, side, [s.id], { kind: 'dig' }); }
   else if (a.k === 'hold') { if (s.order !== 'hold' && s.order !== 'idle') issueOrder(b, side, [s.id], { kind: 'hold' }); }
   else if (a.k === 'attack') issueOrder(b, side, [s.id], { kind: 'attack', target: a.target! });
   else if (a.k === 'smoke') issueOrder(b, side, [s.id], { kind: 'smoke', x: a.x, y: a.y });

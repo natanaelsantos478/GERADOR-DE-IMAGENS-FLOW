@@ -1,5 +1,8 @@
 /** Target acquisition, firing, projectiles, damage, support strikes and morale. */
 import { coverAt, heightAt, los } from './grid';
+import { onImpact } from './terrainFx';
+import { navCell, navOf } from './nav';
+import { SURF } from '../../data/vector/nav';
 import type { Battle, Ent, Proj, Side } from './types';
 import { UNITS, penFactor, type Weapon } from './units';
 import { DT, cacheOf, def, gauss, isAir, nearby, rnd, wrapPi } from './util';
@@ -16,7 +19,7 @@ export function coverMod(b: Battle, t: Ent): number {
   const lvl = coverAt(b.map, t.x, t.y);
   const foot = isFoot(t);
   const sq = b.squads[t.sq];
-  return Math.min(0.75, (foot ? [0, 0.3, 0.5][lvl] : [0, 0.1, 0.2][lvl]) + sq.dug * (foot ? 0.35 : 0.25));
+  return Math.min(0.75, (foot ? [0, 0.3, 0.5, 0.7][lvl] : [0, 0.1, 0.2, 0.3][lvl]) + sq.dug * (foot ? 0.35 : 0.25));
 }
 const canHit = (w: Weapon, t: Ent) => (isAir(t) ? !!w.air : !w.noGround);
 
@@ -148,15 +151,18 @@ function impact(b: Battle, p: Proj): void {
   const t = p.tgt >= 0 ? b.ents[p.tgt] : null;
   if (p.hit && t && t.alive && !t.gone) damage(b, t, p.dmg, p.pen, p.face, p.supp, p.side);
   else if (t && t.alive && !t.gone && p.tgt >= 0) t.supp = Math.min(1, t.supp + p.supp * 0.4);
+  const rt = navOf(b.map);
+  onImpact(b, p);
   if (p.ar > 0) {
     nearby(b, p.x1, p.y1, p.ar, (o) => {
       if (o === t && p.hit) return;
       const f = 1 - Math.hypot(o.x - p.x1, o.y - p.y1) / p.ar;
       const dug = 1 - 0.5 * b.squads[o.sq].dug;
       if (isAir(o) && p.kind !== 'missile') return;
+      if (p.kind === 'bomb' && rt && rt.surf[navCell(rt, o.x, o.y)] === SURF.TUNNEL) return; // tunnels shelter from air strikes
       damage(b, o, p.dmg * f * 0.9 * dug, p.pen * 0.5, 2, p.supp * f * 1.5, p.side);
     });
-    if (coverAt(b.map, p.x1, p.y1) === 2) b.urbanHits += p.dmg * p.ar * 0.0004;
+    if (coverAt(b.map, p.x1, p.y1) >= 2) b.urbanHits += p.dmg * p.ar * 0.0004;
   }
 }
 

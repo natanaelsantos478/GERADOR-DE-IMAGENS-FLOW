@@ -176,6 +176,12 @@ export const tacticalSystem = defineSystem({
         const s = st(ctx);
         if (!s.battle || s.paused || s.battle.phase === 'ended') return;
         stepBattle(s.battle, dt * s.timeScale);
+        for (const e of s.battle.ev?.splice(0) ?? []) {
+          const battleId = s.battle.strategicBattleId;
+          if (e.k === 'protectedHit') ctx.bus.emit({ type: 'tac.protectedHit', battleId, kind: e.kind, x: e.x, y: e.y, side: e.side });
+          else if (e.k === 'bridgeDestroyed') ctx.bus.emit({ type: 'tac.bridgeDestroyed', battleId, x: e.x, y: e.y });
+          else ctx.bus.emit({ type: 'tac.infraDestroyed', battleId, kind: e.kind, effect: e.effect, x: e.x, y: e.y });
+        }
         finishIfNeeded(ctx);
       },
       battle: () => st(ctx).battle,
