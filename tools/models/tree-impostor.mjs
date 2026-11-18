@@ -30,10 +30,14 @@ await page.goto(`http://localhost:${port}/viewer/viewer.html`);
 await page.waitForFunction('window.renderImpostor');
 
 const io = new NodeIO().registerExtensions([KHRMaterialsUnlit]);
+// ground-clamped billboards (city3d/trees.ts) use the same picture: <species>_3.png + its size in model units
+const sizes = {};
 for (const sp of [...new Set(Object.values(styles.species).map((s) => s.file))]) {
   const r = await page.evaluate(([u, w, h]) => window.renderImpostor(u, w, h), [`/m/${sp}.glb`, W, H]);
   // alpha-tested texture: hard edge alpha so the MASK cutoff matches the silhouette
   const png = await sharp(Buffer.from(r.png.split(',')[1], 'base64')).png({ compressionLevel: 9, palette: true }).toBuffer();
+  fs.writeFileSync(path.join(OUT, `${sp}_3.png`), png);
+  sizes[sp] = { w: +r.w.toFixed(3), h: +r.h.toFixed(3), minY: +r.minY.toFixed(3) };
   const doc = new Document(), buf = doc.createBuffer();
   const hw = r.w / 2, y0 = r.minY, y1 = r.minY + r.h;
   // two crossed quads: X-Y plane and Z-Y plane, base on the model base
@@ -56,4 +60,5 @@ for (const sp of [...new Set(Object.values(styles.species).map((s) => s.file))])
   await io.write(f, doc);
   console.log(`${sp}_3`.padEnd(16), `${r.w.toFixed(1)} x ${r.h.toFixed(1)} m`, (fs.statSync(f).size / 1024).toFixed(0).padStart(3), 'KB');
 }
+fs.writeFileSync(path.join(OUT, 'impostors.json'), JSON.stringify(sizes, null, 1));
 await browser.close(); srv.close();

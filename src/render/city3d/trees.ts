@@ -251,6 +251,42 @@ async function buildModels(scene: Cesium.Scene, tile: TileRef, pts: TreePoint[],
 }
 function disposeModels(scene: Cesium.Scene, ms: TreeModel[]) { for (const m of ms) { scene.primitives.remove(m.model); URL.revokeObjectURL(m.url); } }
 
+/** Picture size of each species' impostor (tools/models/tree-impostor.mjs), in model units. */
+let impSizes: Promise<Record<string, { w: number; h: number; minY: number }>> | null = null;
+const impostorSizes = () => (impSizes ??= fetch(new URL('models/nature/lod/impostors.json', document.baseURI)).then((r) => r.json()));
+/**
+ * Far trees as billboards clamped by Cesium to the terrain it is drawing (CLAMP_TO_GROUND): they follow every terrain
+ * level change by themselves, so they can never float. Each stays upright (rotates only around the local vertical).
+ */
+async function buildBillboards(scene: Cesium.Scene, tile: TileRef, pts: TreePoint[], st: Styles): Promise<TreeModel[]> {
+  const sizes = await impostorSizes(), proj = projector(tile);
+  const bbs = new Cesium.BillboardCollection({ scene });
+  const tint = Cesium.Color.fromCssColorString('#7d9a6a'), up = new Cesium.Cartesian3();
+  for (const p of pts) {
+    const file = st.species[p.sp].file, sz = sizes[file];
+    if (!sz) continue;
+    const [lo, la] = proj.lonLat(p.x, p.y), pos = Cesium.Cartesian3.fromDegrees(lo, la, 0);
+    bbs.add({
+      position: pos, image: new URL(`models/nature/lod/${file}_3.png`, document.baseURI).href,
+      width: sz.w * p.s * p.sw, height: sz.h * p.s, sizeInMeters: true,
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      alignedAxis: Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pos, up).clone(), color: tint,
+    });
+  }
+  scene.primitives.add(bbs);
+  return [{ sp: '*', model: bbs as unknown as Cesium.Model, url: '', n: bbs.length, tris: bbs.length * 2 }];
+}
+/** Near trees: read each base height from the terrain Cesium is drawing right now (same surface the eye sees). */
+function seatOnDrawn(scene: Cesium.Scene, tile: TileRef, pts: TreePoint[]) {
+  const proj = projector(tile), c = new Cesium.Cartographic();
+  for (const p of pts) {
+    const [lo, la] = proj.lonLat(p.x, p.y);
+    c.longitude = Cesium.Math.toRadians(lo); c.latitude = Cesium.Math.toRadians(la); c.height = 0;
+    const h = scene.globe.getHeight(c);
+    if (h !== undefined) p.z = h - 0.3;
+  }
+}
+
 /** Distance thresholds (m, camera to the nearest edge of a cell). */
 export interface TreeLodDist { near: number; mid: number; far: number }
 let forcedLod: TreeLod | null = null;
@@ -319,13 +355,14 @@ export class TreeLayer {
     let left = next.length, done = false;
     const go = () => { if (done) return; done = true; this.pending.delete(old); disposeModels(this.scene, old); this.scene.requestRender(); };
     if (!left) { go(); return; }
-    for (const m of next) m.model.readyEvent.addEventListener(() => { if (--left <= 0) go(); });
+    for (const m of next) { const ev = (m.model as Cesium.Model).readyEvent; if (ev) ev.addEventListener(() => { if (--left <= 0) go(); }); else if (--left <= 0) go(); }
     setTimeout(go, 5000);
   }
   private async rebuild(c: Cell, key: number) {
     c.busy = true; this.rebuilds++;
     const gen = this.gen;
     try {
+      if (key >= 0) seatOnDrawn(this.scene, this.tile, c.pts);
       const next = key < 0 ? [] : await buildModels(this.scene, this.tile, c.pts, this.st, key as TreeLod);
       if (this.dead || gen !== this.gen) { disposeModels(this.scene, next); return; }
       const old = c.models;
@@ -339,7 +376,7 @@ export class TreeLayer {
     const gen = this.gen;
     try {
       const pts = cells.flatMap((c) => c.pts);
-      const next = pts.length ? await buildModels(this.scene, this.tile, pts, this.st, 3) : [];
+      const next = pts.length ? await buildBillboards(this.scene, this.tile, pts, this.st) : [];
       if (this.dead || gen !== this.gen) { disposeModels(this.scene, next); return; }
       for (const m of next) m.model.show = !this.hidden;
       // cells now in the impostor ring drop their own (nearer-level) models once the ring is drawable
