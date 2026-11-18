@@ -20,12 +20,17 @@ interface MfEntry { file: string; lengthM: number; nativeSize: number[]; yawOffs
 let mfP: Promise<Record<string, MfEntry>> | null = null;
 const manifest = () => (mfP ??= fetch(new URL('models/manifest.json', document.baseURI)).then((r) => r.json()));
 
-/** Fleet mix per airport size (0 small, 1 medium, 2 large): [class, weight]. */
+/**
+ * Fleet by airport size (0 small, 1 medium, 2 large): [class, weight]. A small airfield never gets airliners; a regional
+ * airport is mostly regional jets/turboprops; a hub mostly narrow-bodies with many wide-bodies.
+ */
 const MIX: Record<number, [string, number][]> = {
-  2: [['airliner_narrow', 6], ['airliner_wide', 3], ['airliner_regional', 1]],
-  1: [['airliner_narrow', 5], ['airliner_regional', 4], ['bizjet', 1]],
-  0: [['light_plane', 3], ['bizjet', 1], ['airliner_regional', 1]],
+  2: [['airliner_narrow', 5], ['airliner_wide', 4], ['airliner_regional', 1]],
+  1: [['airliner_regional', 5], ['airliner_narrow', 4], ['bizjet', 1]],
+  0: [['light_plane', 4], ['bizjet', 2]],
 };
+/** Share of stands busy by airport size (a hub is fuller than a regional airport). */
+const BUSY = [0.5, 0.65, 0.85];
 /** Airfield radius by size (m): no trees there (the grass between runways reads green and the land-use map may call
  * it managed land / park). */
 const FIELD_R = [120, 900, 1800];
@@ -102,7 +107,7 @@ export class AirportPlanes {
     for (const [gi, g] of gates.entries()) {
       const hx = Math.round(g.x), hy = Math.round(g.y);
       // ~80 % of stands busy, fewer the more damaged the airport is
-      if (hash(hx, hy, 41) > 0.8 * (1 - hit.damage)) continue;
+      if (hash(hx, hy, 41) > (BUSY[hit.a.size] ?? 0.65) * (1 - hit.damage)) continue;
       // nose toward the terminal: nearest building centre within 150 m
       let tx = 0, ty = 0, td = 150;
       for (const [bx, by] of blds) { const d = Math.hypot(bx - g.x, by - g.y); if (d < td && d > 3) { td = d; tx = bx; ty = by; } }
