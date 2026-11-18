@@ -26,6 +26,17 @@ export const inPoly = (p: VPoly, x: number, y: number) => {
   return true;
 };
 
+/**
+ * Height of a tree base: the same ground surface the buildings stand on (the finest terrain level), sunk a little like a
+ * foundation so the trunk never shows a gap on a slope: 0.4 m plus the drop of the ground within 2 m of the trunk.
+ */
+export function seat(ground: Ground, x: number, y: number): number {
+  const z = ground(x, y);
+  let drop = 0;
+  for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) drop = Math.max(drop, z - ground(x + dx, y + dy));
+  return z - 0.4 - drop;
+}
+
 /** Why candidate points of the last placement were kept or dropped (debug: `__city3d.treeDebug`). */
 export interface TreeDiag { candidates: number; blocked: number; water: number; lowGreen: number; sparse: number; forest: number; park: number; notInMap: number; kept: number; k: number }
 export const lastDiag = new WeakMap<TreePoint[], TreeDiag>();
@@ -95,7 +106,7 @@ function placeByPhoto(area: VectorArea, tile: TileRef, ground: Ground, budget: n
     if (rnd > Math.min(1, (a - 0.25) / 0.5)) { d.sparse++; continue; }
     const r = rule(m === 2 ? 'park' : 'wood', ground(jx, jy));
     m === 2 ? d.park++ : d.forest++;
-    const z = ground(jx, jy), tw = r.mix.reduce((s, q) => s + q.weight, 0);
+    const z = seat(ground, jx, jy), tw = r.mix.reduce((s, q) => s + q.weight, 0);
     let w = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = r.mix[0].species;
     for (const q of r.mix) { if (w < q.weight) { sp = q.species; break; } w -= q.weight; }
     const [lo, hi] = r.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);
@@ -154,7 +165,7 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
   // no photo: the map's water and sea-level ground still veto (land-cover polygons may spill over bays and shores)
   const water = rasterPolys(area.water, half, CELL, N);
   const push = (jx: number, jy: number, rule: TreeRule) => {
-    const z = ground(jx, jy), tw = rule.mix.reduce((a, q) => a + q.weight, 0);
+    const z = seat(ground, jx, jy), tw = rule.mix.reduce((a, q) => a + q.weight, 0);
     let r = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = rule.mix[0].species;
     for (const q of rule.mix) { if (r < q.weight) { sp = q.species; break; } r -= q.weight; }
     const [lo, hi] = rule.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);

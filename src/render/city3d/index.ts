@@ -149,7 +149,8 @@ export function attachCity3D(globe: Globe): City3D {
       if (d < c.treeDist * 1.1) void t.ensureTrees(styles()!); else if (t.trees && d > c.treeDist * 1.8) t.dropTrees();
       // a camera low among the trees (tactical close-ups) would sit inside the crowns: hide the trees then
       const inCanopy = agl < 70;
-      if (t.trees) { t.trees.update(cp, { near: c.treeNear, mid: c.treeMid, far: c.treeDist }, inCanopy); void t.syncTreeLevel(styles()!).then(() => scene.requestRender()); }
+      // trees stand on the same ground surface as the buildings (no per-level re-seating: that made some float)
+      if (t.trees) t.trees.update(cp, { near: c.treeNear, mid: c.treeMid, far: c.treeDist }, inCanopy);
     }
     scene.requestRender();
   }
