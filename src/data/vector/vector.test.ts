@@ -105,3 +105,17 @@ describe('vector adapters', () => {
     void rasterizeNav;
   });
 });
+
+describe('rasterize: closed building rings', () => {
+  it('keeps the footprint of a closed ring instead of collapsing it to 2 points', async () => {
+    const { emptyArea } = await import('./types');
+    const a = emptyArea(0, 0, 400, 16);
+    // 30 x 20 m rectangle with extra collinear vertices, closed (first == last)
+    a.buildings.push({ cls: 'building', h: 9, rings: [[0, 0, 10, 0, 20, 0, 30, 0, 30, 10, 30, 20, 15, 20, 0, 20, 0, 10, 0, 0]] });
+    const b = rasterizeNav(a).buildings[0];
+    const pts = b.poly.length / 2;
+    expect(pts).toBeGreaterThanOrEqual(4);
+    let s = 0; for (let i = 0; i < pts; i++) { const j = (i + 1) % pts; s += b.poly[i * 2] * b.poly[j * 2 + 1] - b.poly[j * 2] * b.poly[i * 2 + 1]; }
+    expect(Math.abs(s / 2)).toBeCloseTo(600, -1);
+  });
+});

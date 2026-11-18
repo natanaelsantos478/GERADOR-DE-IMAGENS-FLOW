@@ -42,13 +42,15 @@ export interface TacticalLayer {
   pinFx(on: boolean): void;
   /** Test/debug: freeze the age of the live effects (dust of a collapse stays on screen for a capture). */
   holdFx(on: boolean): void;
+  /** Test/debug: run the effect clock at k x real time (k < 1 slows dust/smoke so a slow headless capture still sees them; 1 = normal). */
+  slowFx(k: number): void;
   tracerAt(x0: number, y0: number, x1: number, y1: number): void;
   ents(): { id: number; sq: number; side: number; kind: string; x: number; y: number; alive: boolean; shown: boolean; ready: boolean }[];
   destroy(): void;
 }
 interface E { cl?: boolean; mul?: number; pitch?: number; styled?: boolean; wreckAt?: number; smokeT?: number; dustT?: number; dot?: Cesium.Billboard; h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
-type FxKind = 'fire' | 'flame' | 'smoke' | 'dust' | 'flash' | 'debris';
-interface Fx { b: Cesium.Billboard; t0: number; size: number; grow: number; life: number; lon: number; lat: number; h0: number; z: number; vx: number; vy: number; vz: number; kind: FxKind }
+type FxKind = 'fire' | 'flame' | 'smoke' | 'ash' | 'dust' | 'flash' | 'debris';
+interface Fx { b: Cesium.Billboard; t0: number; size: number; grow: number; life: number; lon: number; lat: number; h0: number; z: number; vx: number; vy: number; vz: number; kind: FxKind; alpha: number }
 const MAX_FX = 240, MAX_CRATERS = 36;
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -152,8 +154,9 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   let deployLines: Cesium.Polyline[] = [];
   let hoverSq = -1, groundC = 0;
   // destroyed buildings (collapse + rubble in the city 3D) and marked routes
+  const smolder = new Map<number, { from: number; until: number; next: number }>();
   const ruinCache = new Map<number, Ruin>(), ruinFx = new Map<number, { t: number; start: boolean; end: boolean; acc: number; blk: number; bp?: [number, number] }>();
-  let ruinList: Ruin[] = [], ruinN = -1, held = false, heldNow = 0;
+  let ruinList: Ruin[] = [], ruinN = -1, held = false, fxSlow = 1, vnow = performance.now(), vlast = vnow;
   const routeVis = new Map<number, { line: Cesium.Polyline; marks: Cesium.Billboard[]; sig: string; at: number }>();
   let navB: Map<number, import('../../data/vector/nav').NavBuilding> | null = null;
   const garrLines = new Map<number, { l: Cesium.Polyline; side: number }>();
@@ -162,9 +165,9 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   const squadMarks = new Map<number, Cesium.Billboard>();
   let saved: { mode: string; fill: boolean; light: Cesium.Light; roads: boolean } | null = null;
   let tcam: ReturnType<typeof createTacCamera> | null = null, pinned = false;
-  const PIN_AGE: Record<FxKind, number> = { flash: 0.12, fire: 0.18, flame: 0.25, smoke: 0.4, dust: 0.35, debris: 0.3 };
+  const PIN_AGE: Record<FxKind, number> = { flash: 0.12, fire: 0.18, flame: 0.25, smoke: 0.4, ash: 0.4, dust: 0.35, debris: 0.3 };
   let mul = 1, last = performance.now(), nextShotEv = 0, wrecks = 0;
-  const imgs = { flame: spriteCanvas([255, 190, 90], 1), smoke: puffCanvas([78, 76, 74]), dark: spriteCanvas([30, 30, 30], 0.9), dust: puffCanvas([168, 146, 112]), flash: flashCanvas(), fire: fireCanvas(), debris: debrisCanvas() };
+  const imgs = { flame: spriteCanvas([255, 190, 90], 1), smoke: puffCanvas([78, 76, 74]), ash: puffCanvas([150, 144, 136]), dark: spriteCanvas([30, 30, 30], 0.9), dust: puffCanvas([206, 190, 160]), flash: flashCanvas(), fire: fireCanvas(), debris: debrisCanvas() };
   const craterImg = craterCanvas();
   const neutralFlag = (() => { const c = document.createElement('canvas'); c.width = 30; c.height = 20; const g = c.getContext('2d')!; g.fillStyle = '#d6d6d6'; g.fillRect(0, 0, 30, 20); g.strokeStyle = '#555'; g.strokeRect(0.5, 0.5, 29, 19); return c; })();
 
@@ -256,7 +259,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     cur.pool?.destroy();
     for (const c of [bills, lines, labels]) scene.primitives.remove(c);
     for (const e of craters) viewer.entities.remove(e);
-    craters = []; cur = null; fxs = []; ruinCache.clear(); ruinFx.clear(); ruinList = []; ruinN = -1; routeVis.clear(); setRuins([], 0); projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); garrLines.clear(); navB = null; smokeZones.clear(); wrecks = 0;
+    craters = []; cur = null; fxs = []; ruinCache.clear(); ruinFx.clear(); smolder.clear(); ruinList = []; ruinN = -1; routeVis.clear(); setRuins([], 0); projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); garrLines.clear(); navB = null; smokeZones.clear(); wrecks = 0;
     renderLock(globe, 'tac', false);
     tcam?.destroy(); tcam = null;
     if (saved) { scene.light = saved.light; if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); if (saved.roads) globe.setLayerVisible('roads', true); saved = null; }
@@ -267,31 +270,31 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
 
   // ------------------------------------------------------------ frame
   const squadSide = (sq: number) => cur!.b.squads[sq]?.side ?? 0;
-  interface FxOpt { grow?: number; life?: number; up?: number; vx?: number; vy?: number; vz?: number }
+  interface FxOpt { grow?: number; life?: number; up?: number; vx?: number; vy?: number; vz?: number; /** peak opacity 0..1 (default 1) */ alpha?: number; /** on-screen size limit in px at the end of the growth (default FX_MAX_PX[kind]) */ px?: number }
   /** Pooled sprite effect; positions are in battle metres, velocities in m/s (render-only ballistics). */
   /** Metres that cover `px` pixels at the ground point (so effects stay readable from far away). */
   function pxM(x: number, y: number, px: number): number {
     const [lo, la] = ll(x, y), d = Math.max(20, Cesium.Cartesian3.distance(viewer.camera.positionWC, Cesium.Cartesian3.fromDegrees(lo, la, hAt(x, y))));
     return (px * 2 * d * Math.tan(((viewer.camera.frustum as Cesium.PerspectiveFrustum).fovy ?? 1) / 2)) / (scene.canvas.clientHeight || 900);
   }
-  const FX_MAX_PX: Record<FxKind, number> = { flash: 70, fire: 100, flame: 90, smoke: 130, dust: 110, debris: 14 };
+  const FX_MAX_PX: Record<FxKind, number> = { flash: 70, fire: 100, flame: 90, smoke: 130, ash: 120, dust: 110, debris: 14 };
   let testFx = false;
   function spawnFx(x: number, y: number, size: number, kind: FxKind, o: FxOpt = {}) {
     if (pinned && !testFx) return; // frozen-effects capture: only the effects the caller fires explicitly
     // legible from far away (minimum on-screen size) but never bigger than FX_MAX_PX on screen at the end of its growth, whatever the camera distance
-    const gmax = 0.6 + (o.grow ?? 3) * 0.5, hi = pxM(x, y, FX_MAX_PX[kind]) / (kind === 'debris' ? 1 : gmax);
-    size = Math.min(Math.max(size, pxM(x, y, kind === 'flash' ? 20 : kind === 'debris' ? 5 : kind === 'smoke' || kind === 'dust' ? 40 : 52)), hi);
+    const gmax = 0.6 + (o.grow ?? 3) * 0.5, hi = pxM(x, y, o.px ?? FX_MAX_PX[kind]) / (kind === 'debris' ? 1 : gmax);
+    size = Math.min(Math.max(size, pxM(x, y, kind === 'flash' ? 20 : kind === 'debris' ? 5 : kind === 'smoke' || kind === 'ash' || kind === 'dust' ? 40 : 52)), hi);
     let f = fxs.find((q) => !q.b.show);
     if (!f && fxs.length < MAX_FX) {
       const b = bills.add({ position: Cesium.Cartesian3.ZERO, sizeInMeters: true, show: false, disableDepthTestDistance: 0 });
-      fxs.push((f = { b, t0: 0, size: 0, grow: 3, life: 1, lon: 0, lat: 0, h0: 0, z: 0, vx: 0, vy: 0, vz: 0, kind }));
+      fxs.push((f = { b, t0: 0, size: 0, grow: 3, life: 1, lon: 0, lat: 0, h0: 0, z: 0, vx: 0, vy: 0, vz: 0, kind, alpha: 1 }));
     }
     if (!f) return;
     const [lon, lat] = ll(x, y);
     f.b.setImage(`fx-${kind}`, imgs[kind]);
-    Object.assign(f, { t0: performance.now(), size, grow: o.grow ?? 3, life: o.life ?? 1.6, lon, lat, h0: hAt(x, y), z: o.up ?? size * 0.3, vx: (o.vx ?? 0) / mul0(lat), vy: (o.vy ?? 0) / M_PER_DEG, vz: o.vz ?? 0, kind });
+    Object.assign(f, { t0: vnow, size, grow: o.grow ?? 3, life: o.life ?? 1.6, lon, lat, h0: hAt(x, y), z: o.up ?? size * 0.3, vx: (o.vx ?? 0) / mul0(lat), vy: (o.vy ?? 0) / M_PER_DEG, vz: o.vz ?? 0, kind, alpha: o.alpha ?? 1 });
     f.b.position = Cesium.Cartesian3.fromDegrees(lon, lat, f.h0 + f.z);
-    f.b.width = f.b.height = size; f.b.show = true; f.b.color = C.WHITE;
+    f.b.width = f.b.height = size; f.b.show = true; f.b.color = C.WHITE.withAlpha(f.alpha);
   }
   const mul0 = (lat: number) => M_PER_DEG * Math.cos((lat * Math.PI) / 180);
   function crater(x: number, y: number, r: number) {
@@ -428,7 +431,6 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   }
 
   function updateFx(now: number, dt: number) {
-    if (held) { now = heldNow; dt = 0; } else heldNow = now;
     for (const f of fxs) {
       if (!f.b.show) continue;
       const a = pinned ? PIN_AGE[f.kind] : (now - f.t0) / 1000 / f.life;
@@ -440,8 +442,8 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
         f.b.position = Cesium.Cartesian3.fromDegrees(f.lon, f.lat, f.h0 + f.z);
       }
       f.b.width = f.b.height = f.kind === 'debris' ? f.size : f.size * (0.6 + a * f.grow * 0.5);
-      const fade = f.kind === 'smoke' ? Math.min(1, a * 6) * (1 - a) : f.kind === 'flash' ? 1 - a * a : Math.min(1, (1 - a) * 2.2);
-      f.b.color = C.WHITE.withAlpha(Math.max(0, fade));
+      const fade = f.kind === 'smoke' || f.kind === 'ash' ? Math.min(1, a * 6) * (1 - a) : f.kind === 'flash' ? 1 - a * a : Math.min(1, (1 - a) * 2.2);
+      f.b.color = C.WHITE.withAlpha(Math.max(0, fade * f.alpha));
     }
   }
 
@@ -605,7 +607,11 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     const spec = cityStyles()?.rubble, nb = navB?.get(r.id);
     if (!spec || !nb) return null;
     const ring: number[] = [];
-    for (let i = 0; i < nb.poly.length; i += 2) ring.push(...ll(nb.poly[i], nb.poly[i + 1]));
+    if (nb.poly.length >= 6) for (let i = 0; i < nb.poly.length; i += 2) ring.push(...ll(nb.poly[i], nb.poly[i + 1]));
+    else { // the nav footprint came out degenerate (2 points: a closed ring simplified to its end points): a square of the same area around the centre; the city tile swaps in the real footprint when it has it
+      const hs = Math.sqrt(Math.max(20, nb.area)) / 2;
+      for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) ring.push(...ll(nb.cx + dx * hs, nb.cy + dy * hs));
+    }
     const [lon, lat] = ll(nb.cx, nb.cy);
     o = { key: `${b.id}:${r.id}`, id: r.id, ring, lon, lat, fl: r.fl, h: r.h, m: r.m, by: r.by, t: r.t, dur: spec.collapse[r.by].duration };
     if (r.by === 'breach') {
@@ -617,7 +623,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     ruinCache.set(r.id, o);
     return o;
   }
-  function updateRuins(b: Battle, now: number) {
+  function updateRuins(b: Battle, now: number, fnow: number) {
     const rub = b.map.rub ?? [];
     if (rub.length !== ruinN || ruinList.length !== rub.length) {
       const list: Ruin[] = [];
@@ -642,14 +648,36 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
         if (bp && Math.random() < 0.6) { const k = Math.random() * 0.5; return [bp[0] + (nb.cx - bp[0]) * k + rnd(-3, 3), bp[1] + (nb.cy - bp[1]) * k + rnd(-3, 3)]; }
         const a = rnd(0, 6.28), d = Math.sqrt(Math.random()) * R; return [nb.cx + Math.sin(a) * d, nb.cy + Math.cos(a) * d];
       };
-      if (!f.start) { // the roof goes: one big cloud
+      const dd = cityStyles()!.rubble.dust, room = () => fxs.reduce((n, q) => n + (q.b.show && (q.kind === 'dust' || q.kind === 'smoke' || q.kind === 'ash') ? 1 : 0), 0) < dd.maxPuffs;
+      if (!f.start) { // the roof goes: one big cloud that grows and lingers, plus the smoke that keeps rising afterwards
         f.start = true;
-        for (let i = 0; i < 3; i++) { const [x, y] = at(); spawnFx(x, y, size * 2 * (1 + i * 0.3), 'dust', { grow: 2.8, life: 2.6, up: nb.h * 0.4, vz: 2 + i }); }
+        smolder.set(o.id, { from: fnow, until: fnow + (o.dur + rnd(dd.smokeTime[0], dd.smokeTime[1])) * 1000, next: fnow + o.dur * 1000 * 0.6 });
+        for (let i = 0; i < dd.cloudPuffs && room(); i++) { const [x, y] = at(); spawnFx(x, y, size * rnd(1.6, 2.6), 'dust', { grow: dd.cloudGrow, life: rnd(dd.cloudLife[0], dd.cloudLife[1]), up: nb.h * rnd(0.3, 0.8) + size * 0.4, vz: rnd(1.5, 4), vx: rnd(-1.2, 1.2), vy: rnd(-1.2, 1.2), alpha: dd.cloudAlpha, px: 260 }); }
       }
       f.acc += dsim * spec.dust; f.blk += dsim * spec.blocks;
-      for (; f.acc >= 1; f.acc -= 1) { const [x, y] = at(); spawnFx(x, y, size * rnd(1.1, 1.8), 'dust', { grow: 2.4, life: 2 + Math.random(), up: nb.h * Math.max(0.1, 0.55 * (1 - p)), vz: 1.5, vx: rnd(-2, 2), vy: rnd(-2, 2) }); }
+      for (; f.acc >= 1; f.acc -= 1) { if (!room()) { f.acc = 0; break; } const [x, y] = at(); spawnFx(x, y, size * rnd(1.1, 1.8), 'dust', { grow: 2.8, life: rnd(4, 7), up: nb.h * Math.max(0.2, 0.55 * (1 - p)) + size * 0.3, vz: 1.5, vx: rnd(-2, 2), vy: rnd(-2, 2), alpha: dd.cloudAlpha * 0.8, px: 200 }); }
       for (; f.blk >= 1; f.blk -= 1) { const [x, y] = at(); spawnFx(x, y, Math.min(1.3, 0.5 + nb.area / 400) * Math.max(1, mul * 0.6), 'debris', { grow: 0, life: 1.4, up: nb.h * Math.max(0.2, 1 - p), vx: rnd(-3, 3), vy: rnd(-3, 3), vz: rnd(-4, 1) }); }
-      if (p > 0.8 && !f.end) { f.end = true; for (let i = 0; i < 2; i++) { const [x, y] = at(); spawnFx(x, y, size * 2.4, 'dust', { grow: 3, life: 3.4, up: 2, vz: 1.2 }); } }
+      if (p > 0.8 && !f.end) { f.end = true; for (let i = 0; i < 3 && room(); i++) { const [x, y] = at(); spawnFx(x, y, size * 2.6, 'dust', { grow: dd.cloudGrow, life: rnd(dd.cloudLife[0], dd.cloudLife[1]), up: 3 + size * 0.5, vz: 1.2, alpha: dd.cloudAlpha, px: 260 }); } }
+    }
+    updateSmolder(fnow);
+  }
+  /** Thin smoke that keeps rising from the recent heaps for 30-60 s; only the newest `maxSmoking` heaps, within the puff cap. */
+  function updateSmolder(now: number) {
+    const dd = cityStyles()?.rubble.dust;
+    if (!dd || !smolder.size) return;
+    for (const [id, sm] of smolder) if (now >= sm.until) smolder.delete(id);
+    if (pinned) return;
+    const live = [...smolder].sort((u, v) => v[1].from - u[1].from).slice(0, dd.maxSmoking);
+    let puffs = fxs.reduce((n, q) => n + (q.b.show && (q.kind === 'dust' || q.kind === 'smoke' || q.kind === 'ash') ? 1 : 0), 0);
+    for (const [id, sm] of live) {
+      if (now < sm.next || puffs >= dd.maxPuffs) continue;
+      const nb = navB?.get(id);
+      if (!nb) continue;
+      const left = clamp((sm.until - now) / (sm.until - sm.from), 0, 1); // thins out as the heap cools
+      sm.next = now + dd.smokeEvery * 1000 * rnd(0.7, 1.3) / (0.4 + 0.6 * left);
+      const R = Math.sqrt(nb.area) * 0.35, a = rnd(0, 6.28), d = Math.sqrt(Math.random()) * R;
+      spawnFx(nb.cx + Math.sin(a) * d, nb.cy + Math.cos(a) * d, clamp(Math.sqrt(nb.area) * 0.3, 4, 10), 'ash', { grow: 2.6, life: rnd(dd.smokeLife[0], dd.smokeLife[1]), up: 4 + Math.sqrt(nb.area) * 0.15, vz: 2.2 * clamp(mul * 0.6, 1, 6), vx: rnd(0.3, 1.2), vy: rnd(-0.4, 0.4), alpha: dd.smokeAlpha * (0.5 + 0.5 * left), px: 120 });
+      puffs++;
     }
   }
 
@@ -711,7 +739,10 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     const g = getGame();
     const b = g?.state.tactical?.battle ?? null;
     const now = performance.now();
-    const dt = Math.min(0.1, (now - last) / 1000);
+    // effects run on their own clock so a capture can freeze (hold) or slow them (slowFx) while the battle goes on
+    const fk = held ? 0 : fxSlow;
+    vnow += (now - vlast) * fk; vlast = now;
+    const dt = Math.min(0.1, (now - last) / 1000), fdt = dt * fk;
     last = now;
     if (!g || !b || !cur || cur.id !== b.id) return;
     if (!pinned && testLines.length) { for (const l of testLines) lines.remove(l); testLines.length = 0; }
@@ -721,13 +752,13 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     updateClusters(now);
     updateEnts(b, now, dt);
     updateProjectiles(b, now);
-    updateFx(now, dt);
+    updateFx(vnow, fdt);
     updateSmoke(b);
     updateObjectives(b);
     updateDeploy(b);
     updateSquads(b);
     updateGarrison(b);
-    updateRuins(b, now);
+    updateRuins(b, now, vnow);
     updateRoutes(b, now);
   };
   scene.preRender.addEventListener(onPre);
@@ -803,6 +834,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     muzzleAt: (x, y, big = 3) => { testFx = true; spawnFx(x, y, big * Math.max(1, mul * 0.7), 'flash', { grow: 0.8, life: 0.16, up: 2 * clamp(mul * 0.7, 1, 10) }); testFx = false; },
     explodeAt: (x, y, r = 12) => { testFx = true; explode(x, y, r); testFx = false; },
     holdFx: (on) => { held = on; },
+    slowFx: (k) => { fxSlow = Math.max(0, k); },
     pinFx: (on) => { pinned = on; if (on) for (const f of fxs) f.b.show = false; },
     tracerAt: (x0, y0, x1, y1) => { const l = lines.add({ positions: [P(x0, y0, 2.5), P(x1, y1, 2.5)], width: 5, material: Cesium.Material.fromType('PolylineGlow', { color: C.fromCssColorString('#ffd060'), glowPower: 0.4, taperPower: 0.9 }) }); testLines.push(l); },
     ents: () => [...(cur?.ents.values() ?? [])].map((e) => ({ id: e.ent.id, sq: e.ent.sq, side: e.ent.side, kind: e.ent.kind, x: e.ent.x, y: e.ent.y, alive: e.ent.alive, shown: !!e.h.model?.show, ready: !!e.h.model?.ready })),

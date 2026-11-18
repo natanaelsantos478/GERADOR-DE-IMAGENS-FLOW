@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { collapsePose, generateRubble, inRing, RUBBLE_BY, RUBBLE_MATS, rubbleHeight, validateRubble, type RubbleInput } from './rubble';
+import { collapsePose, generateRubble, triangles, inRing, RUBBLE_BY, RUBBLE_MATS, rubbleHeight, validateRubble, type RubbleInput } from './rubble';
 
 const spec = validateRubble(JSON.parse(readFileSync('public/data/styles/rubble.json', 'utf8')));
 const box = (w: number, d: number, x = 0, y = 0) => [x - w / 2, y - d / 2, x + w / 2, y - d / 2, x + w / 2, y + d / 2, x - w / 2, y + d / 2];
@@ -37,8 +37,8 @@ describe('rubble generator', () => {
         const r = generateRubble(spec, input({ mat: m, fl, ring: box(w, d) }));
         expect(r.pieces.length).toBeLessThanOrEqual(s.maxPieces);
         expect(r.pieces.length).toBeGreaterThanOrEqual(s.minPieces);
-        expect(r.tris).toBe(r.pieces.length * 12 + r.mound.pts.length * 5);
-        expect(r.tris).toBeLessThanOrEqual(s.maxPieces * 12 + 60);
+        expect(r.tris).toBe(triangles(r.pieces.length, r.mound));
+        expect(r.tris).toBeLessThanOrEqual(s.maxPieces * 12 + 200);
       }
     }
   });
@@ -55,16 +55,50 @@ describe('rubble generator', () => {
   });
   it('keeps the heap on the footprint and its pieces near the heap', () => {
     const r = generateRubble(spec, input({ ring: box(30, 20, 5, 5) }));
-    for (const [px, py] of r.mound.pts) expect(Math.hypot(px, py)).toBeLessThanOrEqual(r.radius + 1e-6);
+    for (const [px, py] of r.mound.pts) expect(Math.hypot(px, py)).toBeLessThanOrEqual(r.radius + r.spill + 1e-6);
     for (const p of r.pieces) {
-      expect(inRing(box(30, 20, 5, 5), r.cx + p.x, r.cy + p.y) || Math.hypot(p.x, p.y) < 12).toBe(true);
+      expect(inRing(box(30, 20, 5, 5), r.cx + p.x, r.cy + p.y) || Math.hypot(p.x, p.y) < r.radius + r.spill + 1).toBe(true);
       expect(p.z).toBeLessThanOrEqual(r.height * 1.05 + p.sz);
       expect(p.z).toBeGreaterThan(0);
     }
   });
+  it('heap is 25-40% of the (capped) original height: house of 2 floors 2-3 m, 8-floor block 5-8 m', () => {
+    const house = generateRubble(spec, input({ mat: 'brick', fl: 2, h: 6.4, ring: box(12, 10) }));
+    expect(house.height).toBeGreaterThanOrEqual(2); expect(house.height).toBeLessThanOrEqual(3);
+    const tower = generateRubble(spec, input({ mat: 'reinforced', fl: 8, h: 25.6, ring: box(30, 24) }));
+    expect(tower.height).toBeGreaterThanOrEqual(5); expect(tower.height).toBeLessThanOrEqual(8);
+    const sky = generateRubble(spec, input({ mat: 'reinforced', fl: 60, h: 220, ring: box(40, 40) }));
+    expect(sky.height).toBeLessThanOrEqual(spec.materials.reinforced.maxHeight);
+  });
+  it('covers the whole footprint and overflows 1-3 m into the street', () => {
+    const ring = box(16, 12), r = generateRubble(spec, input({ mat: 'concrete', fl: 4, ring }));
+    expect(r.spill).toBeGreaterThanOrEqual(1); expect(r.spill).toBeLessThanOrEqual(3.01);
+    // every footprint corner (within the fill) lies inside the heap outline; some of the heap is outside the footprint
+    const inside = (x: number, y: number) => inRing(r.mound.pts.flat(), x, y);
+    for (const [x, y] of [[-6, -4], [6, -4], [6, 4], [-6, 4], [0, 0]]) expect(inside(x * 0.8, y * 0.8)).toBe(true);
+    expect(r.mound.pts.some(([x, y]) => !inRing(ring, r.cx + x, r.cy + y))).toBe(true);
+    // the ground stain reaches beyond the heap everywhere
+    r.decal.pts.forEach(([x, y], i) => expect(Math.hypot(x, y)).toBeGreaterThan(Math.hypot(...r.mound.pts[i]) + 1.5));
+  });
+  it('leaves standing wall fragments with a facade texture, vertical-ish and bigger than a loose block', () => {
+    const r = generateRubble(spec, input({ mat: 'brick', fl: 4, h: 12.8, ring: box(20, 14) })), walls = r.pieces.filter((p) => p.kind === 'wall');
+    expect(walls.length).toBeGreaterThanOrEqual(spec.materials.brick.walls.min);
+    expect(walls.length).toBeLessThanOrEqual(spec.materials.brick.walls.max);
+    for (const w of walls) { expect(w.tex).toMatch(/^facade_/); expect(w.sz).toBeGreaterThan(1.5); expect(w.sy).toBeGreaterThan(2); expect(Math.abs(w.pitch)).toBeLessThan(0.2); }
+  });
+  it('pieces are bigger than before: slabs of a concrete block reach several metres', () => {
+    const r = generateRubble(spec, input({ mat: 'concrete', fl: 6, h: 19, ring: box(40, 30) }));
+    expect(Math.max(...r.pieces.filter((p) => p.kind === 'slab').map((p) => p.sx))).toBeGreaterThan(3);
+  });
+  it('dust pattern: cloud lasts 8-15 s, residual smoke 30-60 s, bounded puff count', () => {
+    expect(spec.dust.cloudLife).toEqual([8, 15]); expect(spec.dust.smokeTime).toEqual([30, 60]);
+    expect(spec.dust.maxPuffs).toBeLessThanOrEqual(200);
+    const bad = JSON.parse(readFileSync('public/data/styles/rubble.json', 'utf8')); delete bad.dust;
+    expect(() => validateRubble(bad)).toThrow(/dust/);
+  });
   it('handles an L-shaped (concave) footprint and a degenerate sliver without NaN', () => {
     const L = [0, 0, 20, 0, 20, 8, 8, 8, 8, 20, 0, 20];
-    for (const ring of [L, box(40, 0.4)]) {
+    for (const ring of [L, box(40, 0.4), [0, 0, 12, 9]]) { // the last one: a 2-point 'ring' (degenerate footprint)
       const r = generateRubble(spec, input({ ring }));
       expect(JSON.stringify(r)).not.toMatch(/null|NaN/);
     }

@@ -29,6 +29,8 @@ export interface City3D {
   pinRuins(p: number | null): void;
   /** Destruction state of the visible tiles: buildings hidden, ruins finished, collapses playing, rubble triangles. */
   ruinStats(): { hidden: number; done: number; animating: number; tris: number; matched: number; nearest: number };
+  /** Test/debug: per tile, what its ruin hiding did (tile key, ruins touching it, matched buildings, nearest centroid to the first ruin, tile state). */
+  ruinTiles(): { tile: string; state: string; stats: unknown }[];
   /** Test/debug: the tallest big buildings of the loaded tiles (lon/lat of the footprint centre). */
   tall(n?: number): { lon: number; lat: number; h: number; area: number }[];
   /** Test/debug: rebuild the material as it was before the opacity fix (legacy = true) or as shipped, regenerating the visible tiles. */
@@ -177,6 +179,7 @@ export function attachCity3D(globe: Globe): City3D {
       scene.requestRender();
     },
     async legacyBlend(legacy) { opacityDebug.legacy = legacy; await reloadStyles(true); },
+    ruinTiles: () => [...tiles.values()].filter((t) => t.rub.stats.hidden > 0 || t.rub.stats.nearest >= 0).map((t) => ({ tile: t.ref.key, state: t.state, stats: t.rub.stats, ruins: t.rub.debug() })),
     ruinStats: () => [...tiles.values()].reduce((a, t) => ({ hidden: a.hidden + t.rub.stats.hidden, done: a.done + t.rub.stats.done, animating: a.animating + t.rub.stats.animating, tris: a.tris + t.rub.stats.tris, matched: a.matched + t.rub.stats.matched, nearest: Math.max(a.nearest, t.rub.stats.nearest) }), { hidden: 0, done: 0, animating: 0, tris: 0, matched: 0, nearest: -1 }),
     stats() {
       const all = [...tiles.values()];

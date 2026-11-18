@@ -78,7 +78,7 @@ test('tático: prédio destruído por artilharia desmorona e vira escombros', as
   const near = await page.evaluate(([x, y]) => {
     const g = window.__game!, b = g.state.tactical.battle!;
     const mine = b.squads.filter((q) => q.side === b.player).slice(0, 2);
-    const pts = [[x - 34, y - 30], [x - 8, y - 44]];
+    const pts = [[x - 60, y - 40], [x - 30, y - 62]]; // outside the 70 m scatter core of the shells
     mine.forEach((q, i) => {
       q.x = pts[i][0]; q.y = pts[i][1]; q.ox = q.x; q.oy = q.y; q.path = []; q.pi = 0; q.order = 'idle';
       b.ents.filter((e) => e.sq === q.id && !e.gone).forEach((e, k) => { e.x = q.x + ((k % 4) - 1.5) * 5; e.y = q.y + Math.floor(k / 4) * 5; });
@@ -95,7 +95,7 @@ test('tático: prédio destruído por artilharia desmorona e vira escombros', as
     expect(h, 'câmera acima de 70 m (árvores somem abaixo disso)').toBeGreaterThan(70);
     return h;
   };
-  const camH = await look(190, -42, 25);
+  const camH = await look(165, -55, 25); // steep enough to see into the lot between the neighbouring buildings
   {
     const dbg = await page.evaluate((id) => { const b = window.__game!.state.tactical.battle!; const nb = (b.map.nav!.buildings as any[]).find((q) => q.id === id); const lon = b.center[0] + nb.cx / (111320 * Math.cos((b.center[1] * Math.PI) / 180)), lat = b.center[1] + nb.cy / 111320; return { nb: { area: Math.round(nb.area), h: nb.h, cx: nb.cx, cy: nb.cy }, near: (window as any).__city3d.near(lon, lat, 5) }; }, target.id);
     log(`alvo nav vs cidade 3D: ${JSON.stringify(dbg)}`);
@@ -122,6 +122,7 @@ test('tático: prédio destruído por artilharia desmorona e vira escombros', as
   }, [target.id, target.x, target.y] as [number, number, number]);
   const strikes = res.salvos;
   expect(res.fell, `prédio não caiu após ${strikes} salvas: ${JSON.stringify(res)}`).toBe(true);
+  await ev(() => window.__tactical!.slowFx(0.03)); // software GL: a frame takes seconds, the dust/smoke clock runs 30x slower from the fall on so the captures still see them
   const rec = await ev(() => (window.__game!.state.tactical.battle!.map.rub as any[]).find((r: any) => r.id === (window as any).__rubTarget));
   expect(rec.m).toBeTruthy();
   log(`caiu após ${strikes} salvas: ${JSON.stringify(rec)} (b.t ${res.t})`);
@@ -140,18 +141,22 @@ test('tático: prédio destruído por artilharia desmorona e vira escombros', as
   await ev(() => { (window as any).__city3d.pinRuins(null); window.__tactical!.holdFx(false); });
   for (let i = 0; i < 24; i++) await ev(() => window.__game!.ctx.api.tactical.advance(0.25));
   await expect.poll(() => ev(() => { const s = (window as any).__city3d.ruinStats(); return s.done >= 1 && s.animating === 0; }), { timeout: 180_000 }).toBe(true);
-  await page.waitForTimeout(6000); // dust fades
-  await settle();
+  await settle(); // the cloud lingers 8-15 s and thin smoke keeps rising ~30-60 s: the photo shows it
+  log(`fx vivos (poeira/fumaça) ${JSON.stringify(await ev(() => window.__tactical!.stats()))}`);
+  log(`tiles com ruína: ${JSON.stringify(await ev(() => (window as any).__city3d.ruinTiles()))}`);
+  // the tile re-batches its buildings asynchronously after the ruin appears (slow on software GL): wait for the standing building to leave the city
+  await expect.poll(() => ev(() => (window as any).__city3d.stats().buildings), { timeout: 240_000, intervals: [2000] }).toBeLessThan(before.buildings);
   const after = await ev(() => (window as any).__city3d.stats());
   const rs = await ev(() => (window as any).__city3d.ruinStats());
   log(`depois (matched/nearest): ${JSON.stringify(rs)} prédios ${after.buildings} (antes ${before.buildings}) ruínas ${JSON.stringify(rs)}`);
   expect(after.buildings, 'o prédio em pé some da cidade 3D').toBeLessThan(before.buildings);
   expect(rs.tris).toBeGreaterThan(50);
   expect(rs.tris, 'escombros baratos').toBeLessThan(2500);
+  expect(rs.tris, 'monte com peças grandes e paredes em pé').toBeGreaterThan(200);
   await shot('docs/assets/rubble-after.png');
 
   // marked route: dashed line with numbered points for a player squad
-  const sq = await ev(() => { const b = window.__game!.state.tactical.battle!; const s = b.squads.find((q: any) => q.side === b.player && ['mech', 'mbt', 'recon', 'infantry'].includes(q.kind))!; return { id: s.id as number, x: s.x as number, y: s.y as number }; });
+  const sq = await ev(() => { const b = window.__game!.state.tactical.battle!; const s = b.squads.find((q: any) => q.side === b.player && ['mech', 'mbt', 'recon', 'infantry'].includes(q.kind) && b.ents.some((e: any) => e.sq === q.id && e.alive))!; return { id: s.id as number, x: s.x as number, y: s.y as number }; });
   await page.evaluate((s) => {
     const r = window.__game!.dispatch({ type: 'tac.order', country: 'USA', squads: [s.id], order: { kind: 'move', x: s.x + 220, y: s.y - 40, via: [s.x + 90, s.y + 60, s.x + 170, s.y + 90] } } as never);
     if (!r.ok) throw new Error(JSON.stringify(r));

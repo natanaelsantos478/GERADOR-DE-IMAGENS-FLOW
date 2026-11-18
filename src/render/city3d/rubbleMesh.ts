@@ -36,8 +36,17 @@ function box(m: Mesh, x: number, y: number, z: number, size: [number, number, nu
  * Adds the heap + loose pieces to `m`. `gz` = ground height (ellipsoidal) at the footprint centre.
  * The model's own (cx, cy) is the centre in the mesh's local frame.
  */
-export function emitRubble(m: Mesh, model: RubbleModel, gz: number, atlas: Atlas | null): void {
+export function emitRubble(m: Mesh, model: RubbleModel, gz: number, atlas: Atlas | null, ground?: (x: number, y: number) => number): void {
   const { cx, cy, mound } = model, cellOf = (id?: string) => (atlas && id ? atlas.cells.get(id) : undefined);
+  // ground stain: dark band around the heap foot, following the terrain, so the ruin reads from far away
+  {
+    const K = mound.pts.length, dc: [number, number, number] = [model.decal.color[0], model.decal.color[1], model.decal.color[2]];
+    const gAt = (px: number, py: number): number => (ground ? ground(cx + px, cy + py) : gz) + 0.12;
+    for (let i = 0; i < K; i++) {
+      const j = (i + 1) % K, a = mound.pts[i], b = mound.pts[j], c = model.decal.pts[j], d = model.decal.pts[i];
+      m.facet([[cx + a[0] * 0.8, cy + a[1] * 0.8, gAt(a[0] * 0.8, a[1] * 0.8)], [cx + b[0] * 0.8, cy + b[1] * 0.8, gAt(b[0] * 0.8, b[1] * 0.8)], [cx + c[0], cy + c[1], gAt(c[0], c[1])], [cx + d[0], cy + d[1], gAt(d[0], d[1])]], dc, PAT.BLANK);
+    }
+  }
   // heap body
   const mc = cellOf(mound.tex);
   m.roofPat = mc ? mc.byte : PAT.BLANK; m.roofInv = mc ? 1 / mc.mu : 1; m.roofU = (model.id % 13) / 13; m.roofV = (model.id % 7) / 7;

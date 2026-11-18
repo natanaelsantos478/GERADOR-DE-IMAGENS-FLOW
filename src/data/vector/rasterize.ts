@@ -14,6 +14,13 @@ const ROAD_RANK: Record<number, number> = { [SURF.STEPS]: 0, [SURF.PATH]: 0, [SU
 function simplify(p: number[], tol: number): number[] {
   const n = p.length / 2;
   if (n < 5) return p;
+  // Closed ring (first == last): the chord is degenerate, so split at the vertex farthest from the start.
+  if (p[0] === p[(n - 1) * 2] && p[1] === p[(n - 1) * 2 + 1]) {
+    let f = 1, fd = -1;
+    for (let i = 1; i < n - 1; i++) { const d = Math.hypot(p[i * 2] - p[0], p[i * 2 + 1] - p[1]); if (d > fd) { fd = d; f = i; } }
+    const a = simplify(p.slice(0, f * 2 + 2), tol), b = simplify(p.slice(f * 2), tol);
+    return a.concat(b.slice(2)).map((v) => Math.round(v * 10) / 10 || 0);
+  }
   const keep = new Uint8Array(n); keep[0] = keep[n - 1] = 1;
   const st: [number, number][] = [[0, n - 1]];
   while (st.length) {

@@ -34,7 +34,10 @@ const covers = (l: LocalRuin, cx: number, cy: number): boolean =>
 const M = new Cesium.Matrix4(), M2 = new Cesium.Matrix4(), R3 = new Cesium.Matrix3(), Q = new Cesium.Quaternion(), AXIS = new Cesium.Cartesian3(), T = new Cesium.Cartesian3(), S = new Cesium.Cartesian3(), NEG = new Cesium.Cartesian3();
 
 export class TileRubble {
+  /** Ruins whose centre is in this tile (this tile draws their collapse and rubble). */
   private mine: LocalRuin[] = [];
+  /** Ruins touching this tile (centre inside or footprint overlapping it): the standing buildings of these are hidden here, so a building on the edge of a tile whose ruin centre lies in the neighbour tile is hidden too. */
+  private touch: LocalRuin[] = [];
   private cache = new Map<string, LocalRuin>();
   /** Signature of the hidden set the building meshes were last built with / the done set the rubble primitive shows. */
   private builtSig = '';
@@ -48,9 +51,15 @@ export class TileRubble {
     const k = r.key;
     let l = this.cache.get(k);
     if (l && l.r === r) return l;
-    const ring: number[] = [];
+    let ring: number[] = [];
     for (let i = 0; i < r.ring.length; i += 2) ring.push(...toLocal(this.t.ref, r.ring[i], r.ring[i + 1]));
     const [cx, cy] = toLocal(this.t.ref, r.lon, r.lat);
+    // the real footprint drawn by this tile (same building, found by its centroid) beats the nav outline, which is coarse (and degenerate in some saves)
+    if (this.t.area) {
+      let best = 6, found: number[] | null = null;
+      for (const p of this.t.area.buildings) { const [bx, by] = polyCentroid(p), d = Math.hypot(bx - cx, by - cy); if (d < best && p.rings[0].length >= 6) { best = d; found = p.rings[0]; } }
+      if (found) ring = Array.from(found);
+    }
     let x0 = cx, x1 = cx, y0 = cy, y1 = cy;
     for (let i = 0; i < ring.length; i += 2) { x0 = Math.min(x0, ring[i]); x1 = Math.max(x1, ring[i]); y0 = Math.min(y0, ring[i + 1]); y1 = Math.max(y1, ring[i + 1]); }
     l = { r, ring, cx, cy, x0: x0 - HIDE_MARGIN, x1: x1 + HIDE_MARGIN, y0: y0 - HIDE_MARGIN, y1: y1 + HIDE_MARGIN };
@@ -59,20 +68,23 @@ export class TileRubble {
   }
   /** Recompute the ruins that fall in this tile; returns the signature of the set whose buildings must be hidden. */
   private compute(): string {
-    const half = this.t.ref.sizeM / 2, out: LocalRuin[] = [];
+    const half = this.t.ref.sizeM / 2, out: LocalRuin[] = [], touch: LocalRuin[] = [];
     for (const r of ruinsNow()) {
       const [x, y] = toLocal(this.t.ref, r.lon, r.lat);
-      if (Math.abs(x) <= half && Math.abs(y) <= half) out.push(this.local(r));
+      if (Math.abs(x) > half * 3 || Math.abs(y) > half * 3) continue; // far from this tile (cheap reject before building the local ring)
+      const l = this.local(r);
+      if (Math.abs(x) <= half && Math.abs(y) <= half) out.push(l);
+      if (l.x1 >= -half && l.x0 <= half && l.y1 >= -half && l.y0 <= half) touch.push(l);
     }
-    this.mine = out;
-    return out.map((l) => l.r.key).sort().join('|');
+    this.mine = out; this.touch = touch;
+    return touch.map((l) => l.r.key).sort().join('|');
   }
   /** The hidden set changed since the building meshes were last built. */
   needsRebuild(): boolean { return this.compute() !== this.builtSig; }
   /** Predicate for `buildBuildings`: true for the buildings of the ruins (called by the tile when it (re)builds its meshes). */
   hideFn(): ((cx: number, cy: number) => boolean) | undefined {
     this.builtSig = this.compute();
-    const list = this.mine;
+    const list = this.touch;
     this.stats.hidden = list.length; this.stats.matched = 0;
     // debug: how far the closest drawn footprint centroid is from the first ruin's centre (m); > HIDE_MARGIN means the two maps disagree
     if (list.length && this.t.area) { let d = 1e9; for (const p of this.t.area.buildings) { const [cx, cy] = polyCentroid(p); d = Math.min(d, Math.hypot(cx - list[0].cx, cy - list[0].cy)); } this.stats.nearest = Math.round(d * 10) / 10; }
@@ -87,13 +99,14 @@ export class TileRubble {
     let changed = false;
     if (sig !== this.builtSig) void t.rebuildBuildings();
     const done: LocalRuin[] = [], running: LocalRuin[] = [];
-    for (const l of this.mine) (ruinProgress(l.r) >= 1 ? done : running).push(l);
+    for (const l of this.mine) if (ruinProgress(l.r) >= 1) done.push(l);
+    for (const l of this.touch) if (ruinProgress(l.r) < 1) running.push(l); // the standing building falls in the tile that draws it, the heap grows in the tile of the centre
     const dsig = done.map((l) => l.r.key).sort().join('|');
     if (dsig !== this.doneSig) { this.doneSig = dsig; this.buildDone(done); changed = true; }
     for (const [k, a] of [...this.anim]) if (!running.some((l) => l.r.key === k)) { this.dropAnim(a); this.anim.delete(k); changed = true; }
     for (const l of running) {
       let a = this.anim.get(l.r.key);
-      if (!a) { a = this.startAnim(l); if (!a) continue; this.anim.set(l.r.key, a); changed = true; }
+      if (!a) { a = this.startAnim(l, this.mine.includes(l)); if (!a) continue; this.anim.set(l.r.key, a); changed = true; }
       const p = ruinProgress(l.r);
       if (Math.abs(p - a.last) > 1e-4) { a.last = p; this.pose(a, p); changed = true; }
     }
@@ -119,26 +132,26 @@ export class TileRubble {
     if (!list.length) return;
     const m = new Mesh(t.ref, true);
     for (const l of list) {
-      const model = generateRubble(st.rubble, { id: l.r.id, mat: l.r.m, fl: l.r.fl, ring: l.ring });
-      emitRubble(m, model, t.ground!(model.cx, model.cy), t.atlas);
+      const model = generateRubble(st.rubble, { id: l.r.id, mat: l.r.m, fl: l.r.fl, h: l.r.h, ring: l.ring });
+      emitRubble(m, model, t.ground!(model.cx, model.cy), t.atlas, t.ground!);
     }
     this.stats.tris = m.tris;
     this.done = this.prim(m, t.ref.enu);
   }
 
-  private startAnim(l: LocalRuin): Anim | undefined {
+  private startAnim(l: LocalRuin, owner: boolean): Anim | undefined {
     const t = this.t, st = styles()!, spec = st.rubble.collapse[l.r.by];
     const polys = t.area!.buildings.filter((p) => {
       const [cx, cy] = polyCentroid(p), half = t.ref.sizeM / 2;
       return Math.abs(cx) <= half && Math.abs(cy) <= half && covers(l, cx, cy);
     });
     const bm = buildBuildings(polys, t.ref, t.ground!, st, [], t.atlas, { local: true });
-    const model = generateRubble(st.rubble, { id: l.r.id, mat: l.r.m, fl: l.r.fl, ring: l.ring });
+    const model = generateRubble(st.rubble, { id: l.r.id, mat: l.r.m, fl: l.r.fl, h: l.r.h, ring: l.ring });
     const hm = new Mesh(t.ref, true);
     const gz = t.ground!(model.cx, model.cy);
-    emitRubble(hm, model, gz, t.atlas);
+    emitRubble(hm, model, gz, t.atlas, t.ground!);
     const bld = [this.prim(bm.major, t.ref.enu), this.prim(bm.minor, t.ref.enu)].filter((p): p is Cesium.Primitive => !!p);
-    const heap = [this.prim(hm, t.ref.enu)].filter((p): p is Cesium.Primitive => !!p);
+    const heap = (owner ? [this.prim(hm, t.ref.enu)] : []).filter((p): p is Cesium.Primitive => !!p);
     // wall falls away from the breaching vehicle; otherwise a seeded direction
     let dir: [number, number];
     if (spec.style === 'breach' && l.r.brk) {
@@ -170,6 +183,17 @@ export class TileRubble {
     Cesium.Matrix4.fromTranslation(pv, M2);
     Cesium.Matrix4.multiply(M2, M, M);
     for (const pr of a.heap) Cesium.Matrix4.multiply(enu, M, pr.modelMatrix);
+  }
+
+  /** Test/debug: the ruins this tile draws (ring size, footprint area in the tile frame, heap model summary). */
+  debug(): { key: string; pts: number; area: number; w: number; d: number; pieces?: number; height?: number }[] {
+    const st = styles();
+    return this.mine.map((l) => {
+      let a = 0;
+      for (let i = 0, n = l.ring.length / 2, j = n - 1; i < n; j = i++) a += l.ring[j * 2] * l.ring[i * 2 + 1] - l.ring[i * 2] * l.ring[j * 2 + 1];
+      const m = st ? generateRubble(st.rubble, { id: l.r.id, mat: l.r.m, fl: l.r.fl, h: l.r.h, ring: l.ring }) : null;
+      return { key: l.r.key, pts: l.ring.length / 2, area: Math.round(Math.abs(a) / 2), w: Math.round((l.x1 - l.x0) * 10) / 10, d: Math.round((l.y1 - l.y0) * 10) / 10, pieces: m?.pieces.length, height: m ? Math.round(m.height * 10) / 10 : undefined };
+    });
   }
 
   /** Forget everything drawn (the tile regenerates or dies); the store keeps the truth. */
