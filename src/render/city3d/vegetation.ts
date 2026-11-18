@@ -40,7 +40,9 @@ async function image(url: string): Promise<ImageBitmap | null> {
  * Mask for tile `t` from the closest imagery that stays affordable: ESRI z17 (~1.2 m/px, 64 images per city tile; z18
  * would be 256 and the imagery server throttles bursts, which also starves the photo shown on the globe) (EOX stops at z13: no mask). Downloads are limited to 4 at a time. Null offline or when no image arrives.
  */
-export async function loadVegetation(t: TileRef, alive: () => boolean): Promise<VegMask | null> {
+/** `'retry'`: the photo source is up but its images did not arrive (throttled / network): try again later instead of
+ * planting from the polygons alone (those cover lakes and fields). */
+export async function loadVegetation(t: TileRef, alive: () => boolean): Promise<VegMask | null | 'retry'> {
   const kind = kindOf();
   // EOX stops at z13, coarser than the city tile itself: no mask then (the vector polygons alone place the trees)
   if (kind !== 'esri') return null;
@@ -50,9 +52,17 @@ export async function loadVegetation(t: TileRef, alive: () => boolean): Promise<
   if (!urls.length) return null;
   const imgs: { u: string; dx: number; dy: number; img: ImageBitmap | null }[] = [];
   for (let i = 0; i < urls.length; i += 4) { imgs.push(...(await Promise.all(urls.slice(i, i + 4).map(async (q) => ({ ...q, img: await image(q.u) }))))); if (!alive()) break; }
+  // one slower retry pass for the images that failed (bursts get throttled)
+  const failed = imgs.filter((q) => !q.img);
+  if (failed.length && failed.length < imgs.length * 0.9 && alive()) {
+    await new Promise((r) => setTimeout(r, 1200));
+    for (const q of failed) { if (!alive()) break; q.img = await image(q.u); }
+  }
   // a missing image (the server has none over open sea, or one request failed) counts as "no green" there; only a tile
   // with no image at all falls back to the polygons
-  if (!alive() || imgs.every((q) => !q.img)) { imgs.forEach((q) => q.img?.close()); return null; }
+  if (!alive()) { imgs.forEach((q) => q.img?.close()); return null; }
+  // more than a quarter missing: the mask would leave holes where the vector polygons have no check; retry later
+  if (imgs.filter((q) => !q.img).length > imgs.length / 4) { imgs.forEach((q) => q.img?.close()); return 'retry'; }
   const cv = new OffscreenCanvas(px, px), cx = cv.getContext('2d', { willReadFrequently: true });
   if (!cx) return null;
   for (const q of imgs) if (q.img) { cx.drawImage(q.img, q.dx * 256, q.dy * 256); q.img.close(); }

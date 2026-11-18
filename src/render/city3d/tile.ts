@@ -84,6 +84,7 @@ export class CityTile {
   treePts: TreePoint[] | null = null;
   /** satellite vegetation mask used for the last placement (debug) */
   veg: VegMask | null = null;
+  private vegRetryAt = 0;
   trees: TreeLayer | null = null;
   treeBusy = false;
   stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {}, cover: {}, treePts: 0, treeSp: {}, vegCover: -1 };
@@ -269,8 +270,11 @@ export class CityTile {
       const g = (await this.groundOf(this.treeLevel)) ?? this.ground;
       if (this.dead || my !== this.gen || !this.area) return;
       if (!this.treePts) {
+        if (performance.now() < this.vegRetryAt) return;
         const veg = await loadVegetation(this.ref, () => !this.dead);
         if (this.dead || my !== this.gen || !this.area) return;
+        // photo source up but images missing: no trees yet, try again in a few seconds (never fall back to polygons only)
+        if (veg === 'retry') { this.vegRetryAt = performance.now() + 8000; return; }
         this.veg = veg;
         this.stats.vegCover = veg ? Math.round(veg.cover * 100) / 100 : -1;
         this.treePts = placeTrees(this.area, this.ref, g, this.maxTrees, st, veg);
