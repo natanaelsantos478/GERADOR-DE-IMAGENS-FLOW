@@ -4,7 +4,7 @@ import { getQuality } from '../globe/quality';
 import type { Globe } from '../globe/types';
 import { mode } from '../units/common';
 import { ATTRIBUTION, CITY_CONFIG } from './config';
-import { tileRef, tileXY, TZ } from './geo';
+import { projector, tileRef, tileXY, TZ } from './geo';
 import { landmarks, LandmarkLayer, loadLandmarks } from './landmarks';
 import { onRuins, pinRuins } from './ruins';
 import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
@@ -37,6 +37,8 @@ export interface City3D {
   hiddenProbe(t: { lon: number; lat: number; h: number; area: number }): void;
   /** Test/debug: footprints of the loaded tiles closest to a point. */
   near(lon: number, lat: number, n?: number): ReturnType<typeof nearBuildings>;
+  /** Test/debug: tree base vs the terrain Cesium draws (m; positive = floating), over up to `n` trees per tile. */
+  treeFit(n?: number): { tiles: { key: string; level: number; trees: number }[]; samples: number; floatP90: number; floatMax: number; sinkP90: number };
   destroy(): void;
 }
 
@@ -138,6 +140,7 @@ export function attachCity3D(globe: Globe): City3D {
       // a camera low among the trees (tactical close-ups) would sit inside the crowns: hide the trees then
       const inCanopy = agl < 70;
       if (t.trees) for (const m of t.trees.models) m.model.show = !inCanopy && (m.far ? d < c.treeDist : d < c.treeDist * 0.55);
+      if (t.trees) void t.syncTreeLevel(styles()!).then(() => scene.requestRender());
     }
     scene.requestRender();
   }
@@ -169,6 +172,21 @@ export function attachCity3D(globe: Globe): City3D {
     update,
     pinRuins,
     near: (lon, lat, n = 4) => nearBuildings(tiles.values(), lon, lat, n),
+    treeFit(n = 200) {
+      const d: number[] = [], out: { key: string; level: number; trees: number }[] = [];
+      for (const t of tiles.values()) {
+        if (!t.trees || !t.treePts) continue;
+        out.push({ key: t.ref.key, level: t.treeLevel, trees: t.treePts.length });
+        const pj = projector(t.ref), step = Math.max(1, Math.floor(t.treePts.length / n));
+        for (let i = 0; i < t.treePts.length; i += step) {
+          const p = t.treePts[i], [lo, la] = pj.lonLat(p.x, p.y), h = scene.globe.getHeight(Cesium.Cartographic.fromDegrees(lo, la));
+          if (h !== undefined) d.push(p.z - h);
+        }
+      }
+      const up = d.map((x) => Math.max(0, x)).sort((a, b) => a - b), dn = d.map((x) => Math.max(0, -x)).sort((a, b) => a - b);
+      const P = (a: number[], q: number) => (a.length ? Math.round(a[Math.floor(q * (a.length - 1))] * 100) / 100 : 0);
+      return { tiles: out, samples: d.length, floatP90: P(up, 0.9), floatMax: P(up, 1), sinkP90: P(dn, 0.9) };
+    },
     tall: (n = 5) => tallBuildings(tiles.values(), n),
     hiddenProbe(t) {
       const g = globe.heightAt(t.lon, t.lat);

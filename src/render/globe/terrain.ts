@@ -3,6 +3,8 @@ import * as Cesium from 'cesium';
 import { loadElevTile, newRequest, TILE_PX } from './elevTiles';
 
 const GRID = 65;
+/** Heightmap size per terrain tile (city3d/ground.ts reproduces the drawn surface from it). */
+export const TERRAIN_GRID = GRID;
 export const TERRAIN_MAX_LEVEL = 13;
 
 export function createTerrariumTerrain(): Cesium.TerrainProvider {

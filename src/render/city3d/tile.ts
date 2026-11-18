@@ -8,7 +8,7 @@ import { loadAtlas, type Atlas } from './atlas';
 import { buildBuildings, polyCentroid } from './buildings';
 import { projector, TZ, tileXY, type TileRef } from './geo';
 import { marksFor } from './landmarks';
-import { loadGround, type Ground } from './ground';
+import { GROUND_LEVEL, loadGround, type Ground } from './ground';
 import { buildInfra } from './infra';
 import type { Mesh } from './mesh';
 import { buildBridges, drawRoads } from './roads';
@@ -215,13 +215,68 @@ export class CityTile {
   /** The destroyed-buildings store changed. */
   syncRuins() { this.rub.sync(); }
 
+  /** Terrain level whose surface the trees stand on (follows the level Cesium draws under the tile). */
+  treeLevel = GROUND_LEVEL;
+  private levelGround = new Map<number, Promise<Ground | null>>();
+  private levelBusy = false;
+  private groundOf(z: number): Promise<Ground | null> {
+    if (z === GROUND_LEVEL && this.ground) return Promise.resolve(this.ground);
+    let p = this.levelGround.get(z);
+    if (!p) { p = loadGround(this.ref, () => !this.dead, z); this.levelGround.set(z, p); }
+    return p;
+  }
+  /** Terrain level Cesium is drawing under this tile right now (null while undecided). One z14 tile always lies inside one terrain tile. */
+  private async drawnLevel(): Promise<number | null> {
+    const globe = this.viewer.scene.globe, pj = projector(this.ref), q = this.ref.sizeM * 0.3;
+    const pts: [number, number][] = [[0, 0], [q, q], [-q, -q], [q, -q], [-q, q]];
+    const drawn = pts.map(([x, y]) => { const [lo, la] = pj.lonLat(x, y); return globe.getHeight(Cesium.Cartographic.fromDegrees(lo, la)); });
+    if (drawn.some((h) => h === undefined)) return null;
+    let best: number | null = null, bestErr = Infinity;
+    for (const z of [this.treeLevel, ...[13, 12, 11, 10].filter((l) => l !== this.treeLevel)]) {
+      const g = await this.groundOf(z);
+      if (!g || this.dead) continue;
+      const e = pts.reduce((s, [x, y], i) => s + Math.abs(g(x, y) - (drawn[i] as number)), 0) / pts.length;
+      if (e < bestErr) { bestErr = e; best = z; }
+      if (e < 0.5) break;
+    }
+    return bestErr < 2 ? best : null;
+  }
+  /** Re-seat the trees when Cesium switches the terrain level under the tile (otherwise they float or sink by up to ~30 m on hills). */
+  async syncTreeLevel(st: Styles): Promise<void> {
+    if (this.levelBusy || this.treeBusy || !this.trees || !this.treePts) return;
+    this.levelBusy = true;
+    try {
+      const z = await this.drawnLevel();
+      if (z === null || z === this.treeLevel || this.dead || !this.trees || this.treeBusy) return;
+      const g = await this.groundOf(z);
+      if (!g || this.dead || !this.trees || !this.treePts) return;
+      this.treeLevel = z;
+      for (const p of this.treePts) p.z = g(p.x, p.y);
+      this.treeBusy = true;
+      const my = this.gen, old = this.trees;
+      try {
+        const t = await createTreeModels(this.viewer.scene, this.ref, this.treePts, st);
+        if (this.dead || my !== this.gen || this.trees !== old) { disposeTreeModels(this.viewer.scene, t); return; }
+        for (const m of t.models) m.model.show = old.models.find((o) => o.sp === m.sp && o.far === m.far)?.model.show ?? false;
+        this.trees = t; this.stats.trees = t.count;
+        // keep the old set until the new one is drawable, so the swap does not blink
+        let left = t.models.length;
+        const swap = () => { if (--left <= 0) { disposeTreeModels(this.viewer.scene, old); this.viewer.scene.requestRender(); } };
+        if (!left) swap();
+        for (const m of t.models) m.model.readyEvent.addEventListener(swap);
+      } finally { this.treeBusy = false; }
+    } catch (e) { console.warn('city3d tree level', this.ref.key, e); } finally { this.levelBusy = false; }
+  }
+
   /** Create the instanced tree models (once per visit; only when the tile is close enough). */
   async ensureTrees(st: Styles): Promise<void> {
     if (this.trees || this.treeBusy || this.state !== 'ready' || !this.area || !this.ground) return;
     this.treeBusy = true;
     const my = this.gen;
     try {
-      this.treePts ??= placeTrees(this.area, this.ref, this.ground, this.maxTrees, st);
+      const g = (await this.groundOf(this.treeLevel)) ?? this.ground;
+      if (this.dead || my !== this.gen || !this.area) return;
+      this.treePts ??= placeTrees(this.area, this.ref, g, this.maxTrees, st);
       this.stats.treePts = this.treePts.length;
       this.stats.treeSp = {};
       for (const q of this.treePts) this.stats.treeSp[q.sp] = (this.stats.treeSp[q.sp] ?? 0) + 1;

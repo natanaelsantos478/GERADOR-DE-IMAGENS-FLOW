@@ -25,12 +25,22 @@ export async function discoverRelease(fetchFn: typeof fetch = (...a) => fetch(..
   return c ? dec.decode(c) : OVERTURE_FALLBACK_RELEASE;
 }
 
+/**
+ * tiles.overturemaps.org answers 403 to some site origins (e.g. *.pages.dev) while it serves localhost and
+ * server-side clients. After the first refusal this session stops asking (the city falls back to OpenFreeMap at once
+ * instead of logging one 403 per archive).
+ */
+let refused = false;
+export const overtureRefused = () => refused;
+
 /** HTTP Range source with an injectable fetch (the pmtiles FetchSource cannot be injected). */
 function rangeSource(url: string, f: typeof fetch, headers?: Record<string, string>): Source {
   return {
     getKey: () => url,
     async getBytes(offset, length, signal): Promise<RangeResponse> {
+      if (refused) throw new Error('403');
       const r = await f(url, { signal, headers: { ...headers, Range: `bytes=${offset}-${offset + length - 1}` } });
+      if (r.status === 403) { refused = true; throw new Error('403'); }
       if (r.status === 416) throw new Error('range');
       if (!r.ok) throw new Error(String(r.status));
       const data = await r.arrayBuffer();
@@ -42,16 +52,20 @@ function rangeSource(url: string, f: typeof fetch, headers?: Record<string, stri
 
 /** Default reader: PMTiles range reads (header + directories + only the tiles asked), with the tile bytes cached in `store`. */
 export function pmtilesReader(o: { release?: string; store?: TileStore; fetchFn?: typeof fetch } = {}): OvertureReader {
-  let rel: Promise<string> | null = null;
+  let rel: Promise<string> | null = null, gate: Promise<void> | null = null;
   const archives = new Map<string, PMTiles>();
   const headers = typeof window === 'undefined' ? { 'User-Agent': 'Meridiano-Game/1.0' } : undefined;
   return async (file, z, x, y) => {
     try {
+      if (refused) return null;
       const release = await (rel ??= o.release ? Promise.resolve(o.release) : discoverRelease(o.fetchFn, o.store));
       const key = `ov/${release}/${file}/${z}/${x}/${y}`;
       const hit = await o.store?.get(key).catch(() => null);
       if (hit) return hit;
       const url = `https://tiles.overturemaps.org/${release}/${file}.pmtiles`;
+      // one tiny request decides access before the archives are opened in parallel (at most one 403 per session)
+      await (gate ??= (o.fetchFn ?? ((...a) => fetch(...a)))(url, { headers: { ...headers, Range: 'bytes=0-0' } }).then((r) => { if (r.status === 403) refused = true; }, () => {}));
+      if (refused) return null;
       let pm = archives.get(url);
       if (!pm) { pm = new PMTiles(rangeSource(url, o.fetchFn ?? ((...a) => fetch(...a)), headers)); archives.set(url, pm); }
       const t = await pm.getZxy(z, x, y);
