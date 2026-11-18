@@ -1,5 +1,6 @@
 /** Weighted A* on the fine navigation grid (typed-array scratch, component pre-check, cost-aware string pulling). */
-import { components, navCell, navCenter, snapCell, type NavRT } from './nav';
+import { breachComponents, components, navCell, navCenter, snapCell, type NavRT } from './nav';
+import { BREACH } from './terrainRules';
 import type { Mobility } from './units';
 
 const HW = 1.35, MAX_EXP = 220_000;
@@ -27,18 +28,24 @@ function pop(): number {
   return top;
 }
 
-/** Waypoints [x0,y0,...,x1,y1] from (x0,y0) to the goal (snapped to the nearest reachable passable cell), [] when unreachable. `inb`/`goalB`: buildings infantry may use. */
-export function navPath(rt: NavRT, mob: Mobility, x0: number, y0: number, x1: number, y1: number, inb = 0, goalB = 0): number[] {
+/**
+ * Waypoints [x0,y0,...,x1,y1] from (x0,y0) to the goal (snapped to the nearest reachable passable cell), [] when unreachable. `inb`/`goalB`: buildings infantry may use.
+ * `breach` (tracked only): small buildings count as very slow ground (demolished on the way), see BREACH.
+ */
+export function navPath(rt: NavRT, mob: Mobility, x0: number, y0: number, x1: number, y1: number, inb = 0, goalB = 0, breach = false): number[] {
   if (mob === 'air') return [x1, y1];
   const n = rt.n, N = n * n, cs = rt.cs, spd = rt.spd[mob], bld = rt.bld;
-  const fac = (c: number) => { const f = spd[c]; if (f === 0 && mob === 'foot') { const b = bld[c]; if (b && (b === inb || b === goalB)) return 0.5; } return f; };
+  const brkOn = breach && mob === 'track', brk = rt.brk, BF = BREACH.astarSpd;
+  const fac = (c: number) => { const f = spd[c]; if (f === 0) { if (mob === 'foot') { const b = bld[c]; if (b && (b === inb || b === goalB)) return 0.5; } else if (brkOn && brk[c]) return BF; } return f; };
   let sc = navCell(rt, x0, y0);
   if (!fac(sc)) { sc = snapCell(rt, mob, sc, 10, 0, inb); if (sc < 0) return []; }
-  const lab = components(rt, mob);
+  const lab = brkOn ? breachComponents(rt) : components(rt, mob);
   const comp = lab[sc];
   let gc = navCell(rt, x1, y1);
   const goalInBuilding = goalB !== 0 && bld[gc] === goalB;
-  if (!goalInBuilding && (!fac(gc) || (comp && lab[gc] !== comp))) { gc = snapCell(rt, mob, gc, 90, comp, 0); if (gc < 0) return []; }
+  if (!goalInBuilding && (!fac(gc) || (comp && lab[gc] !== comp))) { gc = snapCell(rt, mob, gc, 90, brkOn ? 0 : comp, 0); if (brkOn && gc >= 0 && comp && lab[gc] !== comp) return navPath(rt, mob, x0, y0, x1, y1, inb, goalB, false); // breaching would not get there either: plain search
+    if (gc < 0) return [];
+  }
   if (N0 !== N) { N0 = N; g = new Float32Array(N); from = new Int32Array(N); seen = new Uint32Array(N); done = new Uint32Array(N); gen = 0; }
   gen++; hs = 0;
   let vmax = 0.5;

@@ -1,4 +1,5 @@
 /** Squad order execution (pathing, anchor movement) and element movement toward formation slots. */
+import { stepBreach } from './buildings';
 import { cellFactor, cellOf, findPath, inside, moveFactor } from './grid';
 import { mudMult, SURFACE_RULES } from './terrainRules';
 import { navCell, navCenter, navFactor, navOf, snapCell } from './nav';
@@ -25,11 +26,30 @@ export function setPath(b: Battle, s: Squad, x: number, y: number, force = false
   const rt = navOf(b.map);
   if (rt && !force && !takeSearch(b)) { s.pend = [x, y]; s.path = []; s.pi = 0; return true; }
   delete s.pend;
-  const p = findPath(b.map, UNITS[s.kind].mob, s.x, s.y, x, y, rt ? s.inb ?? 0 : 0, rt && s.order === 'occupy' ? s.inb ?? 0 : 0);
+  const p = findPath(b.map, UNITS[s.kind].mob, s.x, s.y, x, y, rt ? s.inb ?? 0 : 0, rt && s.order === 'occupy' ? s.inb ?? 0 : 0, !!s.breach);
   if (!p.length) { s.path = []; s.pi = 0; return false; }
   s.path = p; s.pi = 2; s.repath = b.t;
   return true;
 }
+
+/** Start the next marked leg (searched now, on demand); legs with no path are skipped. False when the route is over. */
+export function nextLeg(b: Battle, s: Squad): boolean {
+  while (s.route && s.route.length >= 2) {
+    const x = s.route[0], y = s.route[1];
+    s.route = s.route.slice(2);
+    s.ox = x; s.oy = y; s.repath = b.t;
+    if (setPath(b, s, x, y)) { if (!s.route.length) delete s.route; return true; }
+  }
+  delete s.route;
+  return false;
+}
+/** Search again toward the current leg; when it is unreachable, go on with the next one; else the order ends. */
+function replan(b: Battle, s: Squad): void {
+  if (setPath(b, s, s.ox, s.oy, true) || nextLeg(b, s)) return;
+  s.order = 'idle'; s.path = []; s.pi = 0; delete s.breach; delete s.brk;
+}
+/** The order is over: forget the marked route and breach flag. */
+export function endMove(s: Squad): void { delete s.route; delete s.breach; delete s.brk; }
 
 /** Free a garrisoned building (the squad keeps `inb` until all its elements are out). */
 export function ungarrison(b: Battle, s: Squad): void {
@@ -56,7 +76,7 @@ export function stepSquads(b: Battle): void {
     const d = UNITS[s.kind];
     if (s.pend && takeSearch(b)) {
       const [px, py] = s.pend;
-      if (!setPath(b, s, px, py, true) && (s.order === 'move' || s.order === 'amove' || s.order === 'occupy')) { s.order = 'idle'; }
+      if (!setPath(b, s, px, py, true) && (s.order === 'move' || s.order === 'amove' || s.order === 'occupy') && !nextLeg(b, s)) { s.order = 'idle'; endMove(s); }
     }
     if (s.routed && s.order !== 'retreat') { s.order = 'retreat'; ungarrison(b, s); }
     if (s.order === 'retreat' && !s.path.length && !s.pend) { const [ex, ey] = edgePoint(b, s); if (!setPath(b, s, ex, ey)) { s.x = ex; s.y = ey; } }
@@ -74,7 +94,7 @@ export function stepSquads(b: Battle): void {
     if (!moving) {
       if (s.path.length && s.pi >= s.path.length) {
         s.path = []; s.pi = 0;
-        if (s.order === 'move' || s.order === 'amove') s.order = 'idle';
+        if ((s.order === 'move' || s.order === 'amove') && !nextLeg(b, s)) { s.order = 'idle'; endMove(s); }
         if (s.order === 'occupy') garrison(b, s);
         if (s.order === 'retreat' && (Math.abs(s.y) > b.map.sizeM / 2 - 140)) withdraw(b, s);
       }
@@ -90,9 +110,10 @@ export function stepSquads(b: Battle): void {
     const lag = Math.min(1, Math.max(0.25, 1 - ((s.lag ?? 0) - 40) / 120));
     const sp = d.spd * moveFactor(b.map, s.x, s.y, hx, hy, d.mob, s.inb ?? 0) * (rt && b.wx?.mud && d.mob !== 'air' ? mudMult(SURFACE_RULES[rt.surf[navCell(rt, s.x, s.y)]], b.wx.mud, d.mob === 'foot' ? 0 : 1) : 1) * lag * (s.order === 'retreat' ? 1.1 : 1) * squadPace(b, s);
     const step = Math.min(dist, sp * DT);
+    if (s.breach && rt && stepBreach(b, rt, s, hx, hy, step)) continue; // demolishing a small building in the way
     if (rt && d.mob !== 'air' && navFactor(rt, navCell(rt, s.x + hx * step, s.y + hy * step), d.mob, s.inb ?? 0) === 0) {
       // clipped a corner of an impassable cell: re-plan instead of walking into it
-      if (s.order === 'move' || s.order === 'amove' || s.order === 'occupy') { if (!setPath(b, s, s.ox, s.oy, true)) { s.order = 'idle'; s.path = []; } } else s.path = [];
+      if (s.order === 'move' || s.order === 'amove' || s.order === 'occupy') replan(b, s); else s.path = [];
       continue;
     }
     s.x += hx * step; s.y += hy * step;

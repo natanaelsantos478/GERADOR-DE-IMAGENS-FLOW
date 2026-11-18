@@ -54,6 +54,9 @@ S(SURF.SCRUB, R('scrub / shrub', [150, 176, 110], [0.85, 0.45, 0.65], 1, 0, 0.4,
 S(SURF.RUNWAY, R('runway / apron / helipad', [188, 188, 200], [1, 1.45, 1.3], 0, 0, 0, 0, 0, ['road']));
 S(SURF.PIER, R('pier / quay', [190, 160, 120], [1, 1, 1], 0, 0, 0, 0, 0));
 S(SURF.STEPS, R('steps', [255, 255, 170], [0.6, 0, 0], 0, 0, 0, 0, 0, ['stairs']));
+/** Runtime-only surface class (never in the serialized raster): the rubble a destroyed building leaves. Slow for wheels, medium for tracks, good cover for infantry. */
+export const SURF_RUBBLE = 26;
+S(SURF_RUBBLE, R('rubble', [128, 118, 108], [0.55, 0.15, 0.4], 2, 1.5, 0.45, 0.2, 0.05, ['dust']));
 
 /** Neutral road class -> surface. */
 export const ROAD_SURF: Record<string, number> = {
@@ -140,3 +143,54 @@ export const PROTECTED_POI = new Set(['hospital', 'school', 'religious', 'cemete
 
 /** Speed multiplier for rain/thaw mud (0..1 wx.mud) on a surface rule for a mobility index (0 foot, 1 wheel, 2 track). */
 export const mudMult = (r: SurfRule, mud: number, g: number): number => 1 - mud * r.mud * (g === 0 ? 0.3 : 0.55);
+
+// ---------------------------------------------------------------- destructible buildings (all data-driven)
+export type Material = 'light' | 'brick' | 'concrete' | 'reinforced';
+/** `k`: hit points per unit of footprint^0.7 x (1 + height/12); `min`: weakest material a function can have. */
+export const MATERIALS: Record<Material, { k: number; rank: number }> = {
+  light: { k: 3, rank: 0 }, brick: { k: 5, rank: 1 }, concrete: { k: 7, rank: 2 }, reinforced: { k: 12, rank: 3 },
+};
+/** Material by height when the function says nothing: shed < 4.5 m, houses/blocks up to 14 m, towers up to 40 m, above that reinforced. */
+export const MATERIAL_BY_HEIGHT: [maxH: number, mat: Material][] = [[4.5, 'light'], [14, 'brick'], [40, 'concrete'], [1e9, 'reinforced']];
+/** Per function: minimum material, civilian (destroying it hurts the population) and protected site (heavier penalty). */
+export const BUILDING_KIND_RULES: Record<string, { min?: Material; civil: boolean; prot?: boolean }> = {
+  hospital: { min: 'concrete', civil: true, prot: true }, school: { min: 'brick', civil: true, prot: true }, religious: { min: 'brick', civil: true, prot: true },
+  townhall: { min: 'concrete', civil: true }, fire_station: { min: 'brick', civil: true }, police: { min: 'concrete', civil: false },
+  station: { min: 'brick', civil: true }, hangar: { civil: false }, military: { min: 'reinforced', civil: false },
+};
+/** Floor height (m) used to derive `floors` from the building height. */
+export const FLOOR_M = 3;
+/** Rubble penalty weights: score of a destroyed civil building = (1 + floors x FLOOR_W) x (protected ? PROT_W : 1). */
+export const CIVIL_FLOOR_W = 0.15, CIVIL_PROT_W = 6;
+/** Collateral (0..1, TacticalResult.collateral) added per unit of that weight. */
+export const COLLATERAL_PER_WEIGHT = 0.02;
+/** Hit points a destroyed floor's worth of occupants lose when the roof comes down. */
+export const COLLAPSE_DMG = { base: 25, perFloor: 10 };
+/** Damage a projectile kind deals to buildings relative to its listed damage (bullets do nothing; a bomb penetrates). */
+export const BUILDING_DMG_K: Record<string, number> = { shell: 1, rocket: 0.8, bomb: 2.2, missile: 1.2, bullet: 0 };
+/** Only blasts with at least this radius (m) hurt buildings. */
+export const BUILDING_MIN_AREA = 4;
+/** Breach (tanks driving through small buildings). */
+export const BREACH = {
+  /** Largest footprint (m2) and floors of a building a vehicle can demolish; protected sites and reinforced material never. */
+  maxArea: 220, maxFloors: 2,
+  /** Speed multiplier the A* sees on those cells for a breaching tracked vehicle (cost = cs / (f * sqrt f)). */
+  astarSpd: 0.15,
+  /** Hit points per second dealt to the building by a squad of that unit kind while breaching. */
+  dps: { mbt: 45, mech: 25, artillery: 15 } as Record<string, number>,
+  /** Fraction of its max hit points each vehicle of the squad loses per second while demolishing, and when the wall gives way. */
+  selfDps: 0.006, selfDone: 0.04,
+};
+export interface BuildingInfo { floors: number; mat: Material; hp: number; civil: boolean; prot: boolean; small: boolean }
+export interface BuildingLike { h: number; area: number; kind?: string }
+export function buildingInfo(b: BuildingLike): BuildingInfo {
+  const kr = b.kind ? BUILDING_KIND_RULES[b.kind] : undefined;
+  let mat = MATERIAL_BY_HEIGHT.find((r) => b.h < r[0])![1];
+  if (kr?.min && MATERIALS[mat].rank < MATERIALS[kr.min].rank) mat = kr.min;
+  const floors = Math.max(1, Math.round(b.h / FLOOR_M));
+  const hp = Math.round(MATERIALS[mat].k * Math.pow(Math.max(b.area, 20), 0.7) * (1 + b.h / 12));
+  const prot = !!kr?.prot, civil = kr ? kr.civil : true;
+  return { floors, mat, hp, civil, prot, small: !prot && mat !== 'reinforced' && b.area <= BREACH.maxArea && floors <= BREACH.maxFloors };
+}
+/** Penalty weight of destroying a building (0 when not civil). */
+export const civilWeight = (i: BuildingInfo): number => (i.civil ? (1 + i.floors * CIVIL_FLOOR_W) * (i.prot ? CIVIL_PROT_W : 1) : 0);

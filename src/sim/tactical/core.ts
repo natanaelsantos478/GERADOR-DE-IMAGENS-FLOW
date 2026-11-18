@@ -7,7 +7,7 @@ import { cellOf } from './grid';
 import { stepEnts, stepSquads } from './move';
 import { stepFires } from './terrainFx';
 import { layout, newEnt } from './orders';
-import type { Battle, Objective, Rect, Side, Squad, SquadResult, TacticalBattleInput, TacticalResult, UnitKind } from './types';
+import type { Battle, Objective, Rect, Side, Squad, SquadResult, TacticalBattleInput, TacticalMap, TacticalResult, UnitKind } from './types';
 import { UNITS } from './units';
 import { DT, cacheOf, nearby, rebuildCache } from './util';
 
@@ -15,7 +15,8 @@ const FRONT: UnitKind[] = ['infantry', 'special', 'engineer', 'mech', 'mbt', 'at
 const depthOf = (k: UnitKind) => (FRONT.includes(k) ? 0.2 : k === 'recon' ? 0.05 : 0.8);
 
 export function createBattle(input: TacticalBattleInput, seed: number): Battle {
-  const m = input.map;
+  // own copy of the map header: destruction (`rub`, nav) is per battle, the input (and its shared raster) stays untouched
+  const m: TacticalMap = { ...input.map, ...(input.map.rub ? { rub: input.map.rub.slice() } : {}) };
   const half = m.sizeM / 2;
   const defaultRect = (side: Side): Rect => ({ x: 0, y: side === 0 ? -half * 0.68 : half * 0.68, w: m.sizeM * 0.7, h: m.sizeM * 0.2 });
   const deploy: [Rect, Rect] = [input.sides[0].deploy ?? defaultRect(0), input.sides[1].deploy ?? defaultRect(1)];
@@ -181,7 +182,7 @@ export function snapshotBattle(b: Battle, timeScale: number, paused: boolean): T
     }),
     squads: b.squads.map((s) => ({
       id: s.id, side: s.side, kind: s.kind, name: s.name, x: r1(s.x), y: r1(s.y), face: r1((s.face * 180) / Math.PI), alive: alive[s.id], n0: s.n0,
-      morale: Math.round(s.morale * 100) / 100, fatigue: Math.round(s.fg * 100) / 100, routed: s.routed, order: s.order, form: s.form, dug: Math.round(s.dug * 100) / 100, smoke: s.smoke, fireFree: s.fireFree, ai: s.ai, cargo: s.cargo,
+      morale: Math.round(s.morale * 100) / 100, fatigue: Math.round(s.fg * 100) / 100, routed: s.routed, order: s.order, ...(s.order === 'move' || s.order === 'amove' ? { route: [s.ox, s.oy, ...(s.route ?? [])] } : {}), ...(s.breach ? { breach: true } : {}), ...(s.brk ? { brk: s.brk } : {}), form: s.form, dug: Math.round(s.dug * 100) / 100, smoke: s.smoke, fireFree: s.fireFree, ai: s.ai, cargo: s.cargo,
     })),
     projectiles: b.proj.map((p) => ({ id: p.id, kind: p.kind, x0: r1(p.x0), y0: r1(p.y0), x1: r1(p.x1), y1: r1(p.y1), t0: Math.round(p.t0 * 100) / 100, t1: Math.round(p.t1 * 100) / 100 })),
     smokes: b.smokes, objectives: b.objs, deploy: b.deploy, score: [Math.round(b.score[0]), Math.round(b.score[1])], support: b.support,

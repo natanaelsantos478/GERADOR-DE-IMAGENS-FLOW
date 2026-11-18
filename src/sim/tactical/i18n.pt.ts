@@ -16,6 +16,7 @@ export const tacticalPt: Record<string, string> = {
   'tac.result.winner': 'Vitória: {side}', 'tac.result.draw': 'Empate',
   'tac.result.destruction': 'Destruição das forças inimigas', 'tac.result.morale': 'Colapso do moral inimigo', 'tac.result.points': 'Vitória por pontos',
   'tac.result.withdrawn': 'Retirada do inimigo', 'tac.result.aborted': 'Batalha interrompida',
+  'tac.order.breach': 'Abrir caminho (demolir prédios pequenos)', 'tac.order.route': 'Rota marcada', 'tac.event.buildingDestroyed': 'Edifício destruído: {kind}', 'tac.event.protectedDestroyed': 'Local protegido destruído: {kind}',
   'tac.err.notEnterable': 'Este edifício não pode ser ocupado.',
   'tac.err.buildingFull': 'Edifício já ocupado por outro esquadrão.',
   'tac.err.busy': 'Já existe uma batalha tática em andamento.',

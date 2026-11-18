@@ -106,10 +106,10 @@ export function moveFactor(m: TacticalMap, x: number, y: number, hx: number, hy:
 const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 
 /** A* over cells for a mobility class. Returns flat waypoints [x,y,...] (smoothed), [] if unreachable. */
-export function findPath(m: TacticalMap, mob: Mobility, x0: number, y0: number, x1: number, y1: number, inb = 0, goalB = 0): number[] {
+export function findPath(m: TacticalMap, mob: Mobility, x0: number, y0: number, x1: number, y1: number, inb = 0, goalB = 0, breach = false): number[] {
   if (mob === 'air') return [x1, y1];
   const rt = navOf(m);
-  if (rt) return navPath(rt, mob, x0, y0, x1, y1, inb, goalB);
+  if (rt) return navPath(rt, mob, x0, y0, x1, y1, inb, goalB, breach);
   const n = m.n, cs = m.sizeM / n, N = n * n;
   const start = cellOf(m, x0, y0);
   let goal = cellOf(m, x1, y1);

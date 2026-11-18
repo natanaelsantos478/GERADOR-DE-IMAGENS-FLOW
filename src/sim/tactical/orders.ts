@@ -1,11 +1,22 @@
 import { schedule } from './combat';
 import { cellFactor, cellOf, inside } from './grid';
-import { edgePoint, setPath, ungarrison } from './move';
+import { edgePoint, endMove, setPath, ungarrison } from './move';
 import { mainComp, navCell, navCenter, navFactor, navOf, snapCell } from './nav';
 import type { Battle, Ent, Order, OrderResult, Side, Squad } from './types';
 import { UNITS } from './units';
 import { slotPos } from './util';
 
+/** Marked waypoints [x,y,...]: whole pairs inside the map, at most MAX_VIA of them; null when one is outside. */
+const MAX_VIA = 24;
+function viaOf(b: Battle, via?: number[]): number[] | null {
+  if (!via || !via.length) return [];
+  const out: number[] = [];
+  for (let i = 0; i + 1 < via.length && out.length < MAX_VIA * 2; i += 2) {
+    if (!Number.isFinite(via[i]) || !Number.isFinite(via[i + 1]) || !inside(b.map, via[i], via[i + 1])) return null;
+    out.push(via[i], via[i + 1]);
+  }
+  return out;
+}
 const err = (reason: string): OrderResult => ({ ok: false, reason });
 
 /** Re-seat the alive elements of a squad on their formation slots (deployment). */
@@ -70,18 +81,27 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
     switch (o.kind) {
       case 'move': case 'attackMove': {
         if (!inside(b.map, o.x, o.y)) return err('tac.err.outOfMap');
+        const via = viaOf(b, o.via);
+        if (!via) return err('tac.err.outOfMap');
         if (b.phase === 'deploy') {
           const r = b.deploy[side];
           s.x = Math.max(r.x - r.w / 2, Math.min(r.x + r.w / 2, o.x)); s.y = Math.max(r.y - r.h / 2, Math.min(r.y + r.h / 2, o.y));
           layout(b, s); break;
         }
         ungarrison(b, s);
-        if (!navOf(b.map) && cellFactor(b.map, cellOf(b.map, o.x, o.y), UNITS[s.kind].mob) === 0) return err('tac.err.impassable');
-        if (!setPath(b, s, o.x, o.y)) return err('tac.err.noPath');
-        s.order = o.kind === 'move' ? 'move' : 'amove'; s.ox = o.x; s.oy = o.y; s.digging = false; s.dug = 0;
+        // marked route: leg k goes to point k; only the first leg is searched now, the others when the previous one ends
+        const legs = via.length ? [...via, o.x, o.y] : [o.x, o.y];
+        const fx = legs[0], fy = legs[1];
+        if (!navOf(b.map) && cellFactor(b.map, cellOf(b.map, fx, fy), UNITS[s.kind].mob) === 0) return err('tac.err.impassable');
+        endMove(s); delete s.pend;
+        s.order = o.kind === 'move' ? 'move' : 'amove'; s.ox = fx; s.oy = fy; s.digging = false; s.dug = 0;
+        if (legs.length > 2) s.route = legs.slice(2);
+        if (o.breach && UNITS[s.kind].mob === 'track') s.breach = true;
+        if (!setPath(b, s, fx, fy)) { s.order = 'idle'; endMove(s); return err('tac.err.noPath'); }
         break;
       }
       case 'attack': {
+        endMove(s);
         const t = b.squads[o.target];
         if (b.phase !== 'combat') return err('tac.err.deployPhase');
         if (!t || t.side === side) return err('tac.err.badTarget');
@@ -89,8 +109,9 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
         s.order = 'attack'; s.target = t.id; s.path = []; s.digging = false; s.dug = 0;
         break;
       }
-      case 'hold': s.order = 'hold'; s.path = []; break;
+      case 'hold': endMove(s); s.order = 'hold'; s.path = []; break;
       case 'retreat': {
+        endMove(s);
         ungarrison(b, s);
         s.order = 'retreat'; s.path = []; s.digging = false; s.dug = 0;
         const [ex, ey] = edgePoint(b, s); setPath(b, s, ex, ey);
@@ -99,7 +120,7 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
       case 'formation': s.form = o.form; if (o.facing !== undefined) s.face = o.facing; if (b.phase === 'deploy') layout(b, s); break;
       case 'face': s.face = o.facing; if (b.phase === 'deploy') layout(b, s); break;
       case 'fire': s.fireFree = o.free; break;
-      case 'dig': s.path = []; s.order = 'hold'; s.digging = true; break;
+      case 'dig': endMove(s); s.path = []; s.order = 'hold'; s.digging = true; break;
       case 'smoke': {
         if (s.smoke <= 0 || b.phase !== 'combat') return err('tac.err.noSmoke');
         const f = 70;
@@ -112,7 +133,8 @@ export function issueOrder(b: Battle, side: Side, ids: number[], o: Order): Orde
       case 'occupy': {
         const rt = navOf(b.map);
         const bd = rt?.data.buildings[o.building - 1];
-        if (!rt || !bd || UNITS[s.kind].mob !== 'foot' || !bd.enterable) return err('tac.err.notEnterable');
+        if (!rt || !bd || UNITS[s.kind].mob !== 'foot' || !bd.enterable || rt.rub.has(bd.id)) return err('tac.err.notEnterable');
+        endMove(s);
         if (b.phase !== 'combat') return err('tac.err.deployPhase');
         const live = (b.garr?.[bd.id] ?? []).filter((q) => q !== s.id && b.ents.some((e) => e.sq === q && e.alive && !e.gone));
         if (live.length >= bd.cap) return err('tac.err.buildingFull');

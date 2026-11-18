@@ -1,6 +1,7 @@
 /** Dynamic effects of the real terrain: destructible bridges, protected sites, structures, artillery fires, objective candidates, point queries. */
 import { encodeRle, SURF, type NavData } from '../../data/vector/nav';
 import { navCell, navCenter, navOf, type NavRT } from './nav';
+import { hitBuildings } from './buildings';
 import { BRIDGE_HP, INFRA_HP, POI_OBJECTIVE, SURFACE_RULES, USE_RULES } from './terrainRules';
 import type { Battle, Proj, TacticalMap } from './types';
 import { rnd, nearby } from './util';
@@ -42,6 +43,7 @@ function destroyBridge(b: Battle, rt: NavRT, key: number): void {
   const list = bridgeGroups(rt).cells.get(key);
   if (!list) return;
   const surf = Uint8Array.from(rt.surf);
+  for (const id of rt.rub) for (const c of rt.bcells[id]) surf[c] = SURF.BUILDING; // rubble lives in `map.rub`, the stored raster keeps the building
   for (const c of list) surf[c] = SURF.DEEP; // what was under the deck is water or a gap: impassable
   const dead = new Set(list);
   for (const e of b.ents) if (e.alive && !e.gone && dead.has(navCell(rt, e.x, e.y)) && e.kind !== 'attackHeli') { e.hp = 0; e.alive = false; }
@@ -87,6 +89,7 @@ export function onImpact(b: Battle, p: Proj): void {
   const kind = PROT_CODES.includes(u) ? USE_NAME[u] : undefined;
   if (kind && b.t - ((b.prot ??= {})[kind] ?? -99) > 8) { b.prot[kind] = b.t; ev(b, { k: 'protectedHit', kind, x: p.x1, y: p.y1, side: p.side, t: b.t }); }
   if (p.ar <= 0) return;
+  hitBuildings(b, rt, p, c);
   if (p.ar >= 8) {
     const g = bridgeGroups(rt), R = Math.ceil(p.ar / rt.cs), cx = c % rt.n, cy = (c - cx) / rt.n, hit = new Map<number, number>();
     for (let j = -R; j <= R; j++) for (let i = -R; i <= R; i++) {

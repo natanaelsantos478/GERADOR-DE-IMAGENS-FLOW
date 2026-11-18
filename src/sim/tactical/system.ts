@@ -180,6 +180,7 @@ export const tacticalSystem = defineSystem({
           const battleId = s.battle.strategicBattleId;
           if (e.k === 'protectedHit') ctx.bus.emit({ type: 'tac.protectedHit', battleId, kind: e.kind, x: e.x, y: e.y, side: e.side });
           else if (e.k === 'bridgeDestroyed') ctx.bus.emit({ type: 'tac.bridgeDestroyed', battleId, x: e.x, y: e.y });
+          else if (e.k === 'buildingDestroyed') ctx.bus.emit({ type: 'tac.buildingDestroyed', battleId, id: e.id, x: e.x, y: e.y, kind: e.kind, floors: e.floors, civil: e.civil, prot: e.prot, weight: e.weight, by: e.by, side: e.side });
           else ctx.bus.emit({ type: 'tac.infraDestroyed', battleId, kind: e.kind, effect: e.effect, x: e.x, y: e.y });
         }
         finishIfNeeded(ctx);

@@ -24,7 +24,7 @@ function tryOccupy(b: Battle, side: Side, s: Squad): boolean {
   const c = cacheOf(b), cx = c.sqCx[s.id], cy = c.sqCy[s.id];
   let best = 0, bd = 180 * 180;
   for (const bl of rt.data.buildings) {
-    if (!bl.enterable) continue;
+    if (!bl.enterable || rt.rub.has(bl.id)) continue;
     const d = (bl.cx - cx) ** 2 + (bl.cy - cy) ** 2;
     if (d >= bd) continue;
     const occ = (b.garr?.[bl.id] ?? []).filter((q) => c.sqEnts[q]?.length).length;

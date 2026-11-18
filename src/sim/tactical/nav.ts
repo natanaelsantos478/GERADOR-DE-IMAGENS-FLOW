@@ -1,6 +1,6 @@
 /** Runtime (derived, never serialized) layers of a `NavData`: speed per mobility class, cover, obstacle height, slope, components. */
 import { decodeRle, SURF, type NavData } from '../../data/vector/nav';
-import { SURFACE_RULES } from './terrainRules';
+import { buildingInfo, SURF_RUBBLE, SURFACE_RULES } from './terrainRules';
 import type { Mobility } from './units';
 import type { TacticalMap } from './types';
 
@@ -16,6 +16,15 @@ export interface NavRT {
   bcells: number[][];
   comps: Partial<Record<Ground, Int32Array>>;
   main: Partial<Record<Ground, number>>;
+  /** 1 on the cells of small buildings a tracked vehicle can demolish (breach); cleared when they fall. */
+  brk: Uint8Array;
+  /** Components of the tracked class when breachable buildings count as passable. */
+  compsB?: Int32Array;
+  /** Destroyed buildings (nav ids) applied to the layers; bumped by every patch so path caches can compare. */
+  rub: Set<number>;
+  ver: number;
+  /** The map this runtime was built for / patched with (destruction is per battle, the raster is shared). */
+  owner: TacticalMap | null;
 }
 const cache = new WeakMap<NavData, NavRT>();
 
@@ -23,6 +32,8 @@ export function navOf(m: TacticalMap): NavRT | null {
   const d = m.nav;
   if (!d) return null;
   let rt = cache.get(d);
+  // `rt.rub` is the destruction already applied to the shared raster; another battle (or a loaded save) rebuilds from its own `map.rub`
+  if (rt && (rt.rub.size !== (m.rub?.length ?? 0) || (rt.rub.size > 0 && rt.owner !== m))) rt = undefined;
   if (!rt) { rt = build(d, m); cache.set(d, rt); }
   return rt;
 }
@@ -59,7 +70,48 @@ function build(d: NavData, m: TacticalMap): NavRT {
       spd[GROUND[g]][c] = base === 0 || slope[c] > lim ? 0 : base * Math.max(0.2, 1 - 0.7 * (slope[c] / lim));
     }
   }
-  return { data: d, n, cs, half, gh, surf, use, bld, slope, cover, obs, spd, bcells, comps: {}, main: {} };
+  const brk = new Uint8Array(N);
+  for (const b of d.buildings) if (buildingInfo(b).small) for (const c of bcells[b.id]) brk[c] = 1;
+  const rt: NavRT = { data: d, n, cs, half, gh, surf, use, bld, slope, cover, obs, spd, bcells, comps: {}, main: {}, brk, rub: new Set(), ver: 0, owner: m };
+  for (const r of m.rub ?? []) applyRubble(rt, r.id);
+  return rt;
+}
+
+/** Incremental patch: the footprint of building `id` becomes rubble (only those cells are touched; derived component labels are dropped to be recomputed lazily). Returns the cells changed. */
+export function applyRubble(rt: NavRT, id: number): number[] {
+  if (rt.rub.has(id)) return [];
+  rt.rub.add(id); rt.ver++;
+  const cells = rt.bcells[id] ?? [], rule = SURFACE_RULES[SURF_RUBBLE];
+  for (const c of cells) {
+    rt.surf[c] = SURF_RUBBLE; rt.bld[c] = 0; rt.cover[c] = rule.cover; rt.obs[c] = rule.obs; rt.brk[c] = 0;
+    for (let g = 0; g < 3; g++) {
+      const lim = SLOPE_LIM[GROUND[g]], base = rule.spd[g];
+      rt.spd[GROUND[g]][c] = base === 0 || rt.slope[c] > lim ? 0 : base * Math.max(0.2, 1 - 0.7 * (rt.slope[c] / lim));
+    }
+  }
+  rt.comps = {}; rt.main = {}; rt.compsB = undefined;
+  return cells;
+}
+
+/** Components of the tracked class when the breachable buildings count as passable (used only by breach orders). */
+export function breachComponents(rt: NavRT): Int32Array {
+  if (rt.compsB) return rt.compsB;
+  const n = rt.n, N = n * n, spd = rt.spd.track, ok = (c: number) => spd[c] > 0 || rt.brk[c] === 1;
+  const lab = new Int32Array(N), st = new Int32Array(N);
+  let id = 0;
+  for (let s = 0; s < N; s++) {
+    if (lab[s] || !ok(s)) continue;
+    id++; let sp = 0; st[sp++] = s; lab[s] = id;
+    while (sp) {
+      const c = st[--sp], cx = c % n;
+      if (cx > 0 && ok(c - 1) && !lab[c - 1]) { lab[c - 1] = id; st[sp++] = c - 1; }
+      if (cx < n - 1 && ok(c + 1) && !lab[c + 1]) { lab[c + 1] = id; st[sp++] = c + 1; }
+      if (c >= n && ok(c - n) && !lab[c - n]) { lab[c - n] = id; st[sp++] = c - n; }
+      if (c < N - n && ok(c + n) && !lab[c + n]) { lab[c + n] = id; st[sp++] = c + n; }
+    }
+  }
+  rt.compsB = lab;
+  return lab;
 }
 
 export const navCell = (rt: NavRT, x: number, y: number): number => {

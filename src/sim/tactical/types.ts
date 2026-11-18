@@ -26,6 +26,24 @@ export interface TacticalMap {
   water: number[];
   /** Fine real-world raster (OpenStreetMap vectors): when present, it drives passability, cover, roads and line of sight. */
   nav?: NavData;
+  /**
+   * Destroyed buildings, in order (part of the save). The nav raster stays untouched; the runtime patches the footprints of these
+   * buildings into rubble (`SURF_RUBBLE`) when it is built and when a building falls. See `Rubble`.
+   */
+  rub?: Rubble[];
+}
+/**
+ * One collapsed building, compact: `id` is the nav building id (`map.nav.buildings[id - 1]` has the footprint polygon `poly`, `h`, `cx`, `cy`, `area`, `kind`),
+ * so the render can raise the debris from an editable pattern (footprint + height + material + how it fell).
+ */
+export interface Rubble {
+  id: number;
+  /** Battle time (s) it fell: drives the collapse animation (progress = (t_now - t) / duration). */
+  t: number;
+  /** Centre (local metres), height (m), floors, function kind (when known), material class. */
+  x: number; y: number; h: number; fl: number; k?: string; m: 'light' | 'brick' | 'concrete' | 'reinforced';
+  /** What brought it down. */
+  by: 'shell' | 'rocket' | 'bomb' | 'missile' | 'breach' | 'fire';
 }
 
 /** Commander / condition modifiers computed by the strategic layer (all multipliers, 1 = neutral). */
@@ -109,6 +127,10 @@ export interface Squad {
   x: number; y: number;
   order: OrderKind; ox: number; oy: number; target: number;
   path: number[]; pi: number; repath: number;
+  /** Marked route: remaining waypoints [x,y,...] after the current leg (whose target is `ox,oy`); each leg is searched on demand when the previous one ends. */
+  route?: number[];
+  /** Breach order: a tracked squad may demolish small buildings in its way (`brk` = building being demolished, nav id). */
+  breach?: boolean; brk?: number;
   fireFree: boolean;
   /** Building (nav id) occupied / being entered or left by this infantry squad; `gar` = garrisoned inside. */
   inb?: number; gar?: number;
@@ -167,7 +189,9 @@ export interface Battle {
   score: [number, number];
   urbanHits: number;
   /** Real-terrain effects: pending events for the system, bridge/structure hit points, fires, outages. */
-  ev?: ({ k: 'protectedHit'; kind: string; x: number; y: number; side: Side; t: number } | { k: 'bridgeDestroyed'; x: number; y: number; t: number } | { k: 'infraDestroyed'; kind: string; effect: string; x: number; y: number; t: number })[];
+  ev?: ({ k: 'protectedHit'; kind: string; x: number; y: number; side: Side; t: number } | { k: 'bridgeDestroyed'; x: number; y: number; t: number } | { k: 'infraDestroyed'; kind: string; effect: string; x: number; y: number; t: number } | { k: 'buildingDestroyed'; id: number; x: number; y: number; kind: string; floors: number; h: number; civil: boolean; prot: boolean; weight: number; by: Rubble['by']; side: Side | -1; t: number })[];
+  /** Hit points left of damaged buildings (nav id -> hp); absent = intact. */
+  bldHp?: Record<string, number>;
   prot?: Record<string, number>; bhp?: Record<string, number>; infraHp?: Record<string, number>;
   fires?: { c: number; until: number }[]; burnt?: number[];
   blackout?: number; commsDown?: number;
@@ -187,8 +211,9 @@ export interface Battle {
 
 // ---------------------------------------------------------------- orders
 export type Order =
-  | { kind: 'move'; x: number; y: number }
-  | { kind: 'attackMove'; x: number; y: number }
+  /** `via`: intermediate waypoints [x,y,...] visited in order before (x,y); `breach`: tracked vehicles may demolish small buildings. */
+  | { kind: 'move'; x: number; y: number; via?: number[]; breach?: boolean }
+  | { kind: 'attackMove'; x: number; y: number; via?: number[]; breach?: boolean }
   | { kind: 'attack'; target: number }
   | { kind: 'hold' }
   | { kind: 'retreat' }
@@ -237,6 +262,11 @@ declare module '../../core/contracts' {
     'tac.protectedHit': { battleId: string; kind: string; x: number; y: number; side: 0 | 1 };
     'tac.bridgeDestroyed': { battleId: string; x: number; y: number };
     'tac.infraDestroyed': { battleId: string; kind: string; effect: string; x: number; y: number };
+    /**
+     * A building collapsed. `kind` = function ('house' when unknown); `civil`: the strategic layer may lower satisfaction / raise damages (`weight` > 0 scales it,
+     * bigger for taller buildings and x6 for protected sites such as hospitals, schools and worship); `prot`: protected site; `side` = who did it (-1: unknown).
+     */
+    'tac.buildingDestroyed': { battleId: string; id: number; x: number; y: number; kind: string; floors: number; civil: boolean; prot: boolean; weight: number; by: string; side: 0 | 1 | -1 };
   }
   interface TacticalApi {
     /** Advance real time (seconds); applies timeScale/pause. Called by the render/UI loop each frame. */
@@ -269,7 +299,7 @@ declare module '../../core/contracts' {
 }
 export interface TacSquadView {
   id: number; side: Side; kind: UnitKind; name: string; x: number; y: number; face: number;
-  alive: number; n0: number; morale: number; fatigue: number; routed: boolean; order: OrderKind; form: FormationKind; dug: number; smoke: number; fireFree: boolean; ai: boolean; cargo: number;
+  alive: number; n0: number; morale: number; fatigue: number; routed: boolean; order: OrderKind; route?: number[]; breach?: boolean; brk?: number; form: FormationKind; dug: number; smoke: number; fireFree: boolean; ai: boolean; cargo: number;
 }
 export interface TacProjView { id: number; kind: Proj['kind']; x0: number; y0: number; x1: number; y1: number; t0: number; t1: number }
 
