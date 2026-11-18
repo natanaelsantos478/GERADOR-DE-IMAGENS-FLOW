@@ -121,7 +121,9 @@ export function attachCity3D(globe: Globe): City3D {
       const d = Math.max(0, Cesium.Cartesian3.distance(cp, t.ref.origin) - t.ref.sizeM * 0.4);
       if (t.minor) t.minor.show = d < c.lodMinor;
       if (d < c.treeDist * 1.1) void t.ensureTrees(styles()!); else if (t.trees && d > c.treeDist * 1.8) t.dropTrees();
-      if (t.trees) for (const m of t.trees.models) m.model.show = m.far ? d < c.treeDist : d < c.treeDist * 0.55;
+      // a camera low among the trees (tactical close-ups) would sit inside the crowns: hide the trees then
+      const inCanopy = agl < 70;
+      if (t.trees) for (const m of t.trees.models) m.model.show = !inCanopy && (m.far ? d < c.treeDist : d < c.treeDist * 0.55);
     }
     scene.requestRender();
   }

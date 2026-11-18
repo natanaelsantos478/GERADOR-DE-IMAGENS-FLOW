@@ -31,7 +31,7 @@ export function marksFor(t: TileRef): LocalMark[] {
 }
 export const modelUrl = (m: string) => {
   const f = m.endsWith('.glb') ? m : `${m}.glb`;
-  return new URL(f.includes('/') ? `models/${f}` : `models/landmarks/${f}`, document.baseURI).href;
+  return new URL(f.startsWith('models/') ? f : f.includes('/') ? `models/${f}` : `models/landmarks/${f}`, document.baseURI).href;
 };
 
 /** Loads/shows landmark models within `range` metres of the camera (much farther than ordinary buildings) and unloads them beyond 1.4x. */

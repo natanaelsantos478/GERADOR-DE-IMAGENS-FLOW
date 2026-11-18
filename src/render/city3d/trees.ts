@@ -63,8 +63,8 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
       const z = ground(jx, jy), rule = ruleOf[i], tw = rule.mix.reduce((a, q) => a + q.weight, 0);
       let r = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = rule.mix[0].species;
       for (const q of rule.mix) { if (r < q.weight) { sp = q.species; break; } r -= q.weight; }
-      const [lo, hi] = rule.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.35, 1 + (k - 1) * 0.12) : 1);
-      out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: k > 1 ? Math.min(2.6, 1 + (k - 1) * 0.5) : 1, sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
+      const [lo, hi] = rule.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);
+      out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1, sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
       if (out.length >= cap) break;
     }
   });
@@ -72,7 +72,7 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
   if (out.length > budget) {
     const r = budget / out.length;
     const kept = out.filter((p) => hash(Math.round(p.x * 3), Math.round(p.y * 3), 21) < r);
-    for (const p of kept) p.sw = Math.min(2.6, Math.max(p.sw, 1 + (1 / Math.sqrt(r) - 1) * 0.5));
+    for (const p of kept) p.sw = Math.min(1.6, Math.max(p.sw, 1 + (1 / Math.sqrt(r) - 1) * 0.3));
     return kept;
   }
   return out;

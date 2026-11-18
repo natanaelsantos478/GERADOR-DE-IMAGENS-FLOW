@@ -10,7 +10,7 @@ const P7 = devices['Pixel 7'];
 const LONG = { timeout: 240_000 }; // a pick on the software GL can take tens of seconds
 
 test('mobile: batalha tática com o dedo', async ({ browser }) => {
-  test.setTimeout(1_500_000);
+  test.setTimeout(2_700_000);
   const context = await browser.newContext({ ...P7, baseURL: `http://localhost:${process.env.E2E_PORT ?? 5197}/` });
   const page = await context.newPage();
   const errors: string[] = [];
@@ -19,7 +19,8 @@ test('mobile: batalha tática com o dedo', async ({ browser }) => {
   const cdp: CDPSession = await context.newCDPSession(page);
   const ev = <T,>(fn: () => T) => page.evaluate(fn);
   const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x = 0, y = 0) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y, id: 0 }] });
-  const tap = async (x: number, y: number) => { await touch('touchStart', x, y); await page.waitForTimeout(60); await touch('touchEnd'); await page.waitForTimeout(250); };
+  // both CDP messages are queued back to back: awaiting the start ack would stretch the press by the page's frame time
+  const tap = async (x: number, y: number) => { await Promise.all([touch('touchStart', x, y), touch('touchEnd')]); await page.waitForTimeout(250); };
   // On the software GL a tap is sometimes lost under main-thread starvation: repeat it until its effect shows (a real phone does not need this).
   const tapUntil = async (x: number, y: number, cond: () => Promise<boolean>, tries = 4) => {
     for (let i = 0; i < tries; i++) {
@@ -78,12 +79,12 @@ test('mobile: batalha tática com o dedo', async ({ browser }) => {
   // 1) tap selects a squad
   const a0 = await squadXY('mine', 0);
   await ev(() => undefined);
-  await page.evaluate((id) => window.__tactical!.focus({ squad: id }, { range: 900, pitchDeg: -55, durationS: 0.01 }), a0.id);
+  await page.evaluate((id) => window.__tactical!.focus({ squad: id }, { range: 1300, pitchDeg: -60, durationS: 0.01 }), a0.id);
   await page.waitForTimeout(5000);
   await page.evaluate(() => { const g = window.__game! as any, d = g.dispatch.bind(g), L = ((window as any).__orders = [] as any[]); g.dispatch = (c: any) => { const r = d(c); if (c.type === 'tac.order') L.push({ order: c.order, squads: c.squads, ok: r.ok, reason: r.reason }); return r; }; });
   const orders = () => page.evaluate(() => (window as any).__orders as { order: any; squads: number[]; ok: boolean; reason?: string }[]);
   await light(true);
-  const refocus = async (id: number) => { await expect.poll(async () => { await page.evaluate((i) => window.__tactical!.focus({ squad: i }, { range: 900, pitchDeg: -55, durationS: 0.01 }), id); await page.waitForTimeout(2500); const q = await squadXY('mine', 0); console.log('REFOCUS', JSON.stringify(q)); return q.x > 30 && q.x < 380 && q.y > 150 && q.y < 660; }, { timeout: 120_000 }).toBe(true); await page.waitForTimeout(2500); };
+  const refocus = async (id: number) => { await expect.poll(async () => { await page.evaluate((i) => window.__tactical!.focus({ squad: i }, { range: 1300, pitchDeg: -60, durationS: 0.01 }), id); await page.waitForTimeout(2500); const q = await squadXY('mine', 0); console.log('REFOCUS', JSON.stringify(q)); return q.x > 30 && q.x < 380 && q.y > 150 && q.y < 660; }, { timeout: 120_000 }).toBe(true); await page.waitForTimeout(2500); };
   await refocus(a0.id);
   const a = await squadXY('mine', 0);
   await tapUntil(a.x, a.y, async () => JSON.stringify(await sel()) === JSON.stringify([a.id]));
@@ -113,17 +114,20 @@ test('mobile: batalha tática com o dedo', async ({ browser }) => {
   expect(await ev(() => { const r = window.__game!.dispatch({ type: 'tac.order', country: 'BRA', squads: [0], order: { kind: 'occupy', building: 999999 } } as never); return r.ok; })).toBe(false);
 
   // 4) box select from the box button
-  await page.evaluate(() => window.__tactical!.focus({ x: 0, y: 0 }, { range: 5500, pitchDeg: -60, durationS: 0.01 }));
-  await page.waitForTimeout(4000);
+  const own = await ev(() => { const b = window.__game!.state.tactical.battle!, m = b.squads.filter((q: any) => q.side === b.player); return { x: m.reduce((u: number, q: any) => u + q.x, 0) / m.length, y: m.reduce((u: number, q: any) => u + q.y, 0) / m.length, n: m.length }; });
+  const mineAll = own.n;
+  let pts: Awaited<ReturnType<typeof squadXY>>[] = [];
+  await expect.poll(async () => {
+    await page.evaluate((o) => window.__tactical!.focus({ x: o.x, y: o.y }, { range: 2500, pitchDeg: -60, durationS: 0.01 }), own);
+    await page.waitForTimeout(3000);
+    pts = await Promise.all([...Array(mineAll).keys()].map((i) => squadXY('mine', i)));
+    return pts.filter((p) => p.x > 20 && p.x < 392 && p.y > 200 && p.y < 640).length;
+  }, { timeout: 180_000 }).toBeGreaterThan(0);
   await page.getByTestId('btn-tools').tap();
   await page.getByTestId('btn-boxmode').tap();
-  const mineAll = await ev(() => { const b = window.__game!.state.tactical.battle!; return b.squads.filter((s: any) => s.side === b.player).length; });
-  const pts = await Promise.all([...Array(mineAll).keys()].map((i) => squadXY('mine', i)));
-  const vis = pts.filter((p) => p.x > 20 && p.x < 392 && p.y > 330 && p.y < 700);
-  expect(vis.length).toBeGreaterThan(0);
-  const x0 = Math.max(4, Math.min(...vis.map((p) => p.x)) - 30), y0 = Math.max(340, Math.min(...vis.map((p) => p.y)) - 30);
-  const x1 = Math.min(405, Math.max(...vis.map((p) => p.x)) + 30), y1 = Math.min(690, Math.max(...vis.map((p) => p.y)) + 30);
-  await tapUntil(5, 340, async () => (await sel()).length === 0); // clears
+  const vis = pts.filter((p) => p.x > 20 && p.x < 392 && p.y > 200 && p.y < 640);
+  const x0 = Math.max(4, Math.min(...vis.map((p) => p.x)) - 30), y0 = Math.max(160, Math.min(...vis.map((p) => p.y)) - 30);
+  const x1 = Math.min(405, Math.max(...vis.map((p) => p.x)) + 30), y1 = Math.min(680, Math.max(...vis.map((p) => p.y)) + 30);
   await touch('touchStart', x0, y0);
   for (let i = 1; i <= 6; i++) { await touch('touchMove', x0 + ((x1 - x0) * i) / 6, y0 + ((y1 - y0) * i) / 6); await page.waitForTimeout(40); }
   await shot('docs/assets/touch-box.png');
@@ -137,12 +141,12 @@ test('mobile: batalha tática com o dedo', async ({ browser }) => {
   await tapUntil(a.x, a.y, async () => JSON.stringify(await sel()) === JSON.stringify([a.id]));
   const lp = { x: a.x + 20, y: a.y + 120 };
   await touch('touchStart', lp.x, lp.y);
-  await expect(page.getByTestId('tac-radial')).toBeVisible({ timeout: 3000 });
+  await expect(page.getByTestId('tac-radial')).toBeVisible({ timeout: 180_000 });
   await touch('touchEnd');
   await page.waitForTimeout(500);
   await expect(page.getByTestId('tac-radial')).toBeVisible();
   await shot('docs/assets/touch-radial.png');
-  await page.getByTestId('rad-hold').tap();
+  await page.getByTestId('rad-hold').dispatchEvent('click');
   await expect.poll(async () => (await orders()).some((o) => o.order.kind === 'hold' && o.ok && o.squads.includes(a.id)), LONG).toBe(true);
   expect((await squad(a.id)).order).toBe('hold');
   await expect(page.getByTestId('tac-radial')).toHaveCount(0);

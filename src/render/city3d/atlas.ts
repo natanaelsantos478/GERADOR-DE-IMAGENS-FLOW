@@ -40,7 +40,7 @@ export function loadAtlas(st: Styles): Promise<Atlas | null> {
         const d = st.textures[id], x = (i % COLS) * CELL, y = Math.floor(i / COLS) * CELL;
         const a = await load(d.file), b = d.night ? await load(d.night) : a;
         dctx.drawImage(a, x, y, CELL, CELL); nctx.drawImage(b, x, y, CELL, CELL);
-        normalize(dctx, x, y, id.startsWith('roof') ? 0.62 : 0.7);
+        normalize(dctx, x, y, id.startsWith('roof') ? 0.6 : 0.6);
         cells.set(id, { byte: i + 1, mu: d.mu, mv: d.mv });
       }));
     } catch (e) { console.warn('[city3d] textures unavailable, procedural facades used:', (e as Error).message); return null; }

@@ -79,6 +79,7 @@ function Overlay() {
 }
 
 export function TacTouch({ m }: { m: TacModel }) {
+  const radial = useTacTouch((s) => !!s.radial);
   const multi = useTacTouch((s) => s.multi), routeMode = useTacTouch((s) => s.routeMode), breach = useTacTouch((s) => s.breach), nPts = useTacTouch((s) => s.route.length / 2);
   const [box, setBox] = useState(false);
   const [open, setOpen] = useState(false);
@@ -93,7 +94,7 @@ export function TacTouch({ m }: { m: TacModel }) {
   return (
     <>
       <Overlay />
-      <div className="tac-tools pe m-only">
+      <div className="tac-tools pe m-only" style={radial ? { visibility: 'hidden' } : undefined}>
         {open && <>
         <button className={`fab-sm ${multi ? 'on' : ''}`} data-testid="btn-multi" aria-pressed={multi} onClick={() => useTacTouch.getState().setMulti(!multi)}><Icon name="check" /><span>{t('ui.tac.multi')}</span></button>
         <button className={`fab-sm ${routeMode ? 'on' : ''}`} data-testid="btn-route" aria-pressed={routeMode} onClick={() => {

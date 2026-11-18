@@ -42,7 +42,7 @@ void main() {
     vec3 d = atlasDay(tb, v_st);
     vec3 tcol = d;
     if (cityNight() > 0.02) { vec3 n = atlasNight(tb, v_st); tcol = mix(d, n, cityNight()); emis = cityNight() * dot(n, vec3(0.3, 0.59, 0.11)); }
-    base = min(tcol * base * 1.55, vec3(1.0));
+    base = min(tcol * base * 1.12, vec3(1.0));
   } else if (pat > 0.02 && pat < 0.98) {
     float fl = pat < 0.4 ? 3.0 : (pat < 0.7 ? 3.5 : 3.8);
     float wd = pat < 0.4 ? 3.2 : (pat < 0.7 ? 3.0 : 1.9);
