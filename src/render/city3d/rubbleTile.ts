@@ -11,7 +11,7 @@ import { styles } from './styles';
 
 /** A ruin expressed in one tile's local metres. */
 interface LocalRuin { r: Ruin; ring: number[]; cx: number; cy: number; x0: number; x1: number; y0: number; y1: number }
-interface Anim { bld: Cesium.Primitive[]; heap: Cesium.Primitive[]; pivot: Cesium.Cartesian3; dir: [number, number]; spec: CollapseSpec; lr: LocalRuin }
+interface Anim { last: number; bld: Cesium.Primitive[]; heap: Cesium.Primitive[]; pivot: Cesium.Cartesian3; dir: [number, number]; spec: CollapseSpec; lr: LocalRuin }
 
 const HIDE_MARGIN = 2.5;
 const toLocal = (t: TileRef, lon: number, lat: number): [number, number] => {
@@ -41,7 +41,7 @@ export class TileRubble {
   private doneSig = '';
   private done: Cesium.Primitive | null = null;
   private anim = new Map<string, Anim>();
-  stats = { hidden: 0, done: 0, animating: 0, tris: 0 };
+  stats = { hidden: 0, done: 0, animating: 0, tris: 0, matched: 0, nearest: -1 };
   constructor(private t: CityTile) {}
 
   private local(r: Ruin): LocalRuin {
@@ -73,8 +73,10 @@ export class TileRubble {
   hideFn(): ((cx: number, cy: number) => boolean) | undefined {
     this.builtSig = this.compute();
     const list = this.mine;
-    this.stats.hidden = list.length;
-    return list.length ? (cx, cy) => list.some((l) => covers(l, cx, cy)) : undefined;
+    this.stats.hidden = list.length; this.stats.matched = 0;
+    // debug: how far the closest drawn footprint centroid is from the first ruin's centre (m); > HIDE_MARGIN means the two maps disagree
+    if (list.length && this.t.area) { let d = 1e9; for (const p of this.t.area.buildings) { const [cx, cy] = polyCentroid(p); d = Math.min(d, Math.hypot(cx - list[0].cx, cy - list[0].cy)); } this.stats.nearest = Math.round(d * 10) / 10; }
+    return list.length ? (cx, cy) => { const hit = list.some((l) => covers(l, cx, cy)); if (hit) this.stats.matched++; return hit; } : undefined;
   }
 
   /** Bring the tile in line with the store: hide / rebuild, rubble primitive, collapse animations. */
@@ -82,19 +84,21 @@ export class TileRubble {
     const t = this.t, st = styles();
     if (t.state !== 'ready' || t.generating || t.dead || !t.area || !t.ground || !st) return;
     const sig = this.compute();
+    let changed = false;
     if (sig !== this.builtSig) void t.rebuildBuildings();
     const done: LocalRuin[] = [], running: LocalRuin[] = [];
     for (const l of this.mine) (ruinProgress(l.r) >= 1 ? done : running).push(l);
     const dsig = done.map((l) => l.r.key).sort().join('|');
-    if (dsig !== this.doneSig) { this.doneSig = dsig; this.buildDone(done); }
-    for (const [k, a] of [...this.anim]) if (!running.some((l) => l.r.key === k)) { this.dropAnim(a); this.anim.delete(k); }
+    if (dsig !== this.doneSig) { this.doneSig = dsig; this.buildDone(done); changed = true; }
+    for (const [k, a] of [...this.anim]) if (!running.some((l) => l.r.key === k)) { this.dropAnim(a); this.anim.delete(k); changed = true; }
     for (const l of running) {
       let a = this.anim.get(l.r.key);
-      if (!a) { a = this.startAnim(l); if (!a) continue; this.anim.set(l.r.key, a); }
-      this.pose(a, ruinProgress(l.r));
+      if (!a) { a = this.startAnim(l); if (!a) continue; this.anim.set(l.r.key, a); changed = true; }
+      const p = ruinProgress(l.r);
+      if (Math.abs(p - a.last) > 1e-4) { a.last = p; this.pose(a, p); changed = true; }
     }
     this.stats.done = done.length; this.stats.animating = this.anim.size; this.stats.hidden = this.mine.length;
-    t.viewer.scene.requestRender();
+    if (changed) t.viewer.scene.requestRender(); // only when something moved: a render loop here would starve captures
   }
 
   private prim(m: Mesh, mat: Cesium.Matrix4): Cesium.Primitive | null {
@@ -142,7 +146,7 @@ export class TileRubble {
       dir = [dx / d, dy / d];
     } else { const a = hash(l.r.id, 7, 3) * Math.PI * 2; dir = [Math.cos(a), Math.sin(a)]; }
     const pivot = projector(t.ref).local(model.cx, model.cy, gz);
-    return { bld, heap, pivot, dir, spec, lr: l };
+    return { last: -1, bld, heap, pivot, dir, spec, lr: l };
   }
   private dropAnim(a: Anim) { for (const p of [...a.bld, ...a.heap]) this.remove(p); }
 
@@ -173,6 +177,6 @@ export class TileRubble {
     this.remove(this.done); this.done = null; this.doneSig = '';
     for (const a of this.anim.values()) this.dropAnim(a);
     this.anim.clear(); this.cache.clear(); this.builtSig = '';
-    this.stats = { hidden: 0, done: 0, animating: 0, tris: 0 };
+    this.stats = { hidden: 0, done: 0, animating: 0, tris: 0, matched: 0, nearest: -1 };
   }
 }

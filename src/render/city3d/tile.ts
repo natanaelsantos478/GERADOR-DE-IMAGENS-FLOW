@@ -6,7 +6,7 @@ import type { VectorArea } from '../../data/vector/types';
 import { cityAppearance, opacityDebug, type CityAppearance } from './appearance';
 import { loadAtlas, type Atlas } from './atlas';
 import { buildBuildings, polyCentroid } from './buildings';
-import { projector, type TileRef } from './geo';
+import { projector, TZ, tileXY, type TileRef } from './geo';
 import { marksFor } from './landmarks';
 import { loadGround, type Ground } from './ground';
 import { buildInfra } from './infra';
@@ -45,6 +45,21 @@ export function tallBuildings(tiles: Iterable<CityTile>, n: number): { lon: numb
     }
   }
   return out.sort((u, v) => v.h - u.h).slice(0, n);
+}
+/** Debug: the `n` drawn footprints closest to lon/lat (distance m, area m2, height, offset east/north m from the point). */
+export function nearBuildings(tiles: Iterable<CityTile>, lon: number, lat: number, n: number): { d: number; dx: number; dy: number; area: number; h: number; tile: string }[] {
+  const out: { d: number; dx: number; dy: number; area: number; h: number; tile: string }[] = [];
+  for (const t of tiles) {
+    if (t.state !== 'ready' || !t.area) continue;
+    const [gx, gy] = tileXY(lon, lat, TZ), px = (gx - (t.ref.x + 0.5)) * t.ref.sizeM, py = -(gy - (t.ref.y + 0.5)) * t.ref.sizeM;
+    for (const p of t.area.buildings) {
+      const [cx, cy] = polyCentroid(p), d = Math.hypot(cx - px, cy - py);
+      if (d > 150) continue;
+      const r = p.rings[0]; let a = 0; for (let i = 0, k = r.length / 2, j = k - 1; i < k; j = i++) a += r[j * 2] * r[i * 2 + 1] - r[i * 2] * r[j * 2 + 1];
+      out.push({ d: Math.round(d * 10) / 10, dx: Math.round((cx - px) * 10) / 10, dy: Math.round((cy - py) * 10) / 10, area: Math.round(Math.abs(a) / 2), h: p.h ?? 0, tile: t.ref.key });
+    }
+  }
+  return out.sort((u, v) => u.d - v.d).slice(0, n);
 }
 /** Imagery provider that serves one canvas as a single image over `rect` (no PNG encode/decode round trip). */
 function canvasTileProvider(canvas: HTMLCanvasElement, rect: Cesium.Rectangle): Cesium.ImageryProvider {
@@ -144,7 +159,7 @@ export class CityTile {
         Object.assign(this.stats, { buildings: bm.stats.count, majorBuildings: bm.stats.major, tris: bm.stats.tris, styles: bm.stats.byStyle });
         this.viewer.scene.requestRender();
       } while (this.rub.needsRebuild());
-    } finally { this.rebuilding = false; }
+    } catch (e) { console.warn('city3d rebuildBuildings', this.ref.key, e); } finally { this.rebuilding = false; }
   }
   private async generateInner(st: Styles, my: number, scene: Cesium.Scene, r: TileRef, area: VectorArea, ground: Ground, t0: number, stale: () => boolean): Promise<void> {
     this.clearGenerated();

@@ -105,7 +105,9 @@ function craterCanvas(): HTMLCanvasElement {
 
 export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): TacticalLayer {
   const viewer = globe.viewer, scene = viewer.scene;
-  const cache = new Map<string, { heights: number[]; nav?: NavData | null }>();
+  const cache = new Map<string, { heights: number[]; nav?: NavData | null; origin: [number, number] }>();
+  /** Where the map handed to the sim for a battle really is centred (a cached map is keyed at ~100 m resolution, so its origin can differ from `battle.center` by tens of metres): the render must use it to line up with the real streets/buildings. */
+  const origins = new Map<string, [number, number]>();
   const key = (lon: number, lat: number) => `${lon.toFixed(3)},${lat.toFixed(3)}`;
   const pending = new Map<string, Promise<void>>();
   const prefetchAt = (lon: number, lat: number) => {
@@ -114,17 +116,18 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     let p = pending.get(k);
     if (!p) { p = sampleGrid(lon, lat).then(async (h) => {
       if (!h) return;
-      cache.set(k, { heights: h });
+      cache.set(k, { heights: h, origin: [lon, lat] });
       // real vector map (Overture / OpenFreeMap) BEFORE tac.start: the sim reads it synchronously from this cache
       // slow links (tests through a proxy) can raise the per-source budget with window.__vectorTimeoutMs
       const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: 64, timeoutMs: (window as unknown as { __vectorTimeoutMs?: number }).__vectorTimeoutMs });
-      cache.set(k, { heights: h, nav });
+      cache.set(k, { heights: h, nav, origin: [lon, lat] });
     }).finally(() => pending.delete(k)); pending.set(k, p); }
     return p;
   };
   // The sim asks for heights synchronously at `tac.start`; fall back to the rendered globe when the cache is cold.
   setTacticalMapProvider((lon, lat) => {
     const hit = cache.get(key(lon, lat));
+    origins.set(key(lon, lat), hit ? hit.origin : [lon, lat]);
     if (hit) return { heights: hit.heights, vectorArea: hit.nav ?? undefined };
     void prefetchAt(lon, lat);
     const n = 64, sizeM = 8000, cs = sizeM / n, mPer = M_PER_DEG * Math.cos((lat * Math.PI) / 180), cg = new Cesium.Cartographic();
@@ -217,7 +220,8 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     mode.tactical = true;
     const mf = await loadModelData();
     if (g.state.tactical?.battle?.id !== b.id) { mode.tactical = false; return; }
-    cur = { id: b.id, b, pool: new ModelPool(scene, mf), ents: new Map(), clat: b.center[1], clon: b.center[0], mPerLon: M_PER_DEG * Math.cos((b.center[1] * Math.PI) / 180) };
+    const org = origins.get(key(b.center[0], b.center[1])) ?? b.center;
+    cur = { id: b.id, b, pool: new ModelPool(scene, mf), ents: new Map(), clat: org[1], clon: org[0], mPerLon: M_PER_DEG * Math.cos((org[1] * Math.PI) / 180) };
     bills = scene.primitives.add(new Cesium.BillboardCollection({ scene })) as Cesium.BillboardCollection;
     lines = scene.primitives.add(new Cesium.PolylineCollection()) as Cesium.PolylineCollection;
     labels = scene.primitives.add(new Cesium.LabelCollection({ scene })) as Cesium.LabelCollection;

@@ -9,7 +9,7 @@ import { landmarks, LandmarkLayer, loadLandmarks } from './landmarks';
 import { onRuins, pinRuins } from './ruins';
 import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
 import { opacityDebug } from './appearance';
-import { cachedTiles, CityTile, sharedAppearance, tallBuildings } from './tile';
+import { cachedTiles, CityTile, sharedAppearance, tallBuildings, nearBuildings } from './tile';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
@@ -28,13 +28,15 @@ export interface City3D {
   /** Test/debug: freeze every building collapse at progress p (0..1); null follows the battle clock. */
   pinRuins(p: number | null): void;
   /** Destruction state of the visible tiles: buildings hidden, ruins finished, collapses playing, rubble triangles. */
-  ruinStats(): { hidden: number; done: number; animating: number; tris: number };
+  ruinStats(): { hidden: number; done: number; animating: number; tris: number; matched: number; nearest: number };
   /** Test/debug: the tallest big buildings of the loaded tiles (lon/lat of the footprint centre). */
   tall(n?: number): { lon: number; lat: number; h: number; area: number }[];
   /** Test/debug: rebuild the material as it was before the opacity fix (legacy = true) or as shipped, regenerating the visible tiles. */
   legacyBlend(legacy: boolean): Promise<void>;
   /** Test/debug: hide a magenta box inside the building at lon/lat (lower than its walls) and frame its facade from outside. */
   hiddenProbe(t: { lon: number; lat: number; h: number; area: number }): void;
+  /** Test/debug: footprints of the loaded tiles closest to a point. */
+  near(lon: number, lat: number, n?: number): ReturnType<typeof nearBuildings>;
   destroy(): void;
 }
 
@@ -166,6 +168,7 @@ export function attachCity3D(globe: Globe): City3D {
     active: () => on,
     update,
     pinRuins,
+    near: (lon, lat, n = 4) => nearBuildings(tiles.values(), lon, lat, n),
     tall: (n = 5) => tallBuildings(tiles.values(), n),
     hiddenProbe(t) {
       const g = globe.heightAt(t.lon, t.lat);
@@ -174,7 +177,7 @@ export function attachCity3D(globe: Globe): City3D {
       scene.requestRender();
     },
     async legacyBlend(legacy) { opacityDebug.legacy = legacy; await reloadStyles(true); },
-    ruinStats: () => [...tiles.values()].reduce((a, t) => ({ hidden: a.hidden + t.rub.stats.hidden, done: a.done + t.rub.stats.done, animating: a.animating + t.rub.stats.animating, tris: a.tris + t.rub.stats.tris }), { hidden: 0, done: 0, animating: 0, tris: 0 }),
+    ruinStats: () => [...tiles.values()].reduce((a, t) => ({ hidden: a.hidden + t.rub.stats.hidden, done: a.done + t.rub.stats.done, animating: a.animating + t.rub.stats.animating, tris: a.tris + t.rub.stats.tris, matched: a.matched + t.rub.stats.matched, nearest: Math.max(a.nearest, t.rub.stats.nearest) }), { hidden: 0, done: 0, animating: 0, tris: 0, matched: 0, nearest: -1 }),
     stats() {
       const all = [...tiles.values()];
       const sum = (f: (t: CityTile) => number) => all.reduce((s, t) => s + f(t), 0);
