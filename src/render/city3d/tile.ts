@@ -16,7 +16,7 @@ import { styles as currentStyles, type Styles } from './styles';
 import { TileRubble } from './rubbleTile';
 import { placeTrees, TreeLayer, type TreePoint } from './trees';
 import { loadVegetation, type VegMask } from './vegetation';
-import { AirportPlanes } from './airplanes';
+import { AirportPlanes, airfieldsIn } from './airplanes';
 
 let sources: VectorTileSource[] | null = null;
 let appearance: CityAppearance | null = null, appearanceSig = '';
@@ -283,7 +283,7 @@ export class CityTile {
         if (veg === 'retry') { this.vegRetryAt = performance.now() + 8000; return; }
         this.veg = veg;
         this.stats.vegCover = veg ? Math.round(veg.cover * 100) / 100 : -1;
-        this.treePts = placeTrees(this.area, this.ref, g, this.maxTrees, st, veg);
+        this.treePts = placeTrees(this.area, this.ref, g, this.maxTrees, st, veg, airfieldsIn(this.ref));
       }
       this.stats.treePts = this.treePts.length;
       this.stats.treeSp = {};

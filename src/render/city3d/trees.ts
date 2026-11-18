@@ -121,7 +121,7 @@ function placeByPhoto(area: VectorArea, tile: TileRef, ground: Ground, budget: n
  * Trees for a tile: at most `budget`, spacing widened automatically for big forests. With the satellite photo the
  * placement is `placeByPhoto` (photo green x vector map); without it, only the wood / scrub / park polygons.
  */
-export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budget: number, st: Styles, veg: VegMask | null = null): TreePoint[] {
+export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budget: number, st: Styles, veg: VegMask | null = null, noTreeZones: { x: number; y: number; r: number }[] = []): TreePoint[] {
   const half = tile.sizeM / 2, CELL = 4, N = Math.ceil(tile.sizeM / CELL);
   const blocked = new Uint8Array(N * N);
   const mark = (x0: number, y0: number, x1: number, y1: number) => {
@@ -145,6 +145,15 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
   // the whole airport / port area plus runways (~60 m wide) and taxiways (~25 m) are blocked
   const noTree = rasterPolys(area.landuse.filter((p) => p.cls === 'airport' || p.cls === 'port' || p.cls === 'transport'), half, CELL, N);
   for (let i = 0; i < noTree.length; i++) if (noTree[i]) blocked[i] = 1;
+  // the game's airfields (position + size): runways, taxiways and the grass between them
+  for (const z of noTreeZones) {
+    const r2 = z.r * z.r;
+    for (let j = Math.max(0, Math.floor((z.y - z.r + half) / CELL)); j <= Math.min(N - 1, Math.floor((z.y + z.r + half) / CELL)); j++)
+      for (let i = Math.max(0, Math.floor((z.x - z.r + half) / CELL)); i <= Math.min(N - 1, Math.floor((z.x + z.r + half) / CELL)); i++) {
+        const dx = -half + (i + 0.5) * CELL - z.x, dy = -half + (j + 0.5) * CELL - z.y;
+        if (dx * dx + dy * dy <= r2) blocked[j * N + i] = 1;
+      }
+  }
   for (const l of area.aeroways) {
     const w = l.cls === 'runway' ? 32 : l.cls === 'taxiway' ? 14 : 8;
     for (let i = 0; i + 3 < l.pts.length; i += 2) {

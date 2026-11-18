@@ -26,6 +26,22 @@ const MIX: Record<number, [string, number][]> = {
   1: [['airliner_narrow', 5], ['airliner_regional', 4], ['bizjet', 1]],
   0: [['light_plane', 3], ['bizjet', 1], ['airliner_regional', 1]],
 };
+/** Airfield radius by size (m): no trees there (the grass between runways reads green and the land-use map may call
+ * it managed land / park). */
+const FIELD_R = [120, 900, 1800];
+/** Airfields touching a tile, in its local metres (trees.ts blocks them). */
+export function airfieldsIn(tile: TileRef): { x: number; y: number; r: number }[] {
+  const src = source(), out: { x: number; y: number; r: number }[] = [];
+  if (!src) return out;
+  const half = tile.sizeM / 2, k = (2 ** 14) / 360, kRad = Math.PI / 180;
+  for (const a of src.airports) {
+    if (Math.abs(a.lat - tile.lat0) > 0.15 || Math.abs(a.lon - tile.lon0) > 0.15) continue;
+    const gx = (a.lon + 180) * k, gy = ((1 - Math.asinh(Math.tan(a.lat * kRad)) / Math.PI) / 2) * 2 ** 14;
+    const x = (gx - (tile.x + 0.5)) * tile.sizeM, y = -(gy - (tile.y + 0.5)) * tile.sizeM, r = FIELD_R[a.size] ?? 120;
+    if (Math.abs(x) < half + r && Math.abs(y) < half + r) out.push({ x, y, r });
+  }
+  return out;
+}
 /** Damage at or above which an airport has no aircraft left on its stands. */
 export const DESTROYED = 0.6;
 const R = 6371000;
