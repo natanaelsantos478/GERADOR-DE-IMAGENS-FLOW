@@ -35,7 +35,7 @@ E2E (lentos: 15–20 min no headless por software; rápidos com GPU): `npx playw
 
 ## Estado (verificado por testes até o último commit)
 Pronto e no GitHub: simulação completa (economia, diplomacia, pesquisa, militar com comandantes/fadiga/clima/desgaste, tático, IA regras + neural opcional), dados reais, globo, UI desktop e **celular** (toque, gavetas, PWA, divisão de dados), modelos reais por país (tanques com textura), mapa vetorial + regras de terreno na sim tática, 36 marcos famosos (`landmarks`).
-Em andamento no momento da escrita (pode estar parcialmente no GitHub — veja `git log`): **cidade 3D** (`src/render/city3d`, `public/data/styles`, árvores `public/models/nature`), agrupamento de unidades, visibilidade das unidades na batalha tática, integração dos marcos.
+Também pronto (nov/2026): cidade 3D sob demanda (prédios texturizados via atlas e opacos, árvores 3D instanciadas em florestas, vias com meio-fio/faixas), marcos famosos carregando e orientados (Eiffel conferida), agrupamento de unidades (supercluster, ícone com "×N"), toque completo na batalha tática (selecionar, ordem, caixa, menu radial, rota com pontos, "abrir caminho"), rotas com vários pontos, prédios destrutíveis com escombros (sim + animação de desabamento + destroços gerados de `public/data/styles/rubble.json`), 5 modelos militares novos (Merkava, Rafale, Su-34, Ka-27, Liaoning).
 
 ## Problemas conhecidos (por prioridade)
 1. Batalha tática: unidades 3D ainda pequenas/pouco legíveis em algumas distâncias; efeitos de combate (clarão/explosão/poeira) nunca confirmados em screenshot; faixa laranja larga de estrada desalinhada sobre rios; terreno às vezes sem satélite quando os tiles não carregam a tempo.
@@ -47,8 +47,8 @@ Em andamento no momento da escrita (pode estar parcialmente no GitHub — veja `
 7. Placar tático mostra pontos de objetivos (ok), mas testes automáticos deixam o lado do jogador sem ordens — comportamento esperado.
 
 ## Próximos passos sugeridos (ordem)
-1. Terminar/validar a cidade 3D (prédios, árvores, vias, marcos, agrupamento) com screenshots do jogo (Paris, Rio, floresta, batalha urbana).
-2. Entrada por toque na batalha tática; revisar tutorial no celular.
+1. Escombros maiores/visíveis e poeira mais duradoura; ligar `tac.buildingDestroyed` à satisfação/danos do país (hoje só vira `collateral`).
+2. Conferir em screenshot a câmera tática (mín. 45 m) e o tutorial no celular.
 3. Publicar no Cloudflare (`build:deploy` + wrangler) e testar no Android do dono.
 4. Modo de mapa "Parâmetros" no globo (mostrar camadas vetoriais/regras sobre o satélite).
 5. Ligar hospitais/aeroportos/portos/bases à simulação (hoje só dados; `public/data/facilities.json` ainda não é lido pela sim).
