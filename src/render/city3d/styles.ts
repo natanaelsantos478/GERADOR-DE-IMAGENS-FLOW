@@ -12,7 +12,7 @@ export interface BuildingStyle {
 /** A texture of public/textures/city: `mu`/`mv` = real-world metres covered by one repeat (u along the wall/x, v up/y). `night` = lit-window variant. */
 export interface TextureDef { file: string; night?: string; mu: number; mv: number }
 export interface TreeSpecies { file: string; nativeHeight: number }
-export interface TreeRule { id: string; match: Match; mix: { species: string; weight: number }[]; density: number; height: [number, number] }
+export interface TreeRule { id: string; match: Match; mix: { species: string; weight: number }[]; density: number; height: [number, number]; /** horizontal crown widening (default 1) */ crown?: number }
 export interface RoadProfile { width?: number; lanes?: number; laneWidth?: number; shoulder?: number; fill: string; casing?: string; marking?: 'dashed' | 'none'; edges?: boolean; unpaved?: boolean; rails?: boolean; sidewalk?: { width: number; color: string } }
 export interface BridgeStyle { id: string; match: Match; girder: number; parapet: number; pierSpacing: number; pierWidth: number; deck: RGB; concrete: RGB; margin: number }
 export interface InfraStyle { id: string; match: { kinds?: string[] }; shape: 'mast' | 'box'; height: number; width: number; top?: number; color: RGB }

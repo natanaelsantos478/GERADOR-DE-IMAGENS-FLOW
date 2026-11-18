@@ -58,6 +58,7 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
   // forest rule for photo-green ground outside the polygons (cached per 100 m of elevation)
   const vegRules = new Map<number, TreeRule>();
   const vegRule = (z: number) => { const b = Math.round(z / 100); let r = vegRules.get(b); if (!r) { r = pickStyle<TreeRule>(st.trees, { cover: 'wood', absLat, elev: z }); vegRules.set(b, r); } return r; };
+  const parkRule = (z: number) => { const b = 1e6 + Math.round(z / 100); let r = vegRules.get(b); if (!r) { r = pickStyle<TreeRule>(st.trees, { cover: 'park', absLat, elev: z }); vegRules.set(b, r); } return r; };
   if (veg) want += veg.cover * tile.sizeM * tile.sizeM * vegRule(ground(0, 0)).density;
   const k = want > budget ? Math.sqrt(want / budget) : 1;
   const out: TreePoint[] = [], cap = budget * 4;
@@ -66,7 +67,7 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
     let r = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = rule.mix[0].species;
     for (const q of rule.mix) { if (r < q.weight) { sp = q.species; break; } r -= q.weight; }
     const [lo, hi] = rule.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);
-    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1, sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
+    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: (k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1) * (rule.crown ?? 1), sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
   };
   polys.forEach((p, i) => {
     const b = bbox[i];
@@ -91,7 +92,11 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
       if (blocked[c] || occ[c]) continue;
       const g = veg.at(jx, jy);
       if (g < 0.25 || hash(Math.round(jx * 5), Math.round(jy * 5), 33) > (g - 0.25) / 0.5) continue;
-      push(jx, jy, vegRule(ground(jx, jy)));
+      // green all around (~60 m square) = forest: tall canopy trees. A smaller green patch among houses = park/street
+      // trees (lower); isolated green specks (backyards, lawns between unmapped houses) get none
+      const a = veg.around(jx, jy, 30);
+      if (a < 0.4) continue;
+      push(jx, jy, a >= 0.75 ? vegRule(ground(jx, jy)) : parkRule(ground(jx, jy)));
       if (out.length >= cap) break;
     }
   }
@@ -99,7 +104,7 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
   if (out.length > budget) {
     const r = budget / out.length;
     const kept = out.filter((p) => hash(Math.round(p.x * 3), Math.round(p.y * 3), 21) < r);
-    for (const p of kept) p.sw = Math.min(1.6, Math.max(p.sw, 1 + (1 / Math.sqrt(r) - 1) * 0.3));
+    for (const p of kept) p.sw = Math.max(p.sw, Math.min(1.6, 1 + (1 / Math.sqrt(r) - 1) * 0.3));
     return kept;
   }
   return out;

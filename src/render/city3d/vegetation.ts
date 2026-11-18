@@ -20,6 +20,8 @@ export interface VegMask {
   cover: number;
   /** vegetation share at tile-local metres (x east, y north from the centre) */
   at(x: number, y: number): number;
+  /** mean vegetation share in the square of half-side `r` metres around a point (a forest is green all around; a backyard is not) */
+  around(x: number, y: number, r: number): number;
 }
 
 /** Excess green on chromatic coordinates; shadows of a dense canopy are dark but still green-dominant, water is blue, roofs and roads grey. */
@@ -56,8 +58,17 @@ export async function loadVegetation(t: TileRef, alive: () => boolean): Promise<
   let sum = 0;
   for (let i = 0; i < v.length; i++) { v[i] = cnt[i] ? v[i] / cnt[i] : 0; sum += v[i]; }
   const half = t.sizeM / 2, cell = t.sizeM / N;
+  // summed-area table for neighbourhood means
+  const S = new Float64Array((N + 1) * (N + 1));
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) S[(j + 1) * (N + 1) + i + 1] = v[j * N + i] + S[j * (N + 1) + i + 1] + S[(j + 1) * (N + 1) + i] - S[j * (N + 1) + i];
+  const cl = (k: number) => Math.min(N, Math.max(0, k));
   return {
     n: N, v, cover: sum / v.length,
     at(x, y) { const i = Math.floor((x + half) / cell), j = Math.floor((half - y) / cell); return i < 0 || j < 0 || i >= N || j >= N ? 0 : v[j * N + i]; },
+    around(x, y, r) {
+      const i0 = cl(Math.floor((x - r + half) / cell)), i1 = cl(Math.ceil((x + r + half) / cell)), j0 = cl(Math.floor((half - y - r) / cell)), j1 = cl(Math.ceil((half - y + r) / cell));
+      const a = (i1 - i0) * (j1 - j0);
+      return a ? (S[j1 * (N + 1) + i1] - S[j0 * (N + 1) + i1] - S[j1 * (N + 1) + i0] + S[j0 * (N + 1) + i0]) / a : 0;
+    },
   };
 }
