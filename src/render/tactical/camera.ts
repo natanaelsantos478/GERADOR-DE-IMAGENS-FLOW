@@ -16,7 +16,7 @@ export interface TacCameraDeps {
 
 export const FIELD_RANGE = 10500;
 const MIN_CLEAR = 38; // metres above terrain (a vehicle seen at ~35 px is drawn exaggerated: the camera must stay out of the models)
-export const MIN_ZOOM = 45; // metres from the orbit target / min range of focus()
+export const MIN_ZOOM = 10; // metres from the orbit target / min range of focus()
 
 /** Takes over the camera controller for the battle; returns focus/frame and a disposer that restores the globe's limits. */
 export function createTacCamera(d: TacCameraDeps) {

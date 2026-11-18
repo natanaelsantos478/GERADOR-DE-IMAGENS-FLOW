@@ -148,7 +148,7 @@ export function attachCity3D(globe: Globe): City3D {
       if (t.minor) t.minor.show = d < c.lodMinor;
       if (d < c.treeDist * 1.1) void t.ensureTrees(styles()!); else if (t.trees && d > c.treeDist * 1.8) t.dropTrees();
       // a camera low among the trees (tactical close-ups) would sit inside the crowns: hide the trees then
-      const inCanopy = agl < 70;
+      const inCanopy = agl < 12; // only hide them when the camera is really inside the crowns
       // trees stand on the same ground surface as the buildings (no per-level re-seating: that made some float)
       if (t.trees) t.trees.update(cp, { near: c.treeNear, mid: c.treeMid, far: c.treeDist }, inCanopy);
     }
