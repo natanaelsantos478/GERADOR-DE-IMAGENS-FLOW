@@ -154,3 +154,24 @@ html.m .tac-sep { flex: none; }
   html.m .tac-left, html.m .tac-right { bottom: calc(var(--safe-b) + 54px); padding-top: 4px; padding-bottom: 4px; }
   html.m .sq-card { width: 150px; min-height: 0; padding: 3px 6px; }
 }
+
+/* tactical touch: radial menu, rings, tools (>= 44 px targets) */
+.tac-ov { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6; }
+.ov-ring { fill: none; stroke: #7fe0ff; stroke-width: 3; filter: drop-shadow(0 0 3px #000); }
+.ov-line { stroke: #ffd060; stroke-width: 2.5; stroke-dasharray: 8 6; opacity: .9; }
+.ov-dest { fill: none; stroke: #ffd060; stroke-width: 3; }
+.ov-dot { fill: #ffd060; }
+.rad-back { position: fixed; inset: 0; z-index: 30; background: #0006; touch-action: none; }
+.rad-hub { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 2px solid #fff; background: #ffffff55; pointer-events: none; }
+.rad-item { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: #0f1822f5; border: 1px solid var(--line-2); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; font-size: 9px; line-height: 1.05; padding: 2px; box-shadow: var(--shadow); }
+.rad-item .icon { font-size: 22px; }
+.rad-item span { max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rad-item.off { opacity: .4; }
+.tac-tools { position: fixed; right: max(8px, var(--safe-r)); bottom: calc(var(--safe-b) + 188px); flex-direction: column; gap: 8px; z-index: 13; }
+html.m .tac-top.min .tac-objs, html.m .tac-top.min > .dim { display: none !important; }
+html.m .tac-top.min:not(.deploy) .tac-ctl { display: none; }
+.fab-sm { min-width: 52px; min-height: 52px; border-radius: 26px; background: #0f1822f2; border: 1px solid var(--line-2); color: var(--text); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; padding: 2px 4px; }
+.fab-sm .icon { font-size: 22px; }
+.fab-sm.on { background: #14424b; border-color: var(--accent); color: #fff; }
+html.m .tac-btn { min-width: 44px; min-height: 44px; }
+html.m .tac-left .sq-card, html.m .tac-right .sq-card { min-width: 150px; min-height: 44px; }

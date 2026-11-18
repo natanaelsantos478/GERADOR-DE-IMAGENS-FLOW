@@ -3,18 +3,21 @@ export type RGB = [number, number, number];
 export interface Match { kinds?: string[]; minHeight?: number; maxHeight?: number; minArea?: number; maxArea?: number; minAbsLat?: number; maxAbsLat?: number; minElev?: number; maxElev?: number; cover?: string[]; classes?: string[]; minLength?: number; maxLength?: number }
 export interface BuildingStyle {
   id: string; match: Match; palette: RGB[]; roofPalette: RGB[];
-  roof: { shape: 'flat' | 'gable' | 'dome' | 'setback'; at?: number; inset?: number; maxArea?: number };
-  facade: { pattern: 'house' | 'office' | 'glass' | 'blank'; floorHeight?: number; windowPitch?: number };
-  groundFloor?: { height: number; pattern: 'house' | 'office' | 'glass' | 'blank'; palette: RGB[] };
+  roof: { shape: 'flat' | 'gable' | 'dome' | 'setback'; at?: number; inset?: number; maxArea?: number; textures?: string[]; tint?: RGB[] };
+  facade: { pattern: 'house' | 'office' | 'glass' | 'blank'; floorHeight?: number; windowPitch?: number; textures?: string[]; scale?: number };
+  groundFloor?: { height: number; pattern: 'house' | 'office' | 'glass' | 'blank'; palette: RGB[]; texture?: string };
   rooftop?: boolean; variation?: number;
 }
+/** A texture of public/textures/city: `mu`/`mv` = real-world metres covered by one repeat (u along the wall/x, v up/y). `night` = lit-window variant. */
+export interface TextureDef { file: string; night?: string; mu: number; mv: number }
 export interface TreeSpecies { file: string; nativeHeight: number }
 export interface TreeRule { id: string; match: Match; mix: { species: string; weight: number }[]; density: number; height: [number, number] }
-export interface RoadProfile { width?: number; lanes?: number; laneWidth?: number; shoulder?: number; fill: string; casing?: string; marking?: 'dashed' | 'none'; unpaved?: boolean; rails?: boolean; sidewalk?: { width: number; color: string } }
+export interface RoadProfile { width?: number; lanes?: number; laneWidth?: number; shoulder?: number; fill: string; casing?: string; marking?: 'dashed' | 'none'; edges?: boolean; unpaved?: boolean; rails?: boolean; sidewalk?: { width: number; color: string } }
 export interface BridgeStyle { id: string; match: Match; girder: number; parapet: number; pierSpacing: number; pierWidth: number; deck: RGB; concrete: RGB; margin: number }
 export interface InfraStyle { id: string; match: { kinds?: string[] }; shape: 'mast' | 'box'; height: number; width: number; top?: number; color: RGB }
 export interface WaterStyle { areas: Record<string, { color: string }>; waterways: Record<string, { width: number; color: string }> }
 export interface Styles {
+  textures: Record<string, TextureDef>;
   buildings: BuildingStyle[]; species: Record<string, TreeSpecies>; trees: TreeRule[];
   roads: { default: RoadProfile; classes: Record<string, RoadProfile> }; bridges: BridgeStyle[]; infra: InfraStyle[]; water: WaterStyle;
 }
@@ -36,6 +39,10 @@ export function validate(raw: Record<(typeof FILES)[number], any>): Styles {
     if (!['house', 'office', 'glass', 'blank'].includes(p.facade.pattern)) fail('buildings', `${p.id}: unknown facade pattern ${p.facade.pattern}`);
     if (p.groundFloor) needPalette('buildings', p.id, p.groundFloor.palette);
   }
+  const tx = (b.textures ?? {}) as Record<string, TextureDef>;
+  for (const [id, d] of Object.entries(tx)) if (!d.file || !(d.mu > 0) || !(d.mv > 0)) fail('buildings', `texture ${id}: file/mu/mv required`);
+  const need = (p: string, id?: string) => { if (id && !tx[id]) fail('buildings', `${p}: unknown texture ${id}`); };
+  for (const p of b.patterns as BuildingStyle[]) { p.facade.textures?.forEach((t) => need(p.id, t)); p.roof.textures?.forEach((t) => need(p.id, t)); need(p.id, p.groundFloor?.texture); }
   catchAll('buildings', b.patterns);
   if (!t.species || !Array.isArray(t.rules)) fail('trees', 'species and rules required');
   for (const ru of t.rules as TreeRule[]) {
@@ -49,7 +56,7 @@ export function validate(raw: Record<(typeof FILES)[number], any>): Styles {
   if (!w.areas || !w.waterways) fail('water', 'areas and waterways required');
   if (!Array.isArray(i.patterns)) fail('infra', 'patterns must be a list');
   catchAll('infra', i.patterns);
-  return { buildings: b.patterns, species: t.species, trees: t.rules, roads: { default: r.default, classes: r.classes }, bridges: br.patterns, infra: i.patterns, water: { areas: w.areas, waterways: w.waterways } };
+  return { textures: tx, buildings: b.patterns, species: t.species, trees: t.rules, roads: { default: r.default, classes: r.classes }, bridges: br.patterns, infra: i.patterns, water: { areas: w.areas, waterways: w.waterways } };
 }
 
 /** Facts about an object that rules can test. */

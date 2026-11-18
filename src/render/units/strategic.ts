@@ -6,14 +6,15 @@ import type { Game } from '../../core/game';
 import { UNITS, formationRoute, milCmd, visibleFormations } from '../../sim/military';
 import type { Globe } from '../globe/types';
 import { groundOf, mode, ModelPool, assetUrl, badgeCanvas, clamp, lerpAngle, offsetLonLat, rad, renderEvents, renderLock, svgImage, textBadge, type ModelHandle } from './common';
+import { clusterScreen, type ClusterItem } from './cluster';
 import { useUnitSelection } from './store';
 
 export const NEAR_H = 30_000;
 export const MAX_MODELS = 300;
-const CLUSTER_PX = 44;
-let clusterOn = true, drawn = 0, nGrouped = 0;
+const CLUSTER_PX = 46;
+let clusterOn = true, drawn = 0, nGrouped = 0, nVis = 0, nGroups = 0, nPass = 0;
 /** Test/debug: toggle the screen-space grouping and read how many formations/models it saved. */
-export const nearClusterDebug = { set: (on: boolean) => { clusterOn = on; }, stats: () => ({ on: clusterOn, modelsDrawn: drawn, formationsGrouped: nGrouped }) };
+export const nearClusterDebug = { set: (on: boolean) => { clusterOn = on; }, stats: () => ({ on: clusterOn, modelsDrawn: drawn, formationsGrouped: nGrouped, onScreen: nVis, groups: nGroups, passes: nPass }) };
 const REL_COLOR = { own: '#4da3ff', ally: '#5ee08a', enemy: '#ff5a4d', neutral: '#d0d4dc', rebel: '#ffb02e' } as const;
 type Rel = keyof typeof REL_COLOR;
 const FAR = Number.POSITIVE_INFINITY;
@@ -32,15 +33,19 @@ interface FS {
   keys: { icon: string; bar: string; flag: string };
   handles: ModelHandle[];
   modelSig: string;
+  /** Lead of the screen-space group this formation belongs to (null: it is its own icon or the lead). */
   cluster: FS | null;
-  /** Screen-space group while close: models of members are not drawn, one icon with the count stands for the group. */
-  nearCl: FS | null;
-  nearN?: number;
+  /** Lead of a group: member count, predominant symbol and mean position (members' models and badges are not drawn). */
+  gN: number; gGlyph?: string; gLon?: number; gLat?: number;
+  /** Screen position / visibility from the last grouping pass. */
+  sx: number; sy: number; vis: boolean;
+  /** Behind the horizon: the badges ignore the depth test (so they show above terrain), hence they must be hidden explicitly. */
+  hid: boolean;
 }
 
 export interface StrategicApi {
   /** Visible formation states (id → lon/lat/relation) for other layers (minimap, tests). */
-  states(): { id: FormationId; lon: number; lat: number; rel: Rel; country: CountryId; clustered: boolean; models: number; modelIds: string[] }[];
+  states(): { id: FormationId; lon: number; lat: number; rel: Rel; country: CountryId; clustered: boolean; groupN: number; models: number; modelIds: string[] }[];
   modelCount(): number;
   destroy(): void;
 }
@@ -54,7 +59,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   const states = new Map<FormationId, FS>();
   const built = new Map<string, HTMLCanvasElement>();
   const glyphs = new Map<string, HTMLImageElement>();
-  let lastHours = -1, dirty = true, lastRefresh = 0, lastLayoutKey = '', dead = false;
+  let lastHours = -1, dirty = true, lastRefresh = 0, dead = false;
   let mul = 1;
 
   // ------------------------------------------------------------ images
@@ -77,8 +82,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     b.setImage(key, c);
   }
   function applyIcon(fs: FS) {
-    const tpl = fs.v.units[0] ? UNITS[fs.v.units[0].template] : null;
-    const glyph = tpl?.iconId ?? 'infantry';
+    const glyph = fs.gGlyph ?? glyphOf(fs);
     const key = `i:${glyph}:${fs.rel}`;
     if (fs.keys.icon === key) return;
     const img = glyphs.get(glyph);
@@ -108,7 +112,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       icon: mk({ width: 38, height: 38 }),
       flag: mk({ width: 22, height: 15, pixelOffset: V(-17, -17), image: iso ? assetUrl(`data/flags/${iso}.svg`) : undefined }),
       bar: mk({ width: 36, height: 9, pixelOffset: V(0, 26) }),
-      keys: { icon: '', bar: '', flag: iso ?? '' }, handles: [], modelSig: '', cluster: null, nearCl: null,
+      keys: { icon: '', bar: '', flag: iso ?? '' }, handles: [], modelSig: '', cluster: null, gN: 0, sx: 0, sy: 0, vis: false, hid: false,
     };
     return fs;
   }
@@ -144,7 +148,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       if (!fs.settled) anyMove = true;
     }
     for (const [id, fs] of states) if (!seen.has(id)) remove(fs, id);
-    lastLayoutKey = '';
+    lastRegroup = 0;
     layout();
     updateSelectionVisuals();
     if (anyMove) renderLock(globe, 'units', true);
@@ -164,7 +168,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   const liftOf = (fs: FS, near: boolean) => (near ? (fs.v.domain === 'air' ? 1500 + mul * 30 : fs.v.domain === 'naval' ? 0 : gh(fs.lon, fs.lat)) + mul * 22 : 0);
   function applyPos(fs: FS) {
     const near = fs.handles.some((h) => h.model);
-    Cesium.Cartesian3.fromDegrees(fs.lon, fs.lat, liftOf(fs, near), undefined, cart);
+    Cesium.Cartesian3.fromDegrees(fs.gLon ?? fs.lon, fs.gLat ?? fs.lat, liftOf(fs, near), undefined, cart);
     fs.icon.position = cart; fs.flag.position = cart; fs.bar.position = cart;
     if (fs.ring) fs.ring.position = cart;
     if (fs.count) fs.count.position = cart;
@@ -199,32 +203,14 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   function updateNear() {
     const cam = globe.cameraState();
     mul = clamp(cam.height / 250, 3, 40);
-    const near = !mode.tactical && cam.height < NEAR_H && cam.view;
-    let budget = MAX_MODELS - 0;
-    const cand: FS[] = [];
-    if (near) {
-      const [w, s, e, n] = cam.view!;
-      const padX = (e - w) * 0.15, padY = (n - s) * 0.15;
-      for (const fs of states.values()) if (fs.lon > w - padX && fs.lon < e + padX && fs.lat > s - padY && fs.lat < n + padY && fs.cluster === null) cand.push(fs);
-      cand.sort((a, b) => (a.lon - cam.lon) ** 2 + (a.lat - cam.lat) ** 2 - ((b.lon - cam.lon) ** 2 + (b.lat - cam.lat) ** 2));
-    }
-    // screen-space grouping of overlapping / tiny formations: one icon with a count instead of N models
-    for (const fs of states.values()) fs.nearCl = null;
-    if (clusterOn) {
-      const cells = new Map<string, FS[]>();
-      for (const fs of cand) {
-        const p = globe.toScreen(fs.lon, fs.lat, 0);
-        if (!p) continue;
-        const k = `${Math.floor(p.x / CLUSTER_PX)}:${Math.floor(p.y / CLUSTER_PX)}:${fs.rel}`;
-        (cells.get(k) ?? cells.set(k, []).get(k)!).push(fs);
-      }
-      for (const l of cells.values()) if (l.length >= 2) { l.sort((a, b) => b.v.strength - a.v.strength); for (const f of l) f.nearCl = l[0]; l[0].nearN = l.length; }
-    }
-    let grouped = 0;
+    const near = !mode.tactical && cam.height < NEAR_H;
+    let budget = MAX_MODELS;
+    const W = scene.canvas.clientWidth / 2, H = scene.canvas.clientHeight / 2;
+    // models only for formations that are their own icon on screen (grouped ones are one icon with a count, their models are not drawn)
+    const cand = near ? [...states.values()].filter((fs) => fs.vis && fs.cluster === null && fs.gN === 0).sort((a, b) => (a.sx - W) ** 2 + (a.sy - H) ** 2 - ((b.sx - W) ** 2 + (b.sy - H) ** 2)) : [];
     const keep = new Set<FS>();
     for (const fs of cand) {
       if (budget <= 0) break;
-      if (fs.nearCl) { grouped++; continue; }
       const want = desired(fs).slice(0, budget);
       const sig = want.join(',');
       if (sig !== fs.modelSig) {
@@ -236,63 +222,80 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       keep.add(fs);
       applyPos(fs);
     }
-    drawn = keep.size ? [...keep].reduce((a, f) => a + f.handles.length, 0) : 0; nGrouped = grouped;
+    drawn = 0; for (const f of keep) drawn += f.handles.length;
     for (const fs of states.values()) {
       if (keep.has(fs)) continue;
       if (fs.handles.length) { fs.handles.forEach((h) => pool.release(h)); fs.handles = []; fs.modelSig = ''; applyPos(fs); }
     }
-    // markers: hide the badge once a model is on screen
+    // markers: a member of a group shows nothing; the badge of a single formation hides once its model is on screen
     for (const fs of states.values()) {
-      const hasModel = fs.handles.some((h) => h.model);
-      if (fs.cluster === null) {
-        const member = fs.nearCl !== null && fs.nearCl !== fs;
-        fs.icon.show = !hasModel && !member; fs.flag.show = !member; fs.bar.show = !member;
-        if (fs.nearCl === fs) { // lead of a near group: count badge
-          const n = fs.nearN ?? 2;
-          if (!fs.count) fs.count = bills.add({ position: Cesium.Cartesian3.ZERO, id: fs.tag, width: 24, height: 16, pixelOffset: V(17, -17), disableDepthTestDistance: FAR });
-          fs.count.position = fs.icon.position; setImg(fs.count, `c:${Math.min(n, 99)}`, () => textBadge(n > 99 ? '99+' : `${n}`, '#c0392b')); fs.count.show = true;
-        } else if (fs.count && near) fs.count.show = false;
-      }
+      const hasModel = fs.handles.some((h) => h.model), member = fs.cluster !== null;
+      fs.icon.show = !fs.hid && !hasModel && !member; fs.flag.show = !fs.hid && !member; fs.bar.show = !fs.hid && !member;
       const f = hasModel ? 1 : 0;
       fs.flag.pixelOffset = V(-17, -17 - f * 10); fs.bar.pixelOffset = V(0, f ? 14 : 26);
     }
     globe.requestRender();
   }
 
-  // ------------------------------------------------------------ clustering (screen-space cells in degrees)
+  // ------------------------------------------------------------ screen-space grouping (supercluster) of every icon, far and near
+  const occluder = new Cesium.EllipsoidalOccluder(Cesium.Ellipsoid.WGS84, Cesium.Cartesian3.ZERO);
+  const wp = new Cesium.Cartesian3();
+  const glyphOf = (fs: FS) => (fs.v.units[0] ? UNITS[fs.v.units[0].template]?.iconId : undefined) ?? 'infantry';
+  let lastRegroup = 0, regroupTimer = 0;
+  /** Throttled (the camera fires every frame while it moves). */
   function layout() {
-    const cam = globe.cameraState();
-    const cell = cam.height > NEAR_H * 2 ? clamp((0.08 * cam.height) / M_DEG, 0.01, 30) : 0;
+    const now = performance.now();
+    if (now - lastRegroup < 120) { if (!regroupTimer) regroupTimer = window.setTimeout(() => { regroupTimer = 0; layout(); }, 130); return; }
+    lastRegroup = now;
+    regroup();
+  }
+  function regroup() {
+    if (dead) return;
+    const cam = globe.cameraState(), near = !mode.tactical && cam.height < NEAR_H;
     const sel = new Set(useUnitSelection.getState().selected);
-    const key = `${cell.toFixed(2)}|${states.size}|${sel.size}`;
-    if (key === lastLayoutKey) return;
-    lastLayoutKey = key;
-    const groups = new Map<string, FS[]>();
+    occluder.cameraPosition = scene.camera.positionWC;
+    const W = scene.canvas.clientWidth, H = scene.canvas.clientHeight;
+    const items: ClusterItem<FS>[] = [];
     for (const fs of states.values()) {
-      fs.cluster = null;
-      if (!cell || sel.has(fs.id)) continue;
-      const k = `${Math.floor(fs.lon / cell)}:${Math.floor(fs.lat / cell)}:${fs.rel}`;
-      let l = groups.get(k);
-      if (!l) groups.set(k, (l = []));
-      l.push(fs);
+      fs.cluster = null; fs.vis = false; fs.hid = true;
+      Cesium.Cartesian3.fromDegrees(fs.lon, fs.lat, near && fs.v.domain === 'land' ? gh(fs.lon, fs.lat) : 0, undefined, wp);
+      if (!occluder.isPointVisible(wp)) continue;
+      fs.hid = false;
+      const w = Cesium.SceneTransforms.worldToWindowCoordinates(scene, wp);
+      if (!w) continue;
+      fs.sx = w.x; fs.sy = w.y;
+      if (w.x < -60 || w.x > W + 60 || w.y < -60 || w.y > H + 60) continue;
+      fs.vis = true;
+      if (sel.has(fs.id)) continue; // selected formations stay individual
+      items.push({ x: w.x, y: w.y, side: fs.rel, kind: glyphOf(fs), weight: Math.max(0.05, fs.v.strength), ref: fs });
     }
-    for (const fs of states.values()) { fs.icon.show = fs.flag.show = fs.bar.show = true; fs.tag.ids = [fs.id]; if (fs.count) fs.count.show = false; }
-    for (const l of groups.values()) {
-      if (l.length < 2) continue;
-      l.sort((a, b) => b.v.strength - a.v.strength);
-      const lead = l[0];
-      lead.tag.ids = l.map((f) => f.id);
-      for (let i = 1; i < l.length; i++) { const f = l[i]; f.cluster = lead; f.icon.show = f.flag.show = f.bar.show = false; f.tag.ids = lead.tag.ids; }
-      const n = l.length;
-      if (!lead.count) lead.count = bills.add({ position: Cesium.Cartesian3.ZERO, id: lead.tag, width: 24, height: 16, pixelOffset: V(17, -17), disableDepthTestDistance: FAR });
-      lead.count.position = lead.icon.position;
-      setImg(lead.count, `c:${Math.min(n, 99)}`, () => textBadge(n > 99 ? '99+' : `${n}`, '#c0392b'));
+    nPass++; nVis = items.length;
+    const res = clusterOn ? clusterScreen(items, CLUSTER_PX, 2) : { groups: [], singles: items };
+    for (const fs of states.values()) {
+      const wasG = fs.gGlyph;
+      fs.icon.show = fs.flag.show = fs.bar.show = !fs.hid; fs.tag.ids = [fs.id]; fs.gN = 0; fs.gGlyph = undefined; fs.gLon = fs.gLat = undefined;
+      if (fs.count) fs.count.show = false;
+      if (wasG) { fs.keys.icon = ''; applyIcon(fs); }
+    }
+    nGrouped = 0; nGroups = res.groups.length;
+    for (const grp of res.groups) {
+      const mem = grp.members.map((m) => m.ref).sort((a, b) => b.v.strength - a.v.strength), lead = mem[0], ids = mem.map((f) => f.id);
+      lead.tag.ids = ids; lead.gN = mem.length; lead.gGlyph = grp.kind;
+      let lo = 0, la = 0;
+      for (const f of mem) { lo += f.lon; la += f.lat; }
+      lead.gLon = lo / mem.length; lead.gLat = la / mem.length;
+      for (let i = 1; i < mem.length; i++) { const f = mem[i]; f.cluster = lead; f.icon.show = f.flag.show = f.bar.show = false; f.tag.ids = ids; }
+      nGrouped += mem.length;
+      lead.keys.icon = ''; applyIcon(lead);
+      const n = mem.length;
+      if (!lead.count) lead.count = bills.add({ position: Cesium.Cartesian3.ZERO, id: lead.tag, width: 34, height: 18, pixelOffset: V(19, -17), disableDepthTestDistance: FAR });
+      setImg(lead.count, `c:${Math.min(n, 99)}`, () => textBadge(n > 99 ? '×99+' : `×${n}`, '#c0392b'));
       lead.count.show = true;
     }
     for (const fs of states.values()) applyPos(fs);
+    updateNear();
   }
-  const M_DEG = 111_320;
-
+  
   // ------------------------------------------------------------ selection visuals, routes
   const ringImg = (() => {
     const c = document.createElement('canvas');
@@ -308,7 +311,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     for (const fs of states.values()) {
       const on = sel.has(fs.id);
       if (on && !fs.ring) { fs.ring = bills.add({ id: fs.tag, width: 64, height: 64, disableDepthTestDistance: FAR, position: fs.icon.position }); setImg(fs.ring, 'ring', () => ringImg); }
-      if (fs.ring) fs.ring.show = on && fs.cluster === null;
+      if (fs.ring) fs.ring.show = on && fs.cluster === null && !fs.hid;
     }
     routes.removeAll(); dests.removeAll();
     if (!g) return;
@@ -334,7 +337,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     scene.requestRender();
   }
   void svgImage('move', '#ffe14d').then((i) => { glyphs.set('move', i); });
-  const unsubSel = useUnitSelection.subscribe(() => { lastLayoutKey = ''; layout(); updateSelectionVisuals(); });
+  const unsubSel = useUnitSelection.subscribe(() => { lastRegroup = 0; layout(); updateSelectionVisuals(); });
 
   // ------------------------------------------------------------ per-frame smoothing
   let last = performance.now();
@@ -402,7 +405,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     dirty = true;
     setTimeout(() => refresh(true), 60);
   });
-  const unCam = globe.onCamera(() => { lastLayoutKey = ''; layout(); updateNear(); });
+  const unCam = globe.onCamera(() => { layout(); });
   const unOverlay = globe.minimap.addOverlay((g, project) => {
     for (const fs of states.values()) {
       const [x, y] = project(fs.lon, fs.lat);
@@ -410,8 +413,8 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       g.fillRect(x - 1, y - 1, 2.4, 2.4);
     }
   });
-  const timer = setInterval(() => { bills.show = routes.show = dests.show = !mode.tactical; refresh(); updateNearIfNeeded(); }, 250);
-  let nearTick = 0;
+  const timer = setInterval(() => { bills.show = routes.show = dests.show = !mode.tactical; refresh(); updateNearIfNeeded(); if (++regroupTick % 4 === 0) layout(); }, 250);
+  let nearTick = 0, regroupTick = 0;
   function updateNearIfNeeded() {
     if (globe.cameraHeight() < NEAR_H && ++nearTick % 4 === 0) updateNear();
   }
@@ -419,11 +422,11 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   updateNear();
 
   return {
-    states: () => [...states.values()].map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, rel: s.rel, country: s.v.country, clustered: s.cluster !== null, models: s.handles.length, modelIds: s.handles.map((h) => h.modelId) })),
+    states: () => [...states.values()].map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, rel: s.rel, country: s.v.country, clustered: s.cluster !== null, groupN: s.gN, models: s.handles.length, modelIds: s.handles.map((h) => h.modelId) })),
     modelCount: () => [...states.values()].reduce((a, s) => a + s.handles.length, 0),
     destroy() {
       dead = true;
-      clearInterval(timer);
+      clearInterval(timer); clearTimeout(regroupTimer);
       scene.preRender.removeEventListener(onPre);
       unsubSel(); unPick(); unClick(); unBox(); unRight(); unCam(); unOverlay();
       for (const [id, fs] of states) remove(fs, id);

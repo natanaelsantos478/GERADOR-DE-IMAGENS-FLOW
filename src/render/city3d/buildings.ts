@@ -6,6 +6,7 @@ import { hash, type TileRef } from './geo';
 import type { Ground } from './ground';
 import { Mesh, PAT } from './mesh';
 import type { LocalMark } from './landmarks';
+import type { Atlas } from './atlas';
 import { pickStyle, type BuildingStyle, type RGB, type Styles } from './styles';
 
 const pick = <T,>(a: readonly T[], r: number): T => a[Math.min(a.length - 1, Math.floor(r * a.length))];
@@ -29,9 +30,9 @@ const inRing = (r: number[], x: number, y: number) => {
 
 export interface BuildingStats { count: number; major: number; tris: number; byStyle: Record<string, number> }
 export interface BuildingMeshes { major: Mesh; minor: Mesh; stats: BuildingStats }
-interface Band { z0: number; z1: number; v0: number; c: RGB; pat: number; sy: number; sx: number }
+interface Band { z0: number; z1: number; v0: number; c: RGB; pat: number; sv: number; su: number; off: number }
 
-export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st: Styles, marks: LocalMark[] = []): BuildingMeshes {
+export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st: Styles, marks: LocalMark[] = [], atlas: Atlas | null = null): BuildingMeshes {
   const major = new Mesh(tile), minor = new Mesh(tile), half = tile.sizeM / 2, absLat = Math.abs(tile.lat0);
   const stats: BuildingStats = { count: 0, major: 0, tris: 0, byStyle: {} };
   for (const poly of polys) {
@@ -59,16 +60,26 @@ export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st
     const zBase = lifted ? g0 + (poly.minH as number) : g0 - 1.2;
     const zRoof = Math.max(g0, (g0 + g1) / 2) + h;
     const tone = 1 - (S.variation ?? 0.06) + seed(2) * (S.variation ?? 0.06) * 2;
-    const wall = shade(pick(S.palette, seed(1)), tone), roofCol = shade(pick(S.roofPalette, seed(3)), 0.92 + seed(4) * 0.16);
+    const wall = shade(pick(S.palette, seed(1)), tone); let roofCol = shade(pick(S.roofPalette, seed(3)), 0.92 + seed(4) * 0.16);
     const fp = S.facade.pattern, fh = S.facade.floorHeight ?? DEF_FLOOR[fp], wp = S.facade.windowPitch ?? DEF_PITCH[fp];
+    const cellOf = (list: string[] | undefined, r: number) => (atlas && list?.length ? atlas.cells.get(pick(list, r)) : undefined);
+    const fcell = cellOf(S.facade.textures, seed(10)), rcell = cellOf(S.roof.textures, seed(11)), gcell = atlas && S.groundFloor?.texture ? atlas.cells.get(S.groundFloor.texture) : undefined;
+    const fsc = S.facade.scale ?? 1;
+    if (S.roof.tint?.length && rcell) roofCol = shade(pick(S.roof.tint, seed(3)), 0.92 + seed(4) * 0.16);
+    /** Band whose texture repeats every mu x mv real metres (textured) or whose procedural window grid is stretched to the style's floor height / pitch. */
+    const band = (z0: number, z1: number, v0: number, c: RGB, pat: number, cell: typeof fcell, ph: number): Band => cell
+      ? { z0, z1, v0, c, pat: cell.byte, su: 1 / (cell.mu * fsc), sv: 1 / (cell.mv * fsc), off: seed(12 + ph) }
+      : { z0, z1, v0, c, pat, sv: DEF_FLOOR[fp] / fh, su: DEF_PITCH[fp] / wp, off: 0 };
     const bands: Band[] = [];
     const gf = S.groundFloor && h > S.groundFloor.height + 3 && !lifted ? S.groundFloor : null;
     if (gf) {
       const gp = gf.pattern, gz = g0 + gf.height;
-      bands.push({ z0: zBase, z1: gz, v0: g0, c: shade(pick(gf.palette, seed(5)), tone), pat: FACADE[gp], sy: DEF_FLOOR[gp] / gf.height, sx: DEF_PITCH[gp] / wp });
-      bands.push({ z0: gz, z1: zRoof, v0: gz, c: wall, pat: FACADE[fp], sy: DEF_FLOOR[fp] / fh, sx: DEF_PITCH[fp] / wp });
-    } else bands.push({ z0: zBase, z1: zRoof, v0: g0, c: wall, pat: FACADE[fp], sy: DEF_FLOOR[fp] / fh, sx: DEF_PITCH[fp] / wp });
+      const gb = band(zBase, gz, g0, shade(pick(gf.palette, seed(5)), tone), FACADE[gp], gcell, 1);
+      if (!gcell) { gb.sv = DEF_FLOOR[gp] / gf.height; gb.su = DEF_PITCH[gp] / wp; }
+      bands.push(gb, band(gz, zRoof, gz, wall, FACADE[fp], fcell, 2));
+    } else bands.push(band(zBase, zRoof, g0, wall, FACADE[fp], fcell, 0));
     const m = area >= MAJOR_AREA || h >= MAJOR_HEIGHT ? major : minor;
+    m.roofPat = rcell ? rcell.byte : PAT.ROOF; m.roofInv = rcell ? 1 / rcell.mu : 1; m.roofU = rcell ? seed(13) : 0; m.roofV = rcell ? seed(14) : 0;
     const t0 = m.tris, holes = poly.rings.slice(1).map((r) => ring(r, false)).filter((r) => r.length >= 6);
     let shape = S.roof.shape;
     if (shape === 'gable' && !(n === 4 && !holes.length && !lifted)) shape = 'flat';
@@ -79,11 +90,12 @@ export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st
     let roofRing = outer;
     if (shape === 'setback') {
       const at = S.roof.at ?? 0.88, zs = zBase + (zRoof - zBase) * at, k = 1 - (S.roof.inset ?? 0.16);
+      const topBand = { ...bands[bands.length - 1], z0: zs, z1: zRoof, v0: zs };
       bands.forEach((b) => { if (b.z1 === zRoof) b.z1 = zs; });
       walls(m, outer, bands, 0);
       flatRoof(m, [outer], zs, roofCol);
       roofRing = outer.map((v, i) => (i % 2 ? cy + (v - cy) * k : cx + (v - cx) * k));
-      walls(m, roofRing, [{ z0: zs, z1: zRoof, v0: zs, c: wall, pat: FACADE[fp], sy: DEF_FLOOR[fp] / fh, sx: DEF_PITCH[fp] / wp }], 0);
+      walls(m, roofRing, [topBand], 0);
       flatRoof(m, [roofRing], zRoof, roofCol);
     } else {
       walls(m, outer, bands, rise);
@@ -111,15 +123,15 @@ function walls(m: Mesh, r: number[], bands: Band[], rise: number) {
     if (len < 0.05) continue;
     const nx = dy / len, ny = -dx / len;
     for (const b of bands) {
-      const v0 = (b.z0 - b.v0) * b.sy, v1 = (b.z1 - b.v0) * b.sy, u0 = u * b.sx, u1 = (u + len) * b.sx;
+      const v0 = (b.z0 - b.v0) * b.sv + b.off, v1 = (b.z1 - b.v0) * b.sv + b.off, u0 = u * b.su + b.off, u1 = (u + len) * b.su + b.off;
       const a0 = m.vert(ax, ay, b.z0, nx, ny, 0, u0, v0, b.c, b.pat), b0 = m.vert(bx, by, b.z0, nx, ny, 0, u1, v0, b.c, b.pat);
       const b1 = m.vert(bx, by, b.z1, nx, ny, 0, u1, v1, b.c, b.pat), a1 = m.vert(ax, ay, b.z1, nx, ny, 0, u0, v1, b.c, b.pat);
       m.tri(a0, b0, b1); m.tri(a0, b1, a1);
     }
     if (rise > 0 && len <= Math.hypot(r[((i + 2) % n) * 2] - bx, r[((i + 2) % n) * 2 + 1] - by)) { // gable end triangle
-      const b = bands[bands.length - 1], zt = b.z1, mx = (ax + bx) / 2, my = (ay + by) / 2, v1 = (zt - b.v0) * b.sy;
-      const mid = m.vert(mx, my, zt + rise, nx, ny, 0, (u + len / 2) * b.sx, v1 + rise * b.sy, b.c, b.pat);
-      m.tri(m.vert(ax, ay, zt, nx, ny, 0, u * b.sx, v1, b.c, b.pat), m.vert(bx, by, zt, nx, ny, 0, (u + len) * b.sx, v1, b.c, b.pat), mid);
+      const b = bands[bands.length - 1], zt = b.z1, mx = (ax + bx) / 2, my = (ay + by) / 2, v1 = (zt - b.v0) * b.sv + b.off;
+      const mid = m.vert(mx, my, zt + rise, nx, ny, 0, (u + len / 2) * b.su + b.off, v1 + rise * b.sv, b.c, b.pat);
+      m.tri(m.vert(ax, ay, zt, nx, ny, 0, u * b.su + b.off, v1, b.c, b.pat), m.vert(bx, by, zt, nx, ny, 0, (u + len) * b.su + b.off, v1, b.c, b.pat), mid);
     }
     u += len;
   }
@@ -149,7 +161,7 @@ function flatRoof(m: Mesh, rings: number[][], z: number, c: RGB) {
   const flat: number[] = [], holes: number[] = [];
   for (let k = 0; k < rings.length; k++) { if (k) holes.push(flat.length / 2); flat.push(...rings[k]); }
   const tri = earcut(flat, holes.length ? holes : null, 2), base = m.verts;
-  for (let i = 0; i < flat.length / 2; i++) m.vert(flat[i * 2], flat[i * 2 + 1], z, 0, 0, 1, flat[i * 2], flat[i * 2 + 1], c, PAT.ROOF);
+  for (let i = 0; i < flat.length / 2; i++) m.vert(flat[i * 2], flat[i * 2 + 1], z, 0, 0, 1, flat[i * 2] * m.roofInv + m.roofU, flat[i * 2 + 1] * m.roofInv + m.roofV, c, m.roofPat);
   for (let i = 0; i < tri.length; i += 3) {
     const a = tri[i], b = tri[i + 1], d = tri[i + 2];
     const cr = (flat[b * 2] - flat[a * 2]) * (flat[d * 2 + 1] - flat[a * 2 + 1]) - (flat[b * 2 + 1] - flat[a * 2 + 1]) * (flat[d * 2] - flat[a * 2]);

@@ -1,5 +1,6 @@
 /** Custom appearance for the city mesh: vertex colours, procedural facade windows (no textures), sun-coherent lambert + sky ambient, distance haze. */
 import * as Cesium from 'cesium';
+import { CELL, COLS, type Atlas } from './atlas';
 
 const VS = `
 in vec3 position3DHigh;
@@ -32,10 +33,17 @@ void main() {
   vec3 V = normalize(-v_positionEC);
   vec3 L = normalize(czm_lightDirectionEC);
   vec3 base = v_color.rgb;
-  float pat = v_color.a;
+  float tb = floor(v_color.a * 255.0 + 0.5);
+  float pat = tb < 64.0 ? 0.0 : v_color.a;
   float win = 0.0, spec = 0.0;
   vec3 glass = vec3(0.1, 0.14, 0.2);
-  if (pat > 0.02 && pat < 0.98) {
+  float emis = 0.0;
+  if (tb >= 1.0 && tb < 64.0) {
+    vec3 d = atlasDay(tb, v_st);
+    vec3 tcol = d;
+    if (cityNight() > 0.02) { vec3 n = atlasNight(tb, v_st); tcol = mix(d, n, cityNight()); emis = cityNight() * dot(n, vec3(0.3, 0.59, 0.11)); }
+    base = min(tcol * base * 1.55, vec3(1.0));
+  } else if (pat > 0.02 && pat < 0.98) {
     float fl = pat < 0.4 ? 3.0 : (pat < 0.7 ? 3.5 : 3.8);
     float wd = pat < 0.4 ? 3.2 : (pat < 0.7 ? 3.0 : 1.9);
     vec2 cell = vec2(v_st.x / wd, v_st.y / fl);
@@ -58,6 +66,7 @@ void main() {
   vec3 lc = min(czm_lightColor, vec3(1.7));
   vec3 amb = mix(vec3(0.34, 0.33, 0.34), vec3(0.58, 0.64, 0.72), 0.5 + 0.5 * upness);
   vec3 col = albedo * (amb * 0.98 + lc * diff * 0.78);
+  if (cityNight() > 0.02 && tb >= 1.0 && tb < 64.0) col = max(col, albedo * emis * 0.9 * step(0.35, emis));
   vec3 H = normalize(L + V);
   col += lc * pow(max(dot(N, H), 0.0), 40.0) * 0.5 * spec * win;
   float dist = length(v_positionEC);
@@ -65,10 +74,40 @@ void main() {
   out_FragColor = vec4(col, 1.0);
 }`;
 
-export function cityAppearance(): Cesium.Appearance {
-  return new Cesium.Appearance({
-    translucent: false, closed: false,
+export interface CityAppearance { appearance: Cesium.Appearance; setNight(n: number): void }
+// Cesium renames material uniforms (u_x -> u_x_0), so everything that reads them lives in the material source and is exposed as functions.
+// Texture of cell c (1-based) in the shared atlas; st is in texture repeats (real metres / repeat size).
+const MAT_SRC = `
+vec3 atlasAt(sampler2D tex, float c, vec2 st) {
+  vec2 g = vec2(mod(c - 1.0, u_grid.x), floor((c - 1.0) / u_grid.x));
+  vec2 cells = u_grid.xy, e = vec2(0.5 / u_grid.z), k = vec2(1.0) - 2.0 * e;
+  vec2 uv = vec2(g.x + e.x + fract(st.x) * k.x, (cells.y - 1.0 - g.y) + e.y + fract(st.y) * k.y) / cells;
+  return textureGrad(tex, uv, dFdx(st) * k * 1.25 / cells, dFdy(st) * k * 1.25 / cells).rgb;
+}
+vec3 atlasDay(float c, vec2 st) { return atlasAt(u_atlasDay, c, st); }
+vec3 atlasNight(float c, vec2 st) { return atlasAt(u_atlasNight, c, st); }
+float cityNight() { return u_night; }
+czm_material czm_getMaterial(czm_materialInput materialInput) { return czm_getDefaultMaterial(materialInput); }
+`;
+function texture(scene: Cesium.Scene, c: HTMLCanvasElement): unknown {
+  const C = Cesium as any, sc = scene as any; // Texture/Sampler are exported by the engine but absent from the public typings
+  const t = new C.Texture({
+    context: sc.context, source: c, flipY: true,
+    sampler: new C.Sampler({ minificationFilter: C.TextureMinificationFilter.LINEAR_MIPMAP_LINEAR, magnificationFilter: C.TextureMagnificationFilter.LINEAR, wrapS: C.TextureWrap.CLAMP_TO_EDGE, wrapT: C.TextureWrap.CLAMP_TO_EDGE, maximumAnisotropy: Math.min(8, sc.maximumAnisotropy ?? 4) }),
+  });
+  t.generateMipmap();
+  return t;
+}
+/** The shared building appearance: one atlas (day + night) sampled per vertex cell; without an atlas the procedural window shader is used. */
+export function cityAppearance(scene: Cesium.Scene, atlas: Atlas | null): CityAppearance {
+  const blank = document.createElement('canvas'); blank.width = blank.height = 4;
+  const day = atlas?.day ?? blank, night = atlas?.night ?? blank;
+  const material = new Cesium.Material({ fabric: { uniforms: { u_atlasDay: day, u_atlasNight: night, u_night: 0, u_grid: new Cesium.Cartesian3(COLS, atlas?.rows ?? 1, CELL) }, source: MAT_SRC } });
+  if (atlas) { (material.uniforms as Record<string, unknown>).u_atlasDay = texture(scene, atlas.day); (material.uniforms as Record<string, unknown>).u_atlasNight = texture(scene, atlas.night); }
+  const appearance = new Cesium.Appearance({
+    material, translucent: false, closed: false,
     vertexShaderSource: VS, fragmentShaderSource: FS,
     renderState: { depthTest: { enabled: true }, depthMask: true, cull: { enabled: false } },
   });
+  return { appearance, setNight: (n) => { (material.uniforms as Record<string, unknown>).u_night = n; } };
 }

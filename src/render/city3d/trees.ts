@@ -7,7 +7,7 @@ import { hash, projector, type TileRef } from './geo';
 import type { Ground } from './ground';
 import { instanceGlb } from './glbInstancing';
 
-export interface TreePoint { x: number; y: number; z: number; yaw: number; s: number; sp: string; far: boolean }
+export interface TreePoint { x: number; y: number; z: number; yaw: number; s: number; /** crown widening (sparse placement of big forests: wider crowns keep the canopy closed) */ sw: number; sp: string; far: boolean }
 
 function inRing(r: number[], x: number, y: number): boolean {
   let c = false;
@@ -52,22 +52,29 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
   let want = 0;
   polys.forEach((p, i) => { const b = bbox[i]; if (b[2] > b[0] && b[3] > b[1]) want += (b[2] - b[0]) * (b[3] - b[1]) * 0.55 * dens(p); }); // upper bound: bbox x fill ratio
   const k = want > budget ? Math.sqrt(want / budget) : 1;
-  const out: TreePoint[] = [];
+  const out: TreePoint[] = [], cap = budget * 4;
   polys.forEach((p, i) => {
     const b = bbox[i];
     if (b[2] <= b[0] || b[3] <= b[1]) return;
     const step = Math.sqrt(1 / dens(p)) * k, ps = hash(i, 7, 3) * step;
-    for (let y = b[1] + ps; y < b[3] && out.length < budget; y += step) for (let x = b[0] + ps; x < b[2]; x += step) {
+    for (let y = b[1] + ps; y < b[3] && out.length < cap; y += step) for (let x = b[0] + ps; x < b[2]; x += step) {
       const jx = x + (hash(Math.round(x * 3), Math.round(y * 3), 11) - 0.5) * step * 0.8, jy = y + (hash(Math.round(x * 3), Math.round(y * 3), 12) - 0.5) * step * 0.8;
       if (Math.abs(jx) >= half || Math.abs(jy) >= half || blocked[Math.floor((jy + half) / CELL) * N + Math.floor((jx + half) / CELL)] || !inPoly(p, jx, jy)) continue;
       const z = ground(jx, jy), rule = ruleOf[i], tw = rule.mix.reduce((a, q) => a + q.weight, 0);
       let r = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = rule.mix[0].species;
       for (const q of rule.mix) { if (r < q.weight) { sp = q.species; break; } r -= q.weight; }
       const [lo, hi] = rule.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.35, 1 + (k - 1) * 0.12) : 1);
-      out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
-      if (out.length >= budget) break;
+      out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: k > 1 ? Math.min(2.6, 1 + (k - 1) * 0.5) : 1, sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
+      if (out.length >= cap) break;
     }
   });
+  // too many candidates (the bbox estimate is an upper bound): thin them uniformly over the whole tile instead of letting the first polygons eat the budget
+  if (out.length > budget) {
+    const r = budget / out.length;
+    const kept = out.filter((p) => hash(Math.round(p.x * 3), Math.round(p.y * 3), 21) < r);
+    for (const p of kept) p.sw = Math.min(2.6, Math.max(p.sw, 1 + (1 / Math.sqrt(r) - 1) * 0.5));
+    return kept;
+  }
   return out;
 }
 
@@ -92,11 +99,13 @@ export async function createTreeModels(scene: Cesium.Scene, tile: TileRef, pts: 
       proj.local(p.x, p.y, p.z - 0.15, v); // ENU (e,n,u) -> glTF Y-up (e,u,-n)
       T.set([v.x, v.z, -v.y], i * 3);
       Rq.set([0, Math.sin(p.yaw / 2), 0, Math.cos(p.yaw / 2)], i * 4);
-      S.set([p.s, p.s, p.s], i * 3);
+      S.set([p.s * p.sw, p.s, p.s * p.sw], i * 3);
     });
     const bytes = instanceGlb(await glb(st.species[sp].file), T, Rq, S);
     const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'model/gltf-binary' }));
     const model = await Cesium.Model.fromGltfAsync({ url, modelMatrix: tile.enu, show: false, allowPicking: false, shadows: Cesium.ShadowMode.DISABLED, incrementallyLoadTextures: false });
+    // the leaf textures are dark: lift them toward a fresh green so a forest reads against the dark satellite canopy
+    model.color = Cesium.Color.fromCssColorString('#a6d96a'); model.colorBlendMode = Cesium.ColorBlendMode.MIX; model.colorBlendAmount = 0.28;
     scene.primitives.add(model);
     out.models.push({ sp, far: far === '1', model, url });
     out.count += list.length;

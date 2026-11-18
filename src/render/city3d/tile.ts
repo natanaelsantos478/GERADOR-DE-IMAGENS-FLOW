@@ -3,7 +3,8 @@ import * as Cesium from 'cesium';
 import { loadFromSources, openFreeMapSource, overtureSource, type VectorTileSource } from '../../data/vector/source';
 import { idbStore } from '../../data/vector/tiles';
 import type { VectorArea } from '../../data/vector/types';
-import { cityAppearance } from './appearance';
+import { cityAppearance, type CityAppearance } from './appearance';
+import { loadAtlas } from './atlas';
 import { buildBuildings } from './buildings';
 import type { TileRef } from './geo';
 import { marksFor } from './landmarks';
@@ -15,7 +16,9 @@ import type { Styles } from './styles';
 import { createTreeModels, disposeTreeModels, placeTrees, type TreeModels, type TreePoint } from './trees';
 
 let sources: VectorTileSource[] | null = null;
-let appearance: Cesium.Appearance | null = null;
+let appearance: CityAppearance | null = null, appearanceSig = '';
+/** Current shared appearance (index.ts drives its night uniform). */
+export const sharedAppearance = () => appearance;
 const tick = () => new Promise<void>((r) => setTimeout(r, 0));
 
 /** Decoded data of tiles that left the view (memory only, LRU): re-entering regenerates the 3D without a new download/decode. */
@@ -23,7 +26,7 @@ const dataCache = new Map<string, { area: VectorArea; ground: Ground; source: st
 const DATA_CACHE_MAX = 16;
 export const cachedTiles = () => dataCache.size;
 
-export interface TileStats { buildings: number; majorBuildings: number; tris: number; roads: number; bridges: number; infra: number; trees: number; loadMs: number; genMs: number; t: Record<string, number>; source: string; styles: Record<string, number> }
+export interface TileStats { buildings: number; majorBuildings: number; tris: number; roads: number; bridges: number; infra: number; trees: number; loadMs: number; genMs: number; t: Record<string, number>; source: string; styles: Record<string, number>; cover: Record<string, number>; treePts: number; treeSp: Record<string, number> }
 /** Imagery provider that serves one canvas as a single image over `rect` (no PNG encode/decode round trip). */
 function canvasTileProvider(canvas: HTMLCanvasElement, rect: Cesium.Rectangle): Cesium.ImageryProvider {
   const scheme = new Cesium.GeographicTilingScheme({ rectangle: rect, numberOfLevelZeroTilesX: 1, numberOfLevelZeroTilesY: 1 });
@@ -46,7 +49,7 @@ export class CityTile {
   treePts: TreePoint[] | null = null;
   trees: TreeModels | null = null;
   treeBusy = false;
-  stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {} };
+  stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {}, cover: {}, treePts: 0, treeSp: {} };
   lastSeen = 0;
   failedAt = 0;
   private gen = 0;
@@ -71,6 +74,8 @@ export class CityTile {
         if (!ground) { this.state = 'failed'; return; }
         this.area = got.area; this.ground = ground; this.stats.source = got.source;
       }
+      this.stats.cover = {};
+      for (const p of [...this.area!.landcover, ...this.area!.landuse]) this.stats.cover[p.cls] = (this.stats.cover[p.cls] ?? 0) + 1;
       await this.generate(st);
       this.state = this.dead ? this.state : 'ready';
     } catch (e) {
@@ -89,15 +94,17 @@ export class CityTile {
     this.clearGenerated();
     await tick();
     if (stale()) return;
-    appearance ??= cityAppearance();
+    const atlas = await loadAtlas(st);
+    if (stale()) return;
+    if (!appearance || appearanceSig !== (atlas?.sig ?? '')) { appearance = cityAppearance(scene, atlas); appearanceSig = atlas?.sig ?? ''; }
     const prim = (m: Mesh) => m.empty ? null : scene.primitives.add(new Cesium.Primitive({
-      geometryInstances: new Cesium.GeometryInstance({ geometry: m.toGeometry() }), appearance: appearance!, asynchronous: false,
+      geometryInstances: new Cesium.GeometryInstance({ geometry: m.toGeometry() }), appearance: appearance!.appearance, asynchronous: false,
       compressVertices: false, interleave: false, vertexCacheOptimize: false, allowPicking: false, releaseGeometryInstances: true, shadows: Cesium.ShadowMode.DISABLED, show: true,
     })) as Cesium.Primitive;
     const T: Record<string, number> = {};
     let tm = performance.now();
     const lap = (k: string) => { const n = performance.now(); T[k] = Math.round(n - tm); tm = n; };
-    const bm = buildBuildings(area.buildings, r, ground, st, marksFor(r));
+    const bm = buildBuildings(area.buildings, r, ground, st, marksFor(r), atlas);
     Object.assign(this.stats, { buildings: bm.stats.count, majorBuildings: bm.stats.major, tris: bm.stats.tris, styles: bm.stats.byStyle });
     lap('bld');
     this.major = prim(bm.major); this.minor = prim(bm.minor);
@@ -139,6 +146,9 @@ export class CityTile {
     const my = this.gen;
     try {
       this.treePts ??= placeTrees(this.area, this.ref, this.ground, this.maxTrees, st);
+      this.stats.treePts = this.treePts.length;
+      this.stats.treeSp = {};
+      for (const q of this.treePts) this.stats.treeSp[q.sp] = (this.stats.treeSp[q.sp] ?? 0) + 1;
       await tick();
       if (this.dead || my !== this.gen) return;
       const t = await createTreeModels(this.viewer.scene, this.ref, this.treePts, st);

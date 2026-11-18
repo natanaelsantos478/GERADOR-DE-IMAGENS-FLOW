@@ -94,7 +94,7 @@ const dict: Record<string, string> = {
   // tactical
   'ui.tac.yourSide': 'Seus esquadrões', 'ui.tac.enemy': 'Inimigo', 'ui.tac.men': 'Efetivo', 'ui.tac.morale': 'Moral', 'ui.tac.ammo': 'Munição', 'ui.tac.routed': 'em debandada', 'ui.tac.destroyed': 'destruído',
   'ui.tac.ord.idle': 'parado', 'ui.tac.ord.move': 'movendo', 'ui.tac.ord.amove': 'atacar-mover', 'ui.tac.ord.attack': 'atacando', 'ui.tac.ord.hold': 'mantendo', 'ui.tac.ord.retreat': 'recuando',
-  'ui.tac.selectFirst': 'Selecione esquadrões primeiro.', 'ui.tac.pickDest': 'Clique no terreno para o destino', 'ui.tac.pickEnemy': 'Clique perto do inimigo a atacar', 'ui.tac.pickFront': 'Clique na direção da frente',
+  'ui.tac.selectFirst': 'Selecione esquadrões primeiro.', 'ui.tac.multi': 'Multi', 'ui.tac.tools': 'Ferram.', 'ui.tac.route': 'Rota', 'ui.tac.routeGo': 'Ir', 'ui.tac.breach': 'Abrir caminho', 'ui.tac.occupy': 'Ocupar prédio', 'ui.tac.formation': 'Formação', 'ui.tac.pickDest': 'Clique no terreno para o destino', 'ui.tac.pickEnemy': 'Clique perto do inimigo a atacar', 'ui.tac.pickFront': 'Clique na direção da frente',
   'ui.tac.pick.artillery': 'Clique no ponto do bombardeio de artilharia', 'ui.tac.pick.airstrike': 'Clique no ponto do ataque aéreo', 'ui.tac.pick.drone': 'Clique no ponto do ataque de drone',
   'ui.tac.ready': 'Pronto', 'ui.tac.waiting': 'Aguardando o inimigo', 'ui.tac.withdraw': 'Retirar', 'ui.tac.withdrawConfirm': 'Confirmar retirada', 'ui.tac.timeLeft': 'Tempo decorrido', 'ui.tac.left': 'restam',
   'ui.tac.score': 'Pontos', 'ui.tac.scoreHelp': 'Pontos por tempo de controle dos objetivos. Uma vantagem de 100 pontos vence a batalha.', 'ui.tac.objective': 'Objetivo', 'ui.tac.deployHelp': 'Implantação: posicione seus esquadrões na zona azul e clique em Pronto.',

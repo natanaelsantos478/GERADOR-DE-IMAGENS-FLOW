@@ -47,7 +47,8 @@ test('cidade 3D: Paris perto/médio, Rio, floresta', async ({ page }) => {
   expect(mid.stats.buildings).toBeGreaterThan(300);
   const rio = await visit(page, -43.2096, -22.9519, 1300, -32, 200, 'city3d-rio');
   expect(rio.stats.trees).toBeGreaterThan(50);
-  await visit(page, 13.07, 47.55, 900, -35, 90, 'city3d-forest');
+  const forest = await visit(page, -43.285, -22.955, 900, -35, 90, 'city3d-forest'); // Floresta da Tijuca (Rio): dense forest must show real trees
+  expect(forest.stats.trees, JSON.stringify(forest.stats.cover)).toBeGreaterThan(400);
   // far away the layer unloads
   await page.evaluate(() => window.__globe!.setView(2.35, 48.85, { height: 60_000, pitchDeg: -90 }));
   await expect.poll(() => page.evaluate(() => (window as any).__city3d.active()), { timeout: 20_000 }).toBe(false);

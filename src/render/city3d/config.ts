@@ -18,8 +18,8 @@ export interface CityConfig {
 export const CITY_CONFIG: Record<QualityId, CityConfig> = {
   mobile: { enableH: 4500, enableHTac: 9000, lodMinor: 1700, treeDist: 1300, maxTiles: 4, maxTreesPerTile: 900, roadPx: 768, concurrency: 1 },
   low: { enableH: 6000, enableHTac: 11000, lodMinor: 2300, treeDist: 1900, maxTiles: 6, maxTreesPerTile: 1600, roadPx: 1024, concurrency: 2 },
-  mid: { enableH: 8000, enableHTac: 13000, lodMinor: 3000, treeDist: 2600, maxTiles: 9, maxTreesPerTile: 3000, roadPx: 1024, concurrency: 2 },
-  high: { enableH: 8000, enableHTac: 14000, lodMinor: 3200, treeDist: 3000, maxTiles: 12, maxTreesPerTile: 4500, roadPx: 1536, concurrency: 3 },
+  mid: { enableH: 8000, enableHTac: 13000, lodMinor: 3000, treeDist: 2600, maxTiles: 9, maxTreesPerTile: 1400, roadPx: 1536, concurrency: 2 },
+  high: { enableH: 8000, enableHTac: 14000, lodMinor: 3200, treeDist: 3000, maxTiles: 12, maxTreesPerTile: 2000, roadPx: 2048, concurrency: 3 },
 };
 /** Big/tall buildings that stay visible from afar. */
 export const MAJOR_AREA = 650;

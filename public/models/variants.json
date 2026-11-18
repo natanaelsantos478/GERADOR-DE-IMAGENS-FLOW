@@ -185,7 +185,7 @@
     "mbt_leclerc"
    ],
    "ISR": [
-    "mbt_m1abrams"
+    "mbt_merkava"
    ],
    "ITA": [
     "mbt_leopard2",
@@ -2299,7 +2299,8 @@
    ],
    "ARE": [
     "fighter_f16",
-    "fighter_mirage2000"
+    "fighter_mirage2000",
+    "fighter_rafale"
    ],
    "ARG": [
     "fighter_superetendard"
@@ -2421,7 +2422,8 @@
     "fighter_f16",
     "fighter_f4",
     "fighter_mig21",
-    "fighter_mirage2000"
+    "fighter_mirage2000",
+    "fighter_rafale"
    ],
    "ERI": [
     "fighter_su37"
@@ -2444,6 +2446,7 @@
     "fighter_f18"
    ],
    "FRA": [
+    "fighter_rafale",
     "fighter_mirage2000"
    ],
    "GBR": [
@@ -2462,7 +2465,8 @@
     "fighter_f16",
     "fighter_f4",
     "fighter_mirage2000",
-    "fighter_miragef1"
+    "fighter_miragef1",
+    "fighter_rafale"
    ],
    "GTM": [
     "fighter_f16",
@@ -2473,7 +2477,8 @@
     "fighter_f35"
    ],
    "HRV": [
-    "fighter_mig21"
+    "fighter_mig21",
+    "fighter_rafale"
    ],
    "HUN": [
     "fighter_gripen"
@@ -2488,7 +2493,8 @@
     "fighter_su37",
     "fighter_mig21",
     "fighter_mirage2000",
-    "fighter_jaguar"
+    "fighter_jaguar",
+    "fighter_rafale"
    ],
    "IRL": [
     "fighter_harrier",
@@ -2680,7 +2686,8 @@
    ],
    "QAT": [
     "fighter_eurofighter",
-    "fighter_mirage2000"
+    "fighter_mirage2000",
+    "fighter_rafale"
    ],
    "ROU": [
     "fighter_f16",
@@ -2692,7 +2699,8 @@
     "fighter_su33",
     "fighter_su25",
     "fighter_su57",
-    "fighter_yak130"
+    "fighter_yak130",
+    "fighter_su34"
    ],
    "SAU": [
     "fighter_eurofighter"
@@ -4485,6 +4493,9 @@
    "CHL": [
     "carrier_nimitz"
    ],
+   "CHN": [
+    "carrier_liaoning"
+   ],
    "COL": [
     "carrier_nimitz"
    ],
@@ -5469,6 +5480,9 @@
     "transport_heli_uh60",
     "transport_heli_ch47"
    ],
+   "CHN": [
+    "transport_heli_ka27"
+   ],
    "COL": [
     "transport_heli_uh60"
    ],
@@ -5554,7 +5568,8 @@
     "transport_heli_ch47"
    ],
    "IND": [
-    "transport_heli_ch47"
+    "transport_heli_ch47",
+    "transport_heli_ka27"
    ],
    "IRL": [
     "transport_heli_uh60",
@@ -5678,6 +5693,9 @@
     "transport_heli_uh60",
     "transport_heli_ch47"
    ],
+   "RUS": [
+    "transport_heli_ka27"
+   ],
    "SAU": [
     "transport_heli_uh60"
    ],
@@ -5731,6 +5749,9 @@
     "transport_heli_uh60",
     "transport_heli_ch47",
     "transport_heli_v22"
+   ],
+   "VNM": [
+    "transport_heli_ka27"
    ],
    "ZAF": [
     "transport_heli_uh60",

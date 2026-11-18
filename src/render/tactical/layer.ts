@@ -13,6 +13,7 @@ import { sampleGrid } from './terrain';
 import { prepareTacticalVector } from '../../data/vector/prepare';
 import type { NavData } from '../../data/vector/nav';
 import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
+import { clusterScreen, type ClusterItem } from '../units/cluster';
 
 const SIDE_COLOR = ['#4da3ff', '#ff5a4d'] as const;
 const C = Cesium.Color;
@@ -259,10 +260,13 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     const [lo, la] = ll(x, y), d = Math.max(20, Cesium.Cartesian3.distance(viewer.camera.positionWC, Cesium.Cartesian3.fromDegrees(lo, la, hAt(x, y))));
     return (px * 2 * d * Math.tan(((viewer.camera.frustum as Cesium.PerspectiveFrustum).fovy ?? 1) / 2)) / (scene.canvas.clientHeight || 900);
   }
+  const FX_MAX_PX: Record<FxKind, number> = { flash: 70, fire: 100, flame: 90, smoke: 130, dust: 110, debris: 14 };
   let testFx = false;
   function spawnFx(x: number, y: number, size: number, kind: FxKind, o: FxOpt = {}) {
     if (pinned && !testFx) return; // frozen-effects capture: only the effects the caller fires explicitly
-    size = Math.max(size, pxM(x, y, kind === 'flash' ? 20 : kind === 'debris' ? 5 : kind === 'smoke' || kind === 'dust' ? 40 : 52));
+    // legible from far away (minimum on-screen size) but never bigger than FX_MAX_PX on screen at the end of its growth, whatever the camera distance
+    const gmax = 0.6 + (o.grow ?? 3) * 0.5, hi = pxM(x, y, FX_MAX_PX[kind]) / (kind === 'debris' ? 1 : gmax);
+    size = Math.min(Math.max(size, pxM(x, y, kind === 'flash' ? 20 : kind === 'debris' ? 5 : kind === 'smoke' || kind === 'dust' ? 40 : 52)), hi);
     let f = fxs.find((q) => !q.b.show);
     if (!f && fxs.length < MAX_FX) {
       const b = bills.add({ position: Cesium.Cartesian3.ZERO, sizeInMeters: true, show: false, disableDepthTestDistance: 0 });
@@ -500,26 +504,24 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   function updateClusters(now: number) {
     if (now < clNext) return;
     clNext = now + 150;
-    const c = cur!, groups = new Map<string, E[]>();
+    const c = cur!, items: ClusterItem<E>[] = [];
     for (const [, s] of c.ents) s.cl = false;
     if (clusterOn) {
       for (const [, s] of c.ents) {
         if (!s.ent.alive || s.ent.gone) continue;
         const [lo, la] = ll(s.x, s.y), p = globe.toScreen(lo, la, hAt(s.x, s.y));
-        if (!p) continue;
-        const k = `${Math.floor(p.x / 44)}:${Math.floor(p.y / 44)}:${s.ent.side}`;
-        (groups.get(k) ?? groups.set(k, []).get(k)!).push(s);
+        if (p) items.push({ x: p.x, y: p.y, side: String(s.ent.side), kind: s.ent.kind, weight: 1, ref: s });
       }
     }
     let gi = 0; clMembers = 0;
-    for (const l of groups.values()) {
-      if (l.length < 3) continue;
-      let x = 0, y = 0; const kinds = new Map<string, number>();
-      for (const s of l) { s.cl = true; x += s.x; y += s.y; kinds.set(s.ent.kind, (kinds.get(s.ent.kind) ?? 0) + 1); }
-      const top = [...kinds].sort((a, b) => b[1] - a[1])[0][0];
+    // supercluster in screen space: a group of >= 3 entities becomes one badge (side colour, count, predominant type); zooming in dissolves it
+    for (const grp of clusterScreen(items, 46, 3).groups) {
+      let x = 0, y = 0;
+      for (const m of grp.members) { m.ref.cl = true; x += m.ref.x; y += m.ref.y; }
+      const l = grp.members;
       let bb = clBills[gi];
       if (!bb) { bb = bills.add({ position: Cesium.Cartesian3.ZERO, width: 38, height: 38, disableDepthTestDistance: INF }); clBills[gi] = bb; }
-      const [k, img] = clusterImg(l[0].ent.side, top, l.length);
+      const [k, img] = clusterImg(l[0].ref.ent.side, grp.kind, l.length);
       bb.setImage(k, img); bb.position = P(x / l.length, y / l.length, 6); bb.show = true;
       gi++; clMembers += l.length;
     }

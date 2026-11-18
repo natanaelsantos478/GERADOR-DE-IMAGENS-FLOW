@@ -45,9 +45,10 @@ export function drawRoads(area: VectorArea, tile: TileRef, px: number, st: Style
     const strokeAll = (style: string, width: number, dash: number[] = []) => { g.strokeStyle = style; g.lineWidth = Math.max(width * k, 0.8); g.setLineDash(dash.map((d) => d * k)); for (const l of group) { path(l.pts); g.stroke(); } g.setLineDash([]); };
     if (P.sidewalk) strokeAll(P.sidewalk.color, w + P.sidewalk.width * 2);
     if (P.casing && !P.unpaved) strokeAll(P.casing, w + 1.1);
-    strokeAll(P.fill, w);
+    if (P.edges) strokeAll('rgba(236,236,226,0.8)', w - 0.7);
+    strokeAll(P.fill, P.edges ? w - 1.5 : w);
     if (P.rails) strokeAll('rgba(190,190,190,0.7)', 0.4);
-    if (P.marking === 'dashed') strokeAll('rgba(240,240,232,0.55)', 0.18, [3.2, 5.5]);
+    if (P.marking === 'dashed') strokeAll('rgba(244,244,236,0.85)', 0.3, [3.2, 5.5]);
   }
   return { canvas: c, stats };
 }

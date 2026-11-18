@@ -7,6 +7,8 @@ export const PAT = { ROOF: 0, HOUSE: 70, OFFICE: 140, GLASS: 200, BLANK: 255 } a
 
 export class Mesh {
   pos: number[] = []; nrm: number[] = []; st: number[] = []; col: number[] = []; idx: number[] = [];
+  /** Surface byte / texture scale (1/m) / phase used by roofs so the textured roof of each building is repeated in real metres. */
+  roofPat: number = PAT.ROOF; roofInv = 1; roofU = 0; roofV = 0;
   readonly p: ReturnType<typeof projector>;
   private nv = new Cesium.Cartesian3();
   constructor(readonly tile: TileRef) { this.p = projector(tile); }
@@ -36,12 +38,12 @@ export class Mesh {
     this.quad(t[0], t[1], t[2], t[3]);
   }
   /** Planar polygon (3D points [x,y,z]) fan-triangulated, facing up. */
-  facet(pts: number[][], c: readonly [number, number, number], pat: number = PAT.ROOF) {
+  facet(pts: number[][], c: readonly [number, number, number], pat: number = this.roofPat) {
     const [a, b, d] = pts, ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = d[0] - a[0], vy = d[1] - a[1], vz = d[2] - a[2];
     let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
     const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
     const flip = nz < 0; if (flip) { nx = -nx; ny = -ny; nz = -nz; }
-    const ids = pts.map((q) => this.vert(q[0], q[1], q[2], nx, ny, nz, q[0], q[1], c, pat));
+    const ids = pts.map((q) => this.vert(q[0], q[1], q[2], nx, ny, nz, q[0] * this.roofInv + this.roofU, q[1] * this.roofInv + this.roofV, c, pat));
     for (let i = 1; i < ids.length - 1; i++) { if (flip) this.tri(ids[0], ids[i + 1], ids[i]); else this.tri(ids[0], ids[i], ids[i + 1]); }
   }
   get empty() { return !this.idx.length; }

@@ -111,7 +111,7 @@ export function GameHud() {
           <Tutorial />
         </>
       )}
-      <BoxSelectFab />
+      {!tactical && <BoxSelectFab />}
       <FpsMeter />
       <UnitSelectionBridge />
       {!tactical && <EventModal />}

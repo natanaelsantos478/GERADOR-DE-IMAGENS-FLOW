@@ -35,7 +35,7 @@ describe('style catalogs', () => {
 
 describe('glb instancing', () => {
   it('adds EXT_mesh_gpu_instancing data to a real tree glb', () => {
-    const b = readFileSync('public/models/nature/oak.glb');
+    const b = readFileSync('public/models/nature/commontree_1.glb');
     const src = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
     const out = instanceGlb(src, new Float32Array(6), new Float32Array([0, 0, 0, 1, 0, 0, 0, 1]), new Float32Array([1, 1, 1, 2, 2, 2]));
     const dv = new DataView(out.buffer);

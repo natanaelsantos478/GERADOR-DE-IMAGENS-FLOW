@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { LonLat } from '../../core/contracts';
 import { useTacSelection } from '../../render/tactical/store';
+import { useTacTouch } from '../../render/tactical/touch';
 import type { FormationKind, Order } from '../../sim/tactical/types';
 import { fmtInt } from '../fmt';
 import { t } from '../i18n';
@@ -11,6 +12,7 @@ import { dispatch, me, useGame } from '../useGame';
 import { pickPoint } from '../war/common';
 import { tacModel, type SquadCard, type TacModel } from './model';
 import { TacResult } from './TacResult';
+import { TacTouch } from './TacTouch';
 
 const M_PER_DEG = 111_320;
 const SPEEDS = [0.5, 1, 2, 4];
@@ -108,13 +110,18 @@ export function TacticalHud() {
   const sel = useTacSelection((s) => s.selected);
   const [confirmW, setConfirmW] = useState(false);
   const [strip, setStrip] = useState<Strip>('mine');
+  const [topMin, setTopMin] = useState(true); // phones: the top panel starts collapsed to one line
   useEffect(() => { if (m?.phase === 'ended') useTacSelection.getState().clear(); }, [m?.phase]);
   if (!m) return null;
   const ps = m.player ?? 0;
   const mine = m.squads.filter((q) => q.side === ps), foes = m.squads.filter((q) => q.side !== ps);
   const alive = (l: SquadCard[]) => l.reduce((a, q) => a + q.alive, 0), n0 = (l: SquadCard[]) => l.reduce((a, q) => a + q.n0, 0);
   const send = (id: string, payload: Record<string, unknown> = {}) => dispatch({ type: id, country: me(), ...payload } as never);
-  const clickMine = (id: number) => (e: React.MouseEvent) => useTacSelection.getState().select([id], e.shiftKey);
+  const clickMine = (id: number) => (e: React.MouseEvent) => {
+    const touch = (e.nativeEvent as PointerEvent).pointerType === 'touch';
+    useTacSelection.getState().select([id], e.shiftKey || (useTacTouch.getState().multi && touch));
+    if (touch) useTacSelection.getState().requestFocus(id);
+  };
   const clickFoe = (id: number) => {
     const ids = sel.filter((s) => m.squads[s]?.side === ps);
     if (ids.length && m.phase === 'combat') tacSend(ids, { kind: 'attack', target: id });
@@ -122,8 +129,9 @@ export function TacticalHud() {
   const left = m.phase === 'deploy' ? Math.max(0, m.deployLimit - m.t) : Math.max(0, m.timeLimit - m.t);
   return (
     <>
-      <div className="tac-top pe" data-testid="tac-top">
+      <div className={`tac-top pe ${topMin ? 'min' : ''} ${m.phase}`} data-testid="tac-top">
         <div className="row tac-info" style={{ gap: 10 }}>
+          <button className="btn sm m-only" data-testid="tac-top-toggle" aria-expanded={!topMin} aria-label={t('tac.title')} onClick={() => setTopMin(!topMin)}>{topMin ? '▾' : '▴'}</button>
           <b><Icon name="war" /> {t('tac.title')}</b>
           <span className={`chip ${m.phase === 'combat' ? 'warn' : ''}`} data-testid="tac-phase">{t(`tac.phase.${m.phase}`)}</span>
           <span className="dim" title={t('ui.tac.timeLeft')}>{clock(m.t)} · {t('ui.tac.left')} {clock(left)}</span>
@@ -156,6 +164,7 @@ export function TacticalHud() {
         <div className="sect-title" style={{ margin: 0 }}>{t('ui.tac.enemy')} · {alive(foes)}/{n0(foes)}</div>
         {foes.map((q) => <Card key={q.id} q={q} mine={false} selected={false} onClick={() => clickFoe(q.id)} />)}
       </div>
+      <TacTouch m={m} />
       <OrderBar m={m} strip={strip} setStrip={setStrip} />
       {m.phase === 'ended' && m.result && <TacResult m={m} onExit={() => send('tac.exit')} />}
     </>

@@ -844,7 +844,7 @@
   "triangles": 11999,
   "bytes": 856740,
   "class": "ifv",
-  "realName": "Sch\u00fctzenpanzer Puma",
+  "realName": "Schützenpanzer Puma",
   "origin": "DEU",
   "realLengthM": 7.6,
   "textures": 3,
@@ -2898,5 +2898,115 @@
    "shoot": "Shoot_OneHanded",
    "walk": "Walk"
   }
+ },
+ "mbt_merkava": {
+  "file": "mbt_merkava.glb",
+  "lengthM": 9.04,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   4.194,
+   2.311,
+   8.754
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Steve Smigielski (Ssmigielski)",
+  "source": "https://www.thingiverse.com/thing:4597608",
+  "substitute": false,
+  "triangles": 11917,
+  "bytes": 917832,
+  "class": "mbt",
+  "realName": "Merkava Mk1",
+  "origin": "ISR",
+  "realLengthM": 9.04,
+  "notes": "Provisional: voxel-remeshed 3D-print kit, no textures. Front = gun side (yaw 0, checked on the contact sheet)."
+ },
+ "fighter_rafale": {
+  "file": "fighter_rafale.glb",
+  "lengthM": 15.27,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   11.417,
+   5.3,
+   15.186
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Jack Dueri (JackTheTinkerer)",
+  "source": "https://www.thingiverse.com/thing:5523718",
+  "substitute": false,
+  "triangles": 29946,
+  "bytes": 1020928,
+  "class": "fighter",
+  "realName": "Dassault Rafale B",
+  "origin": "FRA",
+  "realLengthM": 15.27,
+  "notes": "Checked on the contact sheet (yaw 180, nose to the right)."
+ },
+ "fighter_su34": {
+  "file": "fighter_su34.glb",
+  "lengthM": 23.34,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   18.848,
+   6.1,
+   30.364
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Jack Dueri (JackTheTinkerer)",
+  "source": "https://www.thingiverse.com/thing:5496533",
+  "substitute": false,
+  "triangles": 5860,
+  "bytes": 146216,
+  "class": "fighter",
+  "realName": "Sukhoi Su-34 Fullback",
+  "origin": "RUS",
+  "realLengthM": 23.34,
+  "notes": "Native model is 1.3x real size; lengthM rescales it to the real 23.34 m."
+ },
+ "transport_heli_ka27": {
+  "file": "transport_heli_ka27.glb",
+  "lengthM": 12.25,
+  "yawOffsetDeg": 180,
+  "zOffsetM": 0,
+  "nativeSize": [
+   6.488,
+   5.454,
+   12.486
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Jack Dueri (JackTheTinkerer)",
+  "source": "https://www.thingiverse.com/thing:5496538",
+  "substitute": false,
+  "triangles": 13797,
+  "bytes": 1064528,
+  "class": "transport_heli",
+  "realName": "Kamov Ka-27 Helix",
+  "origin": "RUS",
+  "realLengthM": 12.25,
+  "notes": "Voxel-remeshed; checked on the contact sheet (yaw 180)."
+ },
+ "carrier_liaoning": {
+  "file": "carrier_liaoning.glb",
+  "lengthM": 304.5,
+  "yawOffsetDeg": 90,
+  "zOffsetM": 0,
+  "nativeSize": [
+   322.793,
+   60,
+   64.229
+  ],
+  "license": "CC-BY-4.0",
+  "author": "Feng Yu (54dashayu)",
+  "source": "https://www.thingiverse.com/thing:2219283",
+  "substitute": false,
+  "triangles": 10576,
+  "bytes": 303684,
+  "class": "carrier",
+  "realName": "CV-16 Liaoning",
+  "origin": "CHN",
+  "realLengthM": 304.5,
+  "notes": "Long axis is X (not Z) so yawOffsetDeg is 90 (bow to the right on the contact sheet)."
  }
 }

@@ -7,12 +7,12 @@ import { ATTRIBUTION, CITY_CONFIG } from './config';
 import { tileRef, tileXY, TZ } from './geo';
 import { landmarks, LandmarkLayer, loadLandmarks } from './landmarks';
 import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
-import { cachedTiles, CityTile } from './tile';
+import { cachedTiles, CityTile, sharedAppearance } from './tile';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
   buildings: number; trees: number; treeModels: number; roadSegments: number; bridges: number; tris: number;
-  landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
+  cover: Record<string, number>; treePts: number; treeSp: Record<string, number>; landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
 }
 export interface City3D {
   active(): boolean;
@@ -126,6 +126,19 @@ export function attachCity3D(globe: Globe): City3D {
     scene.requestRender();
   }
 
+  // lit-window facade textures when the camera is on the night side (only with the day/night lighting on)
+  const sunDir = new Cesium.Cartesian3(), up = new Cesium.Cartesian3();
+  const offNight = scene.preRender.addEventListener(() => {
+    const a = sharedAppearance();
+    if (!a) return;
+    let n = 0;
+    if (scene.globe.enableLighting) {
+      Cesium.Cartesian3.normalize(cam.positionWC, up);
+      const d = Cesium.Cartesian3.dot(Cesium.Cartesian3.normalize((scene as any).context.uniformState.sunDirectionWC, sunDir), up);
+      n = Math.min(1, Math.max(0, (0.12 - d) / 0.2));
+    }
+    a.setNight(n);
+  });
   const off = globe.onCamera(() => { update(); });
   const timer = setInterval(update, 900);
   const stop = scene.camera.moveEnd.addEventListener(update);
@@ -142,6 +155,7 @@ export function attachCity3D(globe: Globe): City3D {
       const sum = (f: (t: CityTile) => number) => all.reduce((s, t) => s + f(t), 0);
       return {
         active: on, agl: Math.round(agl), tiles: all.length, ready: all.filter((t) => t.state === 'ready').length, loading: all.filter((t) => t.state === 'loading').length, failed: all.filter((t) => t.state === 'failed').length,
+        cover: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.cover)) a[k] = (a[k] ?? 0) + v; return a; }, {}), treePts: sum((t) => t.stats.treePts), treeSp: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.treeSp)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
         buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.stats.trees), treeModels: sum((t) => t.trees?.models.length ?? 0), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
         landmarks: lm.count(), loadMs: loadMs.slice(-12), genMs: all.map((t) => t.stats.genMs).filter(Boolean), source: [...new Set(all.map((t) => t.stats.source).filter(Boolean))], cachedTiles: cachedTiles(), timings: all.map((t) => t.stats.t).filter((x) => x.bld !== undefined), stylesLoaded: !!styles(),
         styleUse: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.styles)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
@@ -158,7 +172,7 @@ export function attachCity3D(globe: Globe): City3D {
       return false;
     },
     destroy() {
-      destroyed = true; lm.destroy(); off(); offStyles(); if (hot) clearInterval(hot); clearInterval(timer); stop();
+      destroyed = true; lm.destroy(); offNight(); off(); offStyles(); if (hot) clearInterval(hot); clearInterval(timer); stop();
       setActive(false);
     },
   };
