@@ -10,10 +10,13 @@ import { onRuins, pinRuins } from './ruins';
 import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
 import { opacityDebug } from './appearance';
 import { cachedTiles, CityTile, sharedAppearance, tallBuildings, nearBuildings } from './tile';
+import { forceTreeLod } from './trees';
+import { setVegetationImagery } from './vegetation';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
-  buildings: number; trees: number; treeModels: number; roadSegments: number; bridges: number; tris: number;
+  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
+  /** median / p90 frame time (ms) over the last ~120 rendered frames */ frameMs: { med: number; p90: number }; roadSegments: number; bridges: number; tris: number;
   cover: Record<string, number>; treePts: number; treeSp: Record<string, number>; landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
 }
 export interface City3D {
@@ -38,12 +41,15 @@ export interface City3D {
   /** Test/debug: footprints of the loaded tiles closest to a point. */
   near(lon: number, lat: number, n?: number): ReturnType<typeof nearBuildings>;
   /** Test/debug: tree base vs the terrain Cesium draws (m; positive = floating), over up to `n` trees per tile. */
+  /** Test/debug: every visible tree at one detail level (0 full, 1 mid, 3 impostor) or by distance (null). */
+  forceTreeLod(l: 0 | 1 | 3 | null): void;
   treeFit(n?: number): { tiles: { key: string; level: number; trees: number }[]; samples: number; floatP90: number; floatMax: number; sinkP90: number };
   destroy(): void;
 }
 
 export function attachCity3D(globe: Globe): City3D {
   const viewer = globe.viewer, scene = viewer.scene, cam = viewer.camera;
+  setVegetationImagery(() => globe.imageryProvider());
   const tiles = new Map<string, CityTile>();
   const credit = new Cesium.Credit(ATTRIBUTION, true);
   let ready = false, on = false, offSince = 0, destroyed = false, hidRoads = false, agl = Infinity, running = 0;
@@ -139,8 +145,7 @@ export function attachCity3D(globe: Globe): City3D {
       if (d < c.treeDist * 1.1) void t.ensureTrees(styles()!); else if (t.trees && d > c.treeDist * 1.8) t.dropTrees();
       // a camera low among the trees (tactical close-ups) would sit inside the crowns: hide the trees then
       const inCanopy = agl < 70;
-      if (t.trees) for (const m of t.trees.models) m.model.show = !inCanopy && (m.far ? d < c.treeDist : d < c.treeDist * 0.55);
-      if (t.trees) void t.syncTreeLevel(styles()!).then(() => scene.requestRender());
+      if (t.trees) { t.trees.update(cp, { near: c.treeNear, mid: c.treeMid, far: c.treeDist }, inCanopy); void t.syncTreeLevel(styles()!).then(() => scene.requestRender()); }
     }
     scene.requestRender();
   }
@@ -158,6 +163,10 @@ export function attachCity3D(globe: Globe): City3D {
     }
     a.setNight(n);
   });
+  // frame interval of consecutive rendered frames (meaningful with continuous rendering on; tests/debug)
+  const frames: number[] = []; let lastFrame = 0;
+  const offFrame = scene.postRender.addEventListener(() => { const n = performance.now(); if (lastFrame && n - lastFrame < 1000) { frames.push(n - lastFrame); if (frames.length > 120) frames.shift(); } lastFrame = n; });
+  const frameMs = () => { const s = [...frames].sort((a, b) => a - b); const q = (p: number) => (s.length ? Math.round(s[Math.floor(p * (s.length - 1))] * 10) / 10 : 0); return { med: q(0.5), p90: q(0.9) }; };
   const off = globe.onCamera(() => { update(); });
   const timer = setInterval(update, 900);
   const stop = scene.camera.moveEnd.addEventListener(update);
@@ -172,6 +181,7 @@ export function attachCity3D(globe: Globe): City3D {
     update,
     pinRuins,
     near: (lon, lat, n = 4) => nearBuildings(tiles.values(), lon, lat, n),
+    forceTreeLod(l) { forceTreeLod(l); applyLod(); },
     treeFit(n = 200) {
       const d: number[] = [], out: { key: string; level: number; trees: number }[] = [];
       for (const t of tiles.values()) {
@@ -202,7 +212,9 @@ export function attachCity3D(globe: Globe): City3D {
       return {
         active: on, agl: Math.round(agl), tiles: all.length, ready: all.filter((t) => t.state === 'ready').length, loading: all.filter((t) => t.state === 'loading').length, failed: all.filter((t) => t.state === 'failed').length,
         cover: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.cover)) a[k] = (a[k] ?? 0) + v; return a; }, {}), treePts: sum((t) => t.stats.treePts), treeSp: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.treeSp)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
-        buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.stats.trees), treeModels: sum((t) => t.trees?.models.length ?? 0), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
+        buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.trees?.stats().trees ?? 0), treeModels: sum((t) => t.trees?.stats().models ?? 0), treeTris: sum((t) => t.trees?.stats().tris ?? 0),
+        vegCover: all.map((t) => t.stats.vegCover), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
+        treeLods: all.reduce((a, t) => { const l = t.trees?.stats().lods; if (l) l.forEach((v, i) => (a[i] += v)); return a; }, [0, 0, 0]), frameMs: frameMs(), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
         landmarks: lm.count(), loadMs: loadMs.slice(-12), genMs: all.map((t) => t.stats.genMs).filter(Boolean), source: [...new Set(all.map((t) => t.stats.source).filter(Boolean))], cachedTiles: cachedTiles(), timings: all.map((t) => t.stats.t).filter((x) => x.bld !== undefined), stylesLoaded: !!styles(),
         styleUse: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.styles)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
       };
@@ -218,7 +230,7 @@ export function attachCity3D(globe: Globe): City3D {
       return false;
     },
     destroy() {
-      destroyed = true; lm.destroy(); offNight(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
+      destroyed = true; lm.destroy(); offNight(); offFrame(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
       setActive(false);
     },
   };

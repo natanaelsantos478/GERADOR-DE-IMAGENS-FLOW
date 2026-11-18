@@ -14,7 +14,8 @@ import type { Mesh } from './mesh';
 import { buildBridges, drawRoads } from './roads';
 import { styles as currentStyles, type Styles } from './styles';
 import { TileRubble } from './rubbleTile';
-import { createTreeModels, disposeTreeModels, placeTrees, type TreeModels, type TreePoint } from './trees';
+import { placeTrees, TreeLayer, type TreePoint } from './trees';
+import { loadVegetation } from './vegetation';
 
 let sources: VectorTileSource[] | null = null;
 let appearance: CityAppearance | null = null, appearanceSig = '';
@@ -27,7 +28,7 @@ const dataCache = new Map<string, { area: VectorArea; ground: Ground; source: st
 const DATA_CACHE_MAX = 16;
 export const cachedTiles = () => dataCache.size;
 
-export interface TileStats { buildings: number; majorBuildings: number; tris: number; roads: number; bridges: number; infra: number; trees: number; loadMs: number; genMs: number; t: Record<string, number>; source: string; styles: Record<string, number>; cover: Record<string, number>; treePts: number; treeSp: Record<string, number> }
+export interface TileStats { buildings: number; majorBuildings: number; tris: number; roads: number; bridges: number; infra: number; trees: number; loadMs: number; genMs: number; t: Record<string, number>; source: string; styles: Record<string, number>; cover: Record<string, number>; treePts: number; treeSp: Record<string, number>; /** share of the tile green on the satellite photo (-1: imagery unavailable) */ vegCover: number }
 /** Bounding-box centres of the `n` tallest big buildings of the ready tiles (tests: probes for the opacity check). */
 export function tallBuildings(tiles: Iterable<CityTile>, n: number): { lon: number; lat: number; h: number; area: number }[] {
   const out: { lon: number; lat: number; h: number; area: number }[] = [];
@@ -81,9 +82,9 @@ export class CityTile {
   roadLayer: Cesium.ImageryLayer | null = null;
   roadUrl = '';
   treePts: TreePoint[] | null = null;
-  trees: TreeModels | null = null;
+  trees: TreeLayer | null = null;
   treeBusy = false;
-  stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {}, cover: {}, treePts: 0, treeSp: {} };
+  stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {}, cover: {}, treePts: 0, treeSp: {}, vegCover: -1 };
   lastSeen = 0;
   failedAt = 0;
   atlas: Atlas | null = null;
@@ -252,23 +253,12 @@ export class CityTile {
       if (!g || this.dead || !this.trees || !this.treePts) return;
       this.treeLevel = z;
       for (const p of this.treePts) p.z = g(p.x, p.y);
-      this.treeBusy = true;
-      const my = this.gen, old = this.trees;
-      try {
-        const t = await createTreeModels(this.viewer.scene, this.ref, this.treePts, st);
-        if (this.dead || my !== this.gen || this.trees !== old) { disposeTreeModels(this.viewer.scene, t); return; }
-        for (const m of t.models) m.model.show = old.models.find((o) => o.sp === m.sp && o.far === m.far)?.model.show ?? false;
-        this.trees = t; this.stats.trees = t.count;
-        // keep the old set until the new one is drawable, so the swap does not blink
-        let left = t.models.length;
-        const swap = () => { if (--left <= 0) { disposeTreeModels(this.viewer.scene, old); this.viewer.scene.requestRender(); } };
-        if (!left) swap();
-        for (const m of t.models) m.model.readyEvent.addEventListener(swap);
-      } finally { this.treeBusy = false; }
+      this.trees.reseat(); // the cells rebuild at their level on the next LOD pass
+      void st;
     } catch (e) { console.warn('city3d tree level', this.ref.key, e); } finally { this.levelBusy = false; }
   }
 
-  /** Create the instanced tree models (once per visit; only when the tile is close enough). */
+  /** Place the trees of the tile (once per visit); the TreeLayer then builds each cell at the level its distance asks for. */
   async ensureTrees(st: Styles): Promise<void> {
     if (this.trees || this.treeBusy || this.state !== 'ready' || !this.area || !this.ground) return;
     this.treeBusy = true;
@@ -276,19 +266,21 @@ export class CityTile {
     try {
       const g = (await this.groundOf(this.treeLevel)) ?? this.ground;
       if (this.dead || my !== this.gen || !this.area) return;
-      this.treePts ??= placeTrees(this.area, this.ref, g, this.maxTrees, st);
+      if (!this.treePts) {
+        const veg = await loadVegetation(this.ref, () => !this.dead);
+        if (this.dead || my !== this.gen || !this.area) return;
+        this.stats.vegCover = veg ? Math.round(veg.cover * 100) / 100 : -1;
+        this.treePts = placeTrees(this.area, this.ref, g, this.maxTrees, st, veg);
+      }
       this.stats.treePts = this.treePts.length;
       this.stats.treeSp = {};
       for (const q of this.treePts) this.stats.treeSp[q.sp] = (this.stats.treeSp[q.sp] ?? 0) + 1;
       await tick();
       if (this.dead || my !== this.gen) return;
-      const t = await createTreeModels(this.viewer.scene, this.ref, this.treePts, st);
-      if (this.dead || my !== this.gen) { disposeTreeModels(this.viewer.scene, t); return; }
-      this.trees = t; this.stats.trees = t.count;
-      for (const m of t.models) m.model.readyEvent.addEventListener(() => this.viewer.scene.requestRender());
+      this.trees = new TreeLayer(this.viewer.scene, this.ref, this.treePts, st);
     } catch (e) { console.warn('city3d trees', this.ref.key, e); } finally { this.treeBusy = false; this.viewer.scene.requestRender(); }
   }
-  dropTrees() { if (this.trees) { disposeTreeModels(this.viewer.scene, this.trees); this.trees = null; } this.stats.trees = 0; this.treePts = null; }
+  dropTrees() { if (this.trees) { this.trees.dispose(); this.trees = null; } this.stats.trees = 0; this.treePts = null; }
 
   dispose() {
     this.dead = true;

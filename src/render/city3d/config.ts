@@ -10,16 +10,23 @@ export interface CityConfig {
   lodMinor: number;
   /** Tile-centre distance under which trees are drawn; the second half of the instances needs `treeDist * 0.55`. */
   treeDist: number;
+  /** Camera distance (m, to the nearest edge of a tree cell) under which the full-detail tree models are drawn. */
+  treeNear: number;
+  /** Same for the mid-detail models; beyond it the far models (tools/models/tree-lod.mjs). */
+  treeMid: number;
   maxTiles: number;
   maxTreesPerTile: number;
   roadPx: number;
   concurrency: number;
 }
 export const CITY_CONFIG: Record<QualityId, CityConfig> = {
-  mobile: { enableH: 4500, enableHTac: 9000, lodMinor: 1700, treeDist: 1300, maxTiles: 4, maxTreesPerTile: 900, roadPx: 768, concurrency: 1 },
-  low: { enableH: 6000, enableHTac: 11000, lodMinor: 2300, treeDist: 1900, maxTiles: 6, maxTreesPerTile: 1600, roadPx: 1024, concurrency: 2 },
-  mid: { enableH: 8000, enableHTac: 13000, lodMinor: 3000, treeDist: 2600, maxTiles: 9, maxTreesPerTile: 1400, roadPx: 1536, concurrency: 2 },
-  high: { enableH: 8000, enableHTac: 14000, lodMinor: 3200, treeDist: 3000, maxTiles: 12, maxTreesPerTile: 2000, roadPx: 2048, concurrency: 3 },
+  // only what is near is drawn: small buildings within lodMinor, trees within treeDist (full models only inside treeNear,
+  // mid-detail inside treeMid, 4-triangle impostors beyond). More trees per tile than before: the far ones are cheap and the
+  // satellite-green placement needs them to fill a forest. Beyond treeDist the satellite photo itself shows the canopy; the impostor ring is unlit and cheap, so it reaches far.
+  mobile: { enableH: 3500, enableHTac: 9000, lodMinor: 1100, treeDist: 1300, treeNear: 100, treeMid: 300, maxTiles: 4, maxTreesPerTile: 1400, roadPx: 768, concurrency: 1 },
+  low: { enableH: 5000, enableHTac: 11000, lodMinor: 1500, treeDist: 1900, treeNear: 130, treeMid: 400, maxTiles: 5, maxTreesPerTile: 2000, roadPx: 1024, concurrency: 2 },
+  mid: { enableH: 6500, enableHTac: 13000, lodMinor: 2000, treeDist: 2500, treeNear: 160, treeMid: 500, maxTiles: 7, maxTreesPerTile: 2600, roadPx: 1536, concurrency: 2 },
+  high: { enableH: 7000, enableHTac: 14000, lodMinor: 2400, treeDist: 3000, treeNear: 180, treeMid: 600, maxTiles: 9, maxTreesPerTile: 3200, roadPx: 2048, concurrency: 3 },
 };
 /** Big/tall buildings that stay visible from afar. */
 export const MAJOR_AREA = 650;
