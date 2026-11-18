@@ -37,6 +37,7 @@ export const economyPt: Record<string, string> = {
   // news
   'eco.news.blackout': 'Apagões: a oferta de energia cobre só {ratio}% da demanda.', 'eco.news.insolvent': 'O governo está insolvente e perde acesso a crédito.',
   'eco.news.strike': 'Greves paralisam {pct}% da população urbana.', 'eco.news.protest': 'Protestos em massa (aprovação {approval}%).',
+  'eco.news.protDestroyed.hospital': 'Hospital destruído em {city} ({n}).', 'eco.news.protDestroyed.school': 'Escola destruída em {city} ({n}).', 'eco.news.protDestroyed.religious': 'Local de culto destruído em {city} ({n}).', 'eco.news.buildingsDestroyed': '{n} edifícios destruídos em combate em {city}.', 'eco.cause.buildingsLost': 'Destruição de edifícios',
   'eco.news.revolt': 'Revolta armada em {city}.', 'eco.news.coup': 'Golpe de Estado em {country}.', 'eco.news.electionWon': 'Governo reeleito (aprovação {approval}%).',
   'eco.news.electionLost': 'Governo derrotado nas eleições (aprovação {approval}%).', 'eco.news.shortage': 'Escassez de {resource}: {pct}% da demanda sem atender.',
   'eco.news.structureDone': 'Construção concluída: {kind} {fuel} {mw} MW.',

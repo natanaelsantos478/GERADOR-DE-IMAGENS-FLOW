@@ -6,6 +6,7 @@ import { monthlyBudget, budgetLines } from './budget';
 import { autoBuild, autoRepair, dailyBuild, dailyRepairs, damageStructure, getAgg, repairStructure } from './build';
 import { handleCommand } from './commands';
 import { cityInBlackout, energyWeekly, plantDamageToday, updateEnergy } from './energy';
+import { dailyRuins, flushBattle, onBuildingDestroyed } from './destruction';
 import { createEconomySlice } from './init';
 import { dailyStocks, marketStep, refreshFlows } from './resources';
 import { dailySocial, monthlySocial, weeklySocial } from './social';
@@ -72,6 +73,8 @@ export const economySystem = defineSystem({
     const terr = (e: { from: CountryId; to: CountryId }) => invalidateTerritory(ctx, e.from, e.to);
     ctx.bus.on('world.controllerChanged', terr);
     ctx.bus.on('world.ownerChanged', terr);
+    ctx.bus.on('tac.buildingDestroyed', (e) => onBuildingDestroyed(ctx, e));
+    ctx.bus.on('tac.battleEnded', (e) => flushBattle(ctx, e.battleId));
     ctx.bus.on('world.damaged', (e) => {
       if (e.kind !== 'city') return;
       const city = ctx.world.cities[e.index];
@@ -108,6 +111,7 @@ export const economySystem = defineSystem({
       if ((day + slot(c)) % 7 === 0) weeklyCountry(ctx, c, e);
     }
     dailyRepairs(ctx);
+    dailyRuins(ctx);
     marketStep(ctx, day % RES_LIST.length);
   },
 

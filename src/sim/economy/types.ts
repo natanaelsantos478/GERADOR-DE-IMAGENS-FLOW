@@ -129,6 +129,42 @@ export interface UnrestItem {
   until: number;
 }
 
+/** Buildings destroyed in a tactical battle, aggregated until the battle ends (see destruction.ts). */
+export interface TacAgg {
+  pr: ProvinceId | null;
+  pos: [number, number];
+  /** [attacker countries, defender countries]. */
+  sides: [CountryId[], CountryId[]];
+  n: number;
+  /** Σ civil weight, of which protected. */
+  civ: number;
+  prot: number;
+  nProt: number;
+  floors: number;
+  /** Rebuild cost, M USD. */
+  cost: number;
+  /** Civil / protected weight and protected count destroyed by each side (0 = attackers, 1 = defenders). */
+  w: [number, number];
+  wp: [number, number];
+  np: [number, number];
+  kinds: Record<string, number>;
+  last: number;
+}
+
+/** A province recovering from tactical destruction: repairs city damage and pays the bill daily. */
+export interface Ruin {
+  id: number;
+  country: CountryId;
+  province: ProvinceId;
+  city: number;
+  dmg: number;
+  perDay: number;
+  pay: number;
+  daysLeft: number;
+  days: number;
+  drag: number;
+}
+
 export interface PowerContract {
   from: CountryId;
   to: CountryId;
@@ -163,6 +199,10 @@ export interface EconomyState {
   /** Blockaded country → until hours. */
   blockade: Record<CountryId, number>;
   history: HistoryPoint[];
+  /** Tactical destruction pending application / being rebuilt (absent in old saves). */
+  tacAgg?: Record<string, TacAgg>;
+  ruins?: Ruin[];
+  nextRuin?: number;
 }
 
 export interface CityCause {

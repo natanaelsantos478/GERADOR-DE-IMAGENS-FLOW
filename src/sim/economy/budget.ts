@@ -3,6 +3,7 @@ import type { CountryId, Ctx, LedgerLine } from '../../core/contracts';
 import { DEFAULT_TAX, RATING_NAMES, TAX_BASE, TAX_MAX } from './balance';
 import { getAgg } from './build';
 import { territoryFactor } from './energy';
+import { ruinDrag } from './destruction';
 import type { CountryEco, Pillar, TaxKind } from './types';
 import { PILLARS, TAX_KINDS } from './types';
 import { cache, clamp, isAuto, isPlayer, tryMod } from './util';
@@ -95,7 +96,7 @@ export function monthlyBudget(ctx: Ctx, c: CountryId, e: CountryEco): void {
   e.modPrev = mi;
   const energyF = 1 - 0.7 * Math.max(0, 1 - e.energy.ratio);
   const damageF = 1 - 0.5 * Math.min(1, e.warWeary / 60);
-  const targetEff = clamp(energyF * (1 - e.strike * 0.3) * damageF * (e.treasury < 0 ? 0.97 : 1), 0.2, 1.05);
+  const targetEff = clamp(energyF * (1 - e.strike * 0.3) * damageF * (e.treasury < 0 ? 0.97 : 1) * (1 - ruinDrag(ctx, c)), 0.2, 1.05);
   e.eff += (targetEff - e.eff) * 0.3;
   const prevGdp = e.gdp;
   e.gdp = Math.max(1, (e.gdpPot + ag.gdpAdd) * tf * e.eff);
