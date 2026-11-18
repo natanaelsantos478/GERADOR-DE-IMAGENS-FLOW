@@ -13,7 +13,10 @@ import { sampleGrid } from './terrain';
 import { prepareTacticalVector } from '../../data/vector/prepare';
 import type { NavData } from '../../data/vector/nav';
 import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
+import { attackOrder } from './attackOrder';
 import { clusterScreen, type ClusterItem } from '../units/cluster';
+import { setRuins, type Ruin } from '../city3d/ruins';
+import { styles as cityStyles } from '../city3d/styles';
 
 const SIDE_COLOR = ['#4da3ff', '#ff5a4d'] as const;
 const C = Cesium.Color;
@@ -37,6 +40,8 @@ export interface TacticalLayer {
   muzzleAt(x: number, y: number, big?: number): void;
   explodeAt(x: number, y: number, r?: number): void;
   pinFx(on: boolean): void;
+  /** Test/debug: freeze the age of the live effects (dust of a collapse stays on screen for a capture). */
+  holdFx(on: boolean): void;
   tracerAt(x0: number, y0: number, x1: number, y1: number): void;
   ents(): { id: number; sq: number; side: number; kind: string; x: number; y: number; alive: boolean; shown: boolean; ready: boolean }[];
   destroy(): void;
@@ -111,7 +116,8 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       if (!h) return;
       cache.set(k, { heights: h });
       // real vector map (Overture / OpenFreeMap) BEFORE tac.start: the sim reads it synchronously from this cache
-      const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: 64 });
+      // slow links (tests through a proxy) can raise the per-source budget with window.__vectorTimeoutMs
+      const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: 64, timeoutMs: (window as unknown as { __vectorTimeoutMs?: number }).__vectorTimeoutMs });
       cache.set(k, { heights: h, nav });
     }).finally(() => pending.delete(k)); pending.set(k, p); }
     return p;
@@ -142,6 +148,10 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   let objs: { pole: Cesium.Polyline; ring: Cesium.Polyline; flag: Cesium.Billboard; label: Cesium.Label; sig: string }[] = [];
   let deployLines: Cesium.Polyline[] = [];
   let hoverSq = -1, groundC = 0;
+  // destroyed buildings (collapse + rubble in the city 3D) and marked routes
+  const ruinCache = new Map<number, Ruin>(), ruinFx = new Map<number, { t: number; start: boolean; end: boolean; acc: number; blk: number; bp?: [number, number] }>();
+  let ruinList: Ruin[] = [], ruinN = -1, held = false, heldNow = 0;
+  const routeVis = new Map<number, { line: Cesium.Polyline; marks: Cesium.Billboard[]; sig: string; at: number }>();
   let navB: Map<number, import('../../data/vector/nav').NavBuilding> | null = null;
   const garrLines = new Map<number, { l: Cesium.Polyline; side: number }>();
   let squadLabels = new Map<number, Cesium.Label>(), selLines = new Map<number, { ring: Cesium.Polyline; ord: Cesium.Polyline }>();
@@ -242,7 +252,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     cur.pool?.destroy();
     for (const c of [bills, lines, labels]) scene.primitives.remove(c);
     for (const e of craters) viewer.entities.remove(e);
-    craters = []; cur = null; fxs = []; projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); garrLines.clear(); navB = null; smokeZones.clear(); wrecks = 0;
+    craters = []; cur = null; fxs = []; ruinCache.clear(); ruinFx.clear(); ruinList = []; ruinN = -1; routeVis.clear(); setRuins([], 0); projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); garrLines.clear(); navB = null; smokeZones.clear(); wrecks = 0;
     renderLock(globe, 'tac', false);
     tcam?.destroy(); tcam = null;
     if (saved) { scene.light = saved.light; if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); if (saved.roads) globe.setLayerVisible('roads', true); saved = null; }
@@ -414,6 +424,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   }
 
   function updateFx(now: number, dt: number) {
+    if (held) { now = heldNow; dt = 0; } else heldNow = now;
     for (const f of fxs) {
       if (!f.b.show) continue;
       const a = pinned ? PIN_AGE[f.kind] : (now - f.t0) / 1000 / f.life;
@@ -581,6 +592,117 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     }
   }
 
+
+  // ------------------------------------------------------------ destroyed buildings: city 3D collapse + dust and falling blocks
+  /** Footprint ring (lon/lat) of a fallen nav building, cached per id; null until the rubble pattern is loaded. */
+  function ruinOf(b: Battle, r: NonNullable<Battle['map']['rub']>[number]): Ruin | null {
+    let o = ruinCache.get(r.id);
+    if (o) return o;
+    const spec = cityStyles()?.rubble, nb = navB?.get(r.id);
+    if (!spec || !nb) return null;
+    const ring: number[] = [];
+    for (let i = 0; i < nb.poly.length; i += 2) ring.push(...ll(nb.poly[i], nb.poly[i + 1]));
+    const [lon, lat] = ll(nb.cx, nb.cy);
+    o = { key: `${b.id}:${r.id}`, id: r.id, ring, lon, lat, fl: r.fl, h: r.h, m: r.m, by: r.by, t: r.t, dur: spec.collapse[r.by].duration };
+    if (r.by === 'breach') {
+      // the breaching vehicle's side: the wall falls away from it
+      let best = 1e9, bq: Battle['squads'][number] | undefined;
+      for (const q of b.squads) { const d = q.brk === r.id ? 0 : Math.hypot(q.x - nb.cx, q.y - nb.cy); if (d < best && (q.brk === r.id || d < 45)) { best = d; bq = q; } }
+      if (bq) o.brk = ll(bq.x, bq.y);
+    }
+    ruinCache.set(r.id, o);
+    return o;
+  }
+  function updateRuins(b: Battle, now: number) {
+    const rub = b.map.rub ?? [];
+    if (rub.length !== ruinN || ruinList.length !== rub.length) {
+      const list: Ruin[] = [];
+      for (const r of rub) { const o = ruinOf(b, r); if (o) list.push(o); }
+      if (list.length === rub.length) ruinN = rub.length;
+      if (list.length !== ruinList.length || list.some((o, i) => o !== ruinList[i])) ruinList = list;
+    }
+    setRuins(ruinList, b.t);
+    for (const o of ruinList) {
+      const p = (b.t - o.t) / o.dur;
+      let f = ruinFx.get(o.id);
+      if (p >= 1 && !f) continue; // loaded save / finished long ago: final state only, no animation
+      if (!f) ruinFx.set(o.id, (f = { t: b.t, start: false, end: false, acc: 0, blk: 0 }));
+      if (p >= 1.2) { ruinFx.delete(o.id); continue; }
+      const nb = navB?.get(o.id), spec = cityStyles()?.rubble.collapse[o.by];
+      if (!nb || !spec) continue;
+      const dsim = Math.max(0, Math.min(0.5, b.t - f.t));
+      f.t = b.t;
+      const size = clamp(Math.sqrt(nb.area) * 0.4, 5, 24) * mul, R = Math.sqrt(nb.area) * 0.5;
+      const bp = o.brk ? [(o.brk[0] - cur!.clon) * cur!.mPerLon, (o.brk[1] - cur!.clat) * M_PER_DEG] : null;
+      const at = (): [number, number] => {
+        if (bp && Math.random() < 0.6) { const k = Math.random() * 0.5; return [bp[0] + (nb.cx - bp[0]) * k + rnd(-3, 3), bp[1] + (nb.cy - bp[1]) * k + rnd(-3, 3)]; }
+        const a = rnd(0, 6.28), d = Math.sqrt(Math.random()) * R; return [nb.cx + Math.sin(a) * d, nb.cy + Math.cos(a) * d];
+      };
+      if (!f.start) { // the roof goes: one big cloud
+        f.start = true;
+        for (let i = 0; i < 3; i++) { const [x, y] = at(); spawnFx(x, y, size * 2 * (1 + i * 0.3), 'dust', { grow: 2.8, life: 2.6, up: nb.h * 0.4, vz: 2 + i }); }
+      }
+      f.acc += dsim * spec.dust; f.blk += dsim * spec.blocks;
+      for (; f.acc >= 1; f.acc -= 1) { const [x, y] = at(); spawnFx(x, y, size * rnd(1.1, 1.8), 'dust', { grow: 2.4, life: 2 + Math.random(), up: nb.h * Math.max(0.1, 0.55 * (1 - p)), vz: 1.5, vx: rnd(-2, 2), vy: rnd(-2, 2) }); }
+      for (; f.blk >= 1; f.blk -= 1) { const [x, y] = at(); spawnFx(x, y, Math.min(1.3, 0.5 + nb.area / 400) * Math.max(1, mul * 0.6), 'debris', { grow: 0, life: 1.4, up: nb.h * Math.max(0.2, 1 - p), vx: rnd(-3, 3), vy: rnd(-3, 3), vz: rnd(-4, 1) }); }
+      if (p > 0.8 && !f.end) { f.end = true; for (let i = 0; i < 2; i++) { const [x, y] = at(); spawnFx(x, y, size * 2.4, 'dust', { grow: 3, life: 3.4, up: 2, vz: 1.2 }); } }
+    }
+  }
+
+  // ------------------------------------------------------------ marked routes: dashed line on the ground with numbered points
+  const numImgs = new Map<string, HTMLCanvasElement>();
+  function numImg(n: number, side: number): [string, HTMLCanvasElement] {
+    const k = `n${side}-${n}`;
+    let c = numImgs.get(k);
+    if (!c) {
+      c = document.createElement('canvas'); c.width = c.height = 40;
+      const g = c.getContext('2d')!;
+      g.beginPath(); g.arc(20, 20, 16, 0, Math.PI * 2); g.fillStyle = SIDE_COLOR[side]; g.fill(); g.lineWidth = 3.5; g.strokeStyle = '#fff'; g.stroke();
+      g.fillStyle = '#fff'; g.font = '700 20px system-ui'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 3;
+      g.strokeText(String(n), 20, 21); g.fillText(String(n), 20, 21);
+      numImgs.set(k, c);
+    }
+    return [k, c];
+  }
+  /** Terrain-following points of a polyline [x,y,...]: a point at least every 24 m. */
+  function dense(pts: number[]): Cesium.Cartesian3[] {
+    const out: Cesium.Cartesian3[] = [];
+    for (let i = 0; i + 1 < pts.length; i += 2) {
+      if (i) { const ax = pts[i - 2], ay = pts[i - 1], d = Math.hypot(pts[i] - ax, pts[i + 1] - ay), n = Math.min(40, Math.floor(d / 24)); for (let j = 1; j <= n; j++) out.push(P(ax + ((pts[i] - ax) * j) / (n + 1), ay + ((pts[i + 1] - ay) * j) / (n + 1), 2.5)); }
+      out.push(P(pts[i], pts[i + 1], 2.5));
+    }
+    return out;
+  }
+  function updateRoutes(b: Battle, now: number) {
+    const live = new Set<number>();
+    for (const s of b.squads) {
+      const marked = s.side === b.player && (s.order === 'move' || s.order === 'amove') && !!s.route?.length;
+      if (!marked) continue;
+      live.add(s.id);
+      const wp = [s.ox, s.oy, ...(s.route ?? [])];
+      const sig = `${wp.join(',')}|${s.path.length}:${s.pi}|${s.breach ? 1 : 0}`;
+      let v = routeVis.get(s.id);
+      if (v && v.sig === sig && now - v.at < 700) continue;
+      // current leg along its searched path, then straight legs to the next marks (those are searched when reached)
+      const head: number[] = [s.x, s.y];
+      for (let i = s.pi; i + 1 < s.path.length; i += 2) head.push(s.path[i], s.path[i + 1]);
+      head.push(...wp);
+      const positions = dense(head);
+      if (!v) {
+        v = { line: lines.add({ positions, width: 4, material: Cesium.Material.fromType('PolylineDash', { color: C.fromCssColorString(s.breach ? '#ffb347' : SIDE_COLOR[s.side]), gapColor: C.BLACK.withAlpha(0.0), dashLength: 16 }) }), marks: [], sig, at: now };
+        routeVis.set(s.id, v);
+      } else { v.line.positions = positions; v.sig = sig; v.at = now; }
+      for (let i = 0; i < wp.length / 2; i++) {
+        let mk = v.marks[i];
+        const [k, img] = numImg(i + 1, s.side);
+        if (!mk) { mk = bills.add({ position: Cesium.Cartesian3.ZERO, width: 26, height: 26, disableDepthTestDistance: INF }); v.marks[i] = mk; }
+        mk.setImage(k, img); mk.position = P(wp[i * 2], wp[i * 2 + 1], 3); mk.show = true;
+      }
+      for (let i = wp.length / 2; i < v.marks.length; i++) v.marks[i].show = false;
+    }
+    for (const [id, v] of routeVis) if (!live.has(id)) { lines.remove(v.line); v.marks.forEach((m) => bills.remove(m)); routeVis.delete(id); }
+  }
+
   const onPre = () => {
     const g = getGame();
     const b = g?.state.tactical?.battle ?? null;
@@ -601,6 +723,8 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     updateDeploy(b);
     updateSquads(b);
     updateGarrison(b);
+    updateRuins(b, now);
+    updateRoutes(b, now);
   };
   scene.preRender.addEventListener(onPre);
 
@@ -654,7 +778,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     let order: Order | null = null;
     if (f?.kind === 'tacSquad') {
       const d = f.data as { sq: number; ent: number; side: number };
-      if (d.side !== player()) order = { kind: 'attack', target: d.ent };
+      if (d.side !== player()) order = attackOrder(d.sq);
     }
     if (!order && e.pick.lonLat) {
       const x = (e.pick.lonLat[0] - cur.clon) * cur.mPerLon, y = (e.pick.lonLat[1] - cur.clat) * M_PER_DEG;
@@ -674,6 +798,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     frameField: (d) => frameForces(d ?? 2.2),
     muzzleAt: (x, y, big = 3) => { testFx = true; spawnFx(x, y, big * Math.max(1, mul * 0.7), 'flash', { grow: 0.8, life: 0.16, up: 2 * clamp(mul * 0.7, 1, 10) }); testFx = false; },
     explodeAt: (x, y, r = 12) => { testFx = true; explode(x, y, r); testFx = false; },
+    holdFx: (on) => { held = on; },
     pinFx: (on) => { pinned = on; if (on) for (const f of fxs) f.b.show = false; },
     tracerAt: (x0, y0, x1, y1) => { const l = lines.add({ positions: [P(x0, y0, 2.5), P(x1, y1, 2.5)], width: 5, material: Cesium.Material.fromType('PolylineGlow', { color: C.fromCssColorString('#ffd060'), glowPower: 0.4, taperPower: 0.9 }) }); testLines.push(l); },
     ents: () => [...(cur?.ents.values() ?? [])].map((e) => ({ id: e.ent.id, sq: e.ent.sq, side: e.ent.side, kind: e.ent.kind, x: e.ent.x, y: e.ent.y, alive: e.ent.alive, shown: !!e.h.model?.show, ready: !!e.h.model?.ready })),

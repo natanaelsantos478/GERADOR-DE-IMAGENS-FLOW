@@ -15,13 +15,14 @@ export interface TacCameraDeps {
 }
 
 export const FIELD_RANGE = 10500;
-const MIN_CLEAR = 18; // metres above terrain
+const MIN_CLEAR = 38; // metres above terrain (a vehicle seen at ~35 px is drawn exaggerated: the camera must stay out of the models)
+export const MIN_ZOOM = 45; // metres from the orbit target / min range of focus()
 
 /** Takes over the camera controller for the battle; returns focus/frame and a disposer that restores the globe's limits. */
 export function createTacCamera(d: TacCameraDeps) {
   const { viewer } = d, cam = viewer.camera, ctl = viewer.scene.screenSpaceCameraController;
   const saved = { min: ctl.minimumZoomDistance, max: ctl.maximumZoomDistance, col: ctl.enableCollisionDetection };
-  ctl.minimumZoomDistance = 12;
+  ctl.minimumZoomDistance = MIN_ZOOM;
   ctl.maximumZoomDistance = 22_000;
   ctl.enableCollisionDetection = true;
   const cg = new Cesium.Cartographic();
@@ -39,7 +40,7 @@ export function createTacCamera(d: TacCameraDeps) {
     const p = d.resolve(t);
     if (!p) return false;
     const [lon, lat] = d.ll(p.x, p.y);
-    const range = clamp(o.range ?? FIELD_RANGE, 25, 20_000);
+    const range = clamp(o.range ?? FIELD_RANGE, MIN_ZOOM, 20_000);
     const target = Cesium.Cartesian3.fromDegrees(lon, lat, d.hAt(p.x, p.y) + 2);
     const offset = new Cesium.HeadingPitchRange(Cesium.Math.toRadians(o.headingDeg ?? Cesium.Math.toDegrees(cam.heading)), Cesium.Math.toRadians(o.pitchDeg ?? -50), range);
     cam.cancelFlight();

@@ -1,3 +1,4 @@
+import { validateRubble, type RubbleSpec } from './rubble';
 /** Editable style catalogs (public/data/styles/*.json): loaded at runtime, validated, first-match selection, hot reload in dev. */
 export type RGB = [number, number, number];
 export interface Match { kinds?: string[]; minHeight?: number; maxHeight?: number; minArea?: number; maxArea?: number; minAbsLat?: number; maxAbsLat?: number; minElev?: number; maxElev?: number; cover?: string[]; classes?: string[]; minLength?: number; maxLength?: number }
@@ -20,9 +21,11 @@ export interface Styles {
   textures: Record<string, TextureDef>;
   buildings: BuildingStyle[]; species: Record<string, TreeSpecies>; trees: TreeRule[];
   roads: { default: RoadProfile; classes: Record<string, RoadProfile> }; bridges: BridgeStyle[]; infra: InfraStyle[]; water: WaterStyle;
+  /** Rubble of destroyed buildings (styles/rubble.json). */
+  rubble: RubbleSpec;
 }
 
-const FILES = ['buildings', 'trees', 'roads', 'bridges', 'water', 'infra'] as const;
+const FILES = ['buildings', 'trees', 'roads', 'bridges', 'water', 'infra', 'rubble'] as const;
 const isRGB = (c: unknown): c is RGB => Array.isArray(c) && c.length === 3 && c.every((v) => typeof v === 'number' && v >= 0 && v <= 255);
 const fail = (f: string, m: string): never => { throw new Error(`styles/${f}.json: ${m}`); };
 const needPalette = (f: string, id: string, p: unknown) => { if (!Array.isArray(p) || !p.length || !p.every(isRGB)) fail(f, `${id}: palette must be a non-empty list of [r,g,b]`); };
@@ -30,6 +33,7 @@ const catchAll = (f: string, l: { match: object }[]) => { if (!l.length || Objec
 
 export function validate(raw: Record<(typeof FILES)[number], any>): Styles {
   const b = raw.buildings, t = raw.trees, r = raw.roads, br = raw.bridges, w = raw.water, i = raw.infra;
+  const rub = validateRubble(raw.rubble);
   for (const [f, v] of Object.entries(raw)) if (v?.version !== 1) fail(f, 'unsupported or missing version (expected 1)');
   if (!Array.isArray(b.patterns)) fail('buildings', 'patterns must be a list');
   for (const p of b.patterns as BuildingStyle[]) {
@@ -56,7 +60,7 @@ export function validate(raw: Record<(typeof FILES)[number], any>): Styles {
   if (!w.areas || !w.waterways) fail('water', 'areas and waterways required');
   if (!Array.isArray(i.patterns)) fail('infra', 'patterns must be a list');
   catchAll('infra', i.patterns);
-  return { textures: tx, buildings: b.patterns, species: t.species, trees: t.rules, roads: { default: r.default, classes: r.classes }, bridges: br.patterns, infra: i.patterns, water: { areas: w.areas, waterways: w.waterways } };
+  return { textures: tx, buildings: b.patterns, species: t.species, trees: t.rules, roads: { default: r.default, classes: r.classes }, bridges: br.patterns, infra: i.patterns, water: { areas: w.areas, waterways: w.waterways }, rubble: rub };
 }
 
 /** Facts about an object that rules can test. */

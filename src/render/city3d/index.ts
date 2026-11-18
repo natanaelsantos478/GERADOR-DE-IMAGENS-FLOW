@@ -6,8 +6,10 @@ import { mode } from '../units/common';
 import { ATTRIBUTION, CITY_CONFIG } from './config';
 import { tileRef, tileXY, TZ } from './geo';
 import { landmarks, LandmarkLayer, loadLandmarks } from './landmarks';
+import { onRuins, pinRuins } from './ruins';
 import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
-import { cachedTiles, CityTile, sharedAppearance } from './tile';
+import { opacityDebug } from './appearance';
+import { cachedTiles, CityTile, sharedAppearance, tallBuildings } from './tile';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
@@ -23,6 +25,16 @@ export interface City3D {
   update(): void;
   /** Re-read public/data/styles/*.json now and regenerate the visible tiles (also automatic in dev when a file changes). */
   reloadStyles(force?: boolean): Promise<boolean>;
+  /** Test/debug: freeze every building collapse at progress p (0..1); null follows the battle clock. */
+  pinRuins(p: number | null): void;
+  /** Destruction state of the visible tiles: buildings hidden, ruins finished, collapses playing, rubble triangles. */
+  ruinStats(): { hidden: number; done: number; animating: number; tris: number };
+  /** Test/debug: the tallest big buildings of the loaded tiles (lon/lat of the footprint centre). */
+  tall(n?: number): { lon: number; lat: number; h: number; area: number }[];
+  /** Test/debug: rebuild the material as it was before the opacity fix (legacy = true) or as shipped, regenerating the visible tiles. */
+  legacyBlend(legacy: boolean): Promise<void>;
+  /** Test/debug: hide a magenta box inside the building at lon/lat (lower than its walls) and frame its facade from outside. */
+  hiddenProbe(t: { lon: number; lat: number; h: number; area: number }): void;
   destroy(): void;
 }
 
@@ -144,6 +156,7 @@ export function attachCity3D(globe: Globe): City3D {
   const off = globe.onCamera(() => { update(); });
   const timer = setInterval(update, 900);
   const stop = scene.camera.moveEnd.addEventListener(update);
+  const offRuins = onRuins(() => { for (const t of tiles.values()) t.syncRuins(); });
   const offStyles = onStylesChange((st) => { for (const t of tiles.values()) void t.regenerate(st).then(applyLod); });
   void Promise.all([loadLandmarks(), loadStyles()]).then(() => { ready = true; update(); }).catch((e) => console.warn('[city3d] styles unavailable, layer stays off:', (e as Error).message));
   const hot = import.meta.env.DEV ? setInterval(() => { if (on) void reloadStyles(); }, 2000) : 0;
@@ -152,6 +165,16 @@ export function attachCity3D(globe: Globe): City3D {
     reloadStyles: (force = true) => reloadStyles(force),
     active: () => on,
     update,
+    pinRuins,
+    tall: (n = 5) => tallBuildings(tiles.values(), n),
+    hiddenProbe(t) {
+      const g = globe.heightAt(t.lon, t.lat);
+      viewer.entities.add({ position: Cesium.Cartesian3.fromDegrees(t.lon, t.lat, g + t.h * 0.3), box: { dimensions: new Cesium.Cartesian3(9, 9, t.h * 0.5), material: Cesium.Color.fromCssColorString('#ff00ff'), outline: false } });
+      cam.lookAt(Cesium.Cartesian3.fromDegrees(t.lon, t.lat, g + t.h * 0.45), new Cesium.HeadingPitchRange(Cesium.Math.toRadians(30), Cesium.Math.toRadians(-18), Math.max(140, Math.sqrt(t.area) * 2.4)));
+      scene.requestRender();
+    },
+    async legacyBlend(legacy) { opacityDebug.legacy = legacy; await reloadStyles(true); },
+    ruinStats: () => [...tiles.values()].reduce((a, t) => ({ hidden: a.hidden + t.rub.stats.hidden, done: a.done + t.rub.stats.done, animating: a.animating + t.rub.stats.animating, tris: a.tris + t.rub.stats.tris }), { hidden: 0, done: 0, animating: 0, tris: 0 }),
     stats() {
       const all = [...tiles.values()];
       const sum = (f: (t: CityTile) => number) => all.reduce((s, t) => s + f(t), 0);
@@ -174,7 +197,7 @@ export function attachCity3D(globe: Globe): City3D {
       return false;
     },
     destroy() {
-      destroyed = true; lm.destroy(); offNight(); off(); offStyles(); if (hot) clearInterval(hot); clearInterval(timer); stop();
+      destroyed = true; lm.destroy(); offNight(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
       setActive(false);
     },
   };

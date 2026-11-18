@@ -11,13 +11,19 @@ export class Mesh {
   roofPat: number = PAT.ROOF; roofInv = 1; roofU = 0; roofV = 0;
   readonly p: ReturnType<typeof projector>;
   private nv = new Cesium.Cartesian3();
-  constructor(readonly tile: TileRef) { this.p = projector(tile); }
+  /** `local`: positions and normals stay in the tile's ENU frame (the primitive then needs `modelMatrix = tile.enu`, optionally times an animation matrix). */
+  constructor(readonly tile: TileRef, readonly local = false) { this.p = projector(tile); }
   get verts(): number { return this.pos.length / 3; }
   get tris(): number { return this.idx.length / 3; }
   /** Vertex at local (x, y) metres, ellipsoidal height h; normal given in tile-ENU. */
   vert(x: number, y: number, h: number, e: number, n: number, u: number, s: number, t: number, c: readonly [number, number, number], pat: number): number {
-    const q = this.p.ecef(x, y, h), v = enuToEcef(this.tile, e, n, u, this.nv);
-    this.pos.push(q.x, q.y, q.z); this.nrm.push(v.x, v.y, v.z); this.st.push(s, t); this.col.push(c[0], c[1], c[2], pat);
+    if (this.local) {
+      const q = this.p.local(x, y, h, this.nv);
+      this.pos.push(q.x, q.y, q.z); this.nrm.push(e, n, u);
+    } else {
+      const q = this.p.ecef(x, y, h), v = enuToEcef(this.tile, e, n, u, this.nv);
+      this.pos.push(q.x, q.y, q.z); this.nrm.push(v.x, v.y, v.z);
+    } this.st.push(s, t); this.col.push(c[0], c[1], c[2], pat);
     return this.verts - 1;
   }
   tri(a: number, b: number, c: number) { this.idx.push(a, b, c); }
@@ -59,7 +65,7 @@ export class Mesh {
       } as unknown) as Cesium.GeometryAttributes,
       indices: this.verts > 65000 ? new Uint32Array(this.idx) : new Uint16Array(this.idx),
       primitiveType: Cesium.PrimitiveType.TRIANGLES,
-      boundingSphere: new Cesium.BoundingSphere(this.tile.origin, this.tile.sizeM * 0.9),
+      boundingSphere: new Cesium.BoundingSphere(this.local ? Cesium.Cartesian3.ZERO : this.tile.origin, this.tile.sizeM * 0.9),
     });
   }
 }

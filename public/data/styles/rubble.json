@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "doc": "Rubble patterns of destroyed buildings (tactical battle). `materials` (light|brick|concrete|reinforced, from the building's material class): the heap height = clamp(heightPerFloor * floors * (area/150)^areaGain, minHeight, maxHeight); `fill` = fraction of the footprint the heap covers; `density` = loose pieces per 100 m2 (between minPieces and maxPieces, the cap bounds the triangle count: 12 per piece); `palette` = piece tints [r,g,b]; `textures` = ids of the texture atlas in buildings.json used by the pieces (picked by seed); `pieces` = weighted list of block | slab | beam with `size` (longest side, m) and `thickness` (m, slab/beam); `rebar` = share of beams that stick out of the heap; `mound` = the heap body (tint + texture + roughness 0..1). `collapse` per cause (by): duration (s of battle time), tilt (deg), shrinkTo (height fraction left of the standing building at the end), shake (m of tremor), dust (puffs per second), blocks (falling blocks per second), style down = vertical sink | breach = the wall is knocked through away from the breaching vehicle.",
+  "materials": {
+    "light": {
+      "heightPerFloor": 0.9, "minHeight": 0.8, "maxHeight": 3.2, "areaGain": 0.2, "fill": 0.9,
+      "density": 16, "minPieces": 8, "maxPieces": 46, "rebar": 0,
+      "palette": [[150, 120, 92], [124, 102, 82], [172, 150, 120], [92, 80, 70]],
+      "textures": ["roof_clay_a", "roof_clay_b", "roof_grey"],
+      "pieces": [
+        {"type": "block", "weight": 4, "size": [0.5, 1.4]},
+        {"type": "slab", "weight": 4, "size": [1.4, 3.2], "thickness": [0.06, 0.14]},
+        {"type": "beam", "weight": 4, "size": [1.8, 4.5], "thickness": [0.08, 0.16]}
+      ],
+      "mound": {"color": [122, 110, 98], "roughness": 0.45}
+    },
+    "brick": {
+      "heightPerFloor": 1.05, "minHeight": 1.4, "maxHeight": 5, "areaGain": 0.22, "fill": 0.92,
+      "density": 20, "minPieces": 12, "maxPieces": 64, "rebar": 0.05,
+      "palette": [[152, 86, 66], [170, 112, 86], [122, 102, 92], [96, 90, 88]],
+      "textures": ["facade_brick_a", "facade_brick_b", "roof_clay_c"],
+      "pieces": [
+        {"type": "block", "weight": 6, "size": [0.6, 1.7]},
+        {"type": "slab", "weight": 3, "size": [1.6, 3.6], "thickness": [0.1, 0.22]},
+        {"type": "beam", "weight": 2, "size": [2, 5], "thickness": [0.1, 0.18]}
+      ],
+      "mound": {"color": [128, 104, 92], "roughness": 0.5}
+    },
+    "concrete": {
+      "heightPerFloor": 0.8, "minHeight": 2.2, "maxHeight": 9, "areaGain": 0.25, "fill": 0.95,
+      "density": 22, "minPieces": 16, "maxPieces": 84, "rebar": 0.25,
+      "palette": [[150, 150, 148], [122, 122, 120], [166, 162, 154], [100, 100, 102]],
+      "textures": ["facade_concrete_a", "roof_grey", "roof_dark"],
+      "pieces": [
+        {"type": "block", "weight": 5, "size": [0.8, 2.2]},
+        {"type": "slab", "weight": 6, "size": [2, 5.5], "thickness": [0.16, 0.32]},
+        {"type": "beam", "weight": 3, "size": [2.5, 6], "thickness": [0.14, 0.26]}
+      ],
+      "mound": {"color": [118, 116, 112], "roughness": 0.55}
+    },
+    "reinforced": {
+      "heightPerFloor": 0.55, "minHeight": 3.5, "maxHeight": 14, "areaGain": 0.28, "fill": 0.97,
+      "density": 24, "minPieces": 24, "maxPieces": 100, "rebar": 0.45,
+      "palette": [[138, 138, 140], [108, 109, 112], [164, 162, 154], [84, 84, 88]],
+      "textures": ["facade_concrete_a", "roof_dark", "roof_slate"],
+      "pieces": [
+        {"type": "block", "weight": 4, "size": [1, 2.6]},
+        {"type": "slab", "weight": 7, "size": [3, 8], "thickness": [0.2, 0.4]},
+        {"type": "beam", "weight": 4, "size": [3, 8], "thickness": [0.16, 0.3]}
+      ],
+      "mound": {"color": [108, 106, 104], "roughness": 0.6}
+    }
+  },
+  "collapse": {
+    "shell":   {"duration": 2.8, "tilt": 3,   "shrinkTo": 0.08, "shake": 0.35, "dust": 5,  "blocks": 3,  "style": "down"},
+    "rocket":  {"duration": 2.6, "tilt": 4,   "shrinkTo": 0.08, "shake": 0.4,  "dust": 5,  "blocks": 3,  "style": "down"},
+    "missile": {"duration": 3.0, "tilt": 3.5, "shrinkTo": 0.06, "shake": 0.45, "dust": 6,  "blocks": 4,  "style": "down"},
+    "bomb":    {"duration": 3.8, "tilt": 0.8, "shrinkTo": 0.04, "shake": 0.7,  "dust": 9,  "blocks": 7,  "style": "down"},
+    "breach":  {"duration": 2.2, "tilt": 9,   "shrinkTo": 0.14, "shake": 0.2,  "dust": 8,  "blocks": 4,  "style": "breach"},
+    "fire":    {"duration": 4.0, "tilt": 2,   "shrinkTo": 0.1,  "shake": 0.15, "dust": 3,  "blocks": 2,  "style": "down"}
+  }
+}

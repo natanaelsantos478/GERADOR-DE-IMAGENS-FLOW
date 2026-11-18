@@ -32,8 +32,24 @@ export interface BuildingStats { count: number; major: number; tris: number; byS
 export interface BuildingMeshes { major: Mesh; minor: Mesh; stats: BuildingStats }
 interface Band { z0: number; z1: number; v0: number; c: RGB; pat: number; sv: number; su: number; off: number }
 
-export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st: Styles, marks: LocalMark[] = [], atlas: Atlas | null = null): BuildingMeshes {
-  const major = new Mesh(tile), minor = new Mesh(tile), half = tile.sizeM / 2, absLat = Math.abs(tile.lat0);
+export interface BuildOpts {
+  /** Footprints (by centroid in tile-local metres) that must not be drawn: destroyed buildings. */
+  hide?: (cx: number, cy: number) => boolean;
+  /** Meshes in the tile's ENU frame (for a primitive with its own animated model matrix). */
+  local?: boolean;
+}
+/** Centroid (tile-local metres) of a footprint exactly as `buildBuildings` computes it, so other code can find the same building. */
+export function polyCentroid(poly: VPoly): [number, number] {
+  const r = poly.rings[0];
+  let n = r.length / 2;
+  if (n > 1 && r[0] === r[(n - 1) * 2] && r[1] === r[(n - 1) * 2 + 1]) n--;
+  let cx = 0, cy = 0;
+  for (let i = 0; i < n; i++) { cx += r[i * 2]; cy += r[i * 2 + 1]; }
+  return [cx / Math.max(1, n), cy / Math.max(1, n)];
+}
+
+export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st: Styles, marks: LocalMark[] = [], atlas: Atlas | null = null, opts: BuildOpts = {}): BuildingMeshes {
+  const major = new Mesh(tile, !!opts.local), minor = new Mesh(tile, !!opts.local), half = tile.sizeM / 2, absLat = Math.abs(tile.lat0);
   const stats: BuildingStats = { count: 0, major: 0, tris: 0, byStyle: {} };
   for (const poly of polys) {
     const outer = ring(poly.rings[0], true), n = outer.length / 2;
@@ -42,6 +58,7 @@ export function buildBuildings(polys: VPoly[], tile: TileRef, ground: Ground, st
     for (let i = 0; i < n; i++) { cx += outer[i * 2]; cy += outer[i * 2 + 1]; }
     cx /= n; cy /= n;
     if (Math.abs(cx) > half || Math.abs(cy) > half) continue; // the tile owning the centre draws it
+    if (opts.hide && opts.hide(cx, cy)) continue;
     let kindOver: string | undefined;
     for (const mk of marks) if (Math.hypot(cx - mk.x, cy - mk.y) <= mk.r) { if (mk.hasModel) kindOver = 'hidden'; else kindOver = kindOver ?? 'landmark'; }
     if (kindOver === 'hidden') continue; // replaced by the real landmark model

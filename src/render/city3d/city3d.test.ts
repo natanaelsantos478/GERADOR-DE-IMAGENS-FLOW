@@ -4,7 +4,7 @@ import { instanceGlb } from './glbInstancing';
 import { matches, pickStyle, roadWidth, validate } from './styles';
 
 const J = (f: string) => JSON.parse(readFileSync(`public/data/styles/${f}.json`, 'utf8'));
-const raw = () => ({ buildings: J('buildings'), trees: J('trees'), roads: J('roads'), bridges: J('bridges'), water: J('water'), infra: J('infra') });
+const raw = () => ({ buildings: J('buildings'), trees: J('trees'), roads: J('roads'), bridges: J('bridges'), water: J('water'), infra: J('infra'), rubble: J('rubble') });
 
 describe('style catalogs', () => {
   it('shipped catalogs validate', () => { expect(() => validate(raw() as never)).not.toThrow(); });

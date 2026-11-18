@@ -3,16 +3,17 @@ import * as Cesium from 'cesium';
 import { loadFromSources, openFreeMapSource, overtureSource, type VectorTileSource } from '../../data/vector/source';
 import { idbStore } from '../../data/vector/tiles';
 import type { VectorArea } from '../../data/vector/types';
-import { cityAppearance, type CityAppearance } from './appearance';
-import { loadAtlas } from './atlas';
-import { buildBuildings } from './buildings';
-import type { TileRef } from './geo';
+import { cityAppearance, opacityDebug, type CityAppearance } from './appearance';
+import { loadAtlas, type Atlas } from './atlas';
+import { buildBuildings, polyCentroid } from './buildings';
+import { projector, type TileRef } from './geo';
 import { marksFor } from './landmarks';
 import { loadGround, type Ground } from './ground';
 import { buildInfra } from './infra';
 import type { Mesh } from './mesh';
 import { buildBridges, drawRoads } from './roads';
-import type { Styles } from './styles';
+import { styles as currentStyles, type Styles } from './styles';
+import { TileRubble } from './rubbleTile';
 import { createTreeModels, disposeTreeModels, placeTrees, type TreeModels, type TreePoint } from './trees';
 
 let sources: VectorTileSource[] | null = null;
@@ -27,6 +28,24 @@ const DATA_CACHE_MAX = 16;
 export const cachedTiles = () => dataCache.size;
 
 export interface TileStats { buildings: number; majorBuildings: number; tris: number; roads: number; bridges: number; infra: number; trees: number; loadMs: number; genMs: number; t: Record<string, number>; source: string; styles: Record<string, number>; cover: Record<string, number>; treePts: number; treeSp: Record<string, number> }
+/** Bounding-box centres of the `n` tallest big buildings of the ready tiles (tests: probes for the opacity check). */
+export function tallBuildings(tiles: Iterable<CityTile>, n: number): { lon: number; lat: number; h: number; area: number }[] {
+  const out: { lon: number; lat: number; h: number; area: number }[] = [];
+  for (const t of tiles) {
+    if (t.state !== 'ready' || !t.area) continue;
+    const pj = projector(t.ref);
+    for (const p of t.area.buildings) {
+      if ((p.h ?? 0) < 25 || (p.minH ?? 0) > 0.5) continue;
+      const [cx, cy] = polyCentroid(p), r = p.rings[0];
+      let a = 0; for (let i = 0, k = r.length / 2, j = k - 1; i < k; j = i++) a += r[j * 2] * r[i * 2 + 1] - r[i * 2] * r[j * 2 + 1];
+      a = Math.abs(a) / 2;
+      if (a < 500 || Math.abs(cx) > t.ref.sizeM / 2 || Math.abs(cy) > t.ref.sizeM / 2) continue;
+      const [lon, lat] = pj.lonLat(cx, cy);
+      out.push({ lon, lat, h: p.h as number, area: a });
+    }
+  }
+  return out.sort((u, v) => v.h - u.h).slice(0, n);
+}
 /** Imagery provider that serves one canvas as a single image over `rect` (no PNG encode/decode round trip). */
 function canvasTileProvider(canvas: HTMLCanvasElement, rect: Cesium.Rectangle): Cesium.ImageryProvider {
   const scheme = new Cesium.GeographicTilingScheme({ rectangle: rect, numberOfLevelZeroTilesX: 1, numberOfLevelZeroTilesY: 1 });
@@ -52,8 +71,13 @@ export class CityTile {
   stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {}, cover: {}, treePts: 0, treeSp: {} };
   lastSeen = 0;
   failedAt = 0;
+  atlas: Atlas | null = null;
+  /** True while `generate` runs (the destruction sync waits for it). */
+  generating = false;
+  readonly rub = new TileRubble(this);
   private gen = 0;
-  constructor(readonly ref: TileRef, private viewer: Cesium.Viewer, private roadPx: number, private maxTrees: number) {}
+  private rebuilding = false;
+  constructor(readonly ref: TileRef, readonly viewer: Cesium.Viewer, private roadPx: number, private maxTrees: number) {}
 
   /** Fetch data (or reuse the memory cache) and generate the 3D with the current styles. */
   async load(st: Styles): Promise<void> {
@@ -78,6 +102,7 @@ export class CityTile {
       for (const p of [...this.area!.landcover, ...this.area!.landuse]) this.stats.cover[p.cls] = (this.stats.cover[p.cls] ?? 0) + 1;
       await this.generate(st);
       this.state = this.dead ? this.state : 'ready';
+      this.rub.sync();
     } catch (e) {
       if (!this.dead) { this.state = 'failed'; console.warn('city3d tile', r.key, e); }
     } finally {
@@ -91,12 +116,45 @@ export class CityTile {
     if (!this.area || !this.ground) return;
     const my = ++this.gen, scene = this.viewer.scene, r = this.ref, area = this.area, ground = this.ground, t0 = performance.now();
     const stale = () => this.dead || my !== this.gen;
+    this.generating = true;
+    try { await this.generateInner(st, my, scene, r, area, ground, t0, stale); } finally { if (my === this.gen) this.generating = false; }
+  }
+  private makePrim(m: Mesh): Cesium.Primitive | null {
+    return m.empty || !appearance ? null : this.viewer.scene.primitives.add(new Cesium.Primitive({
+      geometryInstances: new Cesium.GeometryInstance({ geometry: m.toGeometry() }), appearance: appearance.appearance, asynchronous: false,
+      compressVertices: false, interleave: false, vertexCacheOptimize: false, allowPicking: false, releaseGeometryInstances: true, shadows: Cesium.ShadowMode.DISABLED, show: true,
+    })) as Cesium.Primitive;
+  }
+  /** Rebuild only the building meshes (a building was destroyed or its rubble finished): roads, trees and the rest stay. */
+  async rebuildBuildings(): Promise<void> {
+    if (this.rebuilding) return;
+    this.rebuilding = true;
+    try {
+      do {
+        const my = this.gen, st = currentStyles();
+        if (!st || !this.area || !this.ground || this.dead || this.generating || !appearance) return;
+        await tick();
+        if (this.dead || my !== this.gen || this.generating) return;
+        const bm = buildBuildings(this.area.buildings, this.ref, this.ground, st, marksFor(this.ref), this.atlas, { hide: this.rub.hideFn() });
+        const show = this.minor ? this.minor.show : true, sc = this.viewer.scene;
+        const old = [this.major, this.minor];
+        this.major = this.makePrim(bm.major); this.minor = this.makePrim(bm.minor);
+        if (this.minor) this.minor.show = show;
+        for (const p of old) if (p) sc.primitives.remove(p);
+        Object.assign(this.stats, { buildings: bm.stats.count, majorBuildings: bm.stats.major, tris: bm.stats.tris, styles: bm.stats.byStyle });
+        this.viewer.scene.requestRender();
+      } while (this.rub.needsRebuild());
+    } finally { this.rebuilding = false; }
+  }
+  private async generateInner(st: Styles, my: number, scene: Cesium.Scene, r: TileRef, area: VectorArea, ground: Ground, t0: number, stale: () => boolean): Promise<void> {
     this.clearGenerated();
     await tick();
     if (stale()) return;
     const atlas = await loadAtlas(st);
     if (stale()) return;
-    if (!appearance || appearanceSig !== (atlas?.sig ?? '')) { appearance = cityAppearance(scene, atlas); appearanceSig = atlas?.sig ?? ''; }
+    this.atlas = atlas;
+    const sig = `${atlas?.sig ?? ''}|${opacityDebug.legacy}`;
+    if (!appearance || appearanceSig !== sig) { appearance = cityAppearance(scene, atlas); appearanceSig = sig; }
     const prim = (m: Mesh) => m.empty ? null : scene.primitives.add(new Cesium.Primitive({
       geometryInstances: new Cesium.GeometryInstance({ geometry: m.toGeometry() }), appearance: appearance!.appearance, asynchronous: false,
       compressVertices: false, interleave: false, vertexCacheOptimize: false, allowPicking: false, releaseGeometryInstances: true, shadows: Cesium.ShadowMode.DISABLED, show: true,
@@ -104,7 +162,7 @@ export class CityTile {
     const T: Record<string, number> = {};
     let tm = performance.now();
     const lap = (k: string) => { const n = performance.now(); T[k] = Math.round(n - tm); tm = n; };
-    const bm = buildBuildings(area.buildings, r, ground, st, marksFor(r), atlas);
+    const bm = buildBuildings(area.buildings, r, ground, st, marksFor(r), atlas, { hide: this.rub.hideFn() });
     Object.assign(this.stats, { buildings: bm.stats.count, majorBuildings: bm.stats.major, tris: bm.stats.tris, styles: bm.stats.byStyle });
     lap('bld');
     this.major = prim(bm.major); this.minor = prim(bm.minor);
@@ -132,12 +190,15 @@ export class CityTile {
     const sc = this.viewer.scene;
     for (const p of [this.major, this.minor, this.bridges, this.infraPrim]) if (p) sc.primitives.remove(p);
     this.major = this.minor = this.bridges = this.infraPrim = null;
+    this.rub.reset();
     if (this.roadLayer) this.viewer.imageryLayers.remove(this.roadLayer, true);
     this.roadLayer = null;
     this.dropTrees();
   }
   /** Styles changed: regenerate this tile from its cached data. */
-  async regenerate(st: Styles) { if (this.state === 'ready') await this.generate(st); this.viewer.scene.requestRender(); }
+  async regenerate(st: Styles) { if (this.state === 'ready') { await this.generate(st); this.rub.sync(); } this.viewer.scene.requestRender(); }
+  /** The destroyed-buildings store changed. */
+  syncRuins() { this.rub.sync(); }
 
   /** Create the instanced tree models (once per visit; only when the tile is close enough). */
   async ensureTrees(st: Styles): Promise<void> {

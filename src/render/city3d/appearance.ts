@@ -74,6 +74,8 @@ void main() {
   out_FragColor = vec4(col, 1.0);
 }`;
 
+/** Test/debug only: `legacy` rebuilds the material the way it was before the opacity fix (Cesium then treats a `source` material as translucent -> blended pass). */
+export const opacityDebug = { legacy: false };
 export interface CityAppearance { appearance: Cesium.Appearance; setNight(n: number): void }
 // Cesium renames material uniforms (u_x -> u_x_0), so everything that reads them lives in the material source and is exposed as functions.
 // Texture of cell c (1-based) in the shared atlas; st is in texture repeats (real metres / repeat size).
@@ -102,7 +104,7 @@ function texture(scene: Cesium.Scene, c: HTMLCanvasElement): unknown {
 export function cityAppearance(scene: Cesium.Scene, atlas: Atlas | null): CityAppearance {
   const blank = document.createElement('canvas'); blank.width = blank.height = 4;
   const day = atlas?.day ?? blank, night = atlas?.night ?? blank;
-  const material = new Cesium.Material({ fabric: { uniforms: { u_atlasDay: day, u_atlasNight: night, u_night: 0, u_grid: new Cesium.Cartesian3(COLS, atlas?.rows ?? 1, CELL) }, source: MAT_SRC } });
+  const material = new Cesium.Material({ translucent: opacityDebug.legacy ? undefined : false, fabric: { uniforms: { u_atlasDay: day, u_atlasNight: night, u_night: 0, u_grid: new Cesium.Cartesian3(COLS, atlas?.rows ?? 1, CELL) }, source: MAT_SRC } });
   if (atlas) { (material.uniforms as Record<string, unknown>).u_atlasDay = texture(scene, atlas.day); (material.uniforms as Record<string, unknown>).u_atlasNight = texture(scene, atlas.night); }
   const appearance = new Cesium.Appearance({
     material, translucent: false, closed: false,
