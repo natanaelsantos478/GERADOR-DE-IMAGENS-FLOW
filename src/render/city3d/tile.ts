@@ -16,6 +16,7 @@ import { styles as currentStyles, type Styles } from './styles';
 import { TileRubble } from './rubbleTile';
 import { placeTrees, TreeLayer, type TreePoint } from './trees';
 import { loadVegetation, type VegMask } from './vegetation';
+import { AirportPlanes } from './airplanes';
 
 let sources: VectorTileSource[] | null = null;
 let appearance: CityAppearance | null = null, appearanceSig = '';
@@ -84,6 +85,8 @@ export class CityTile {
   treePts: TreePoint[] | null = null;
   /** satellite vegetation mask used for the last placement (debug) */
   veg: VegMask | null = null;
+  /** civil aircraft parked at this tile's airport gates */
+  planes: AirportPlanes | null = null;
   private vegRetryAt = 0;
   trees: TreeLayer | null = null;
   treeBusy = false;
@@ -202,6 +205,8 @@ export class CityTile {
     if (stale()) { this.clearGenerated(); return; }
     this.roadLayer = this.viewer.imageryLayers.addImageryProvider(prov);
     lap('png'); this.stats.t = T;
+    this.planes = new AirportPlanes(scene, r, area, ground);
+    void this.planes.sync();
     this.stats.genMs = Math.round(performance.now() - t0);
   }
   private infraPrim: Cesium.Primitive | null = null;
@@ -213,6 +218,7 @@ export class CityTile {
     if (this.roadLayer) this.viewer.imageryLayers.remove(this.roadLayer, true);
     this.roadLayer = null;
     this.dropTrees();
+    this.planes?.dispose(); this.planes = null;
   }
   /** Styles changed: regenerate this tile from its cached data. */
   async regenerate(st: Styles) { if (this.state === 'ready') { await this.generate(st); this.rub.sync(); } this.viewer.scene.requestRender(); }

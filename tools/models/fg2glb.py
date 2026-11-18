@@ -10,7 +10,7 @@ args = [a for a in sys.argv[1:] if not a.startswith('--')]
 opt = dict(a[2:].split('=', 1) for a in sys.argv[1:] if a.startswith('--') and '=' in a)
 adir, out, front = args[0], args[1], args[2]
 main_rel = args[3] if len(args) > 3 else None
-EXC = re.compile(opt.get('exclude', r'(?i)interior|panel|instrument|cockpit|hud|effect|weapon|store|armament|payload|livery|liveries|light|sound|shadow|smoke|contrail|pilot|seat|wash|missile|aim-?\d|gui|gauge|mfd|rwr|chaff|flare|refuel|dialog|ejecta|stick|throttle|flame|afterburn|vapor|vapour|bomb|drop|fuel-?tank|tank-?ext|_ai|-ai\b|tire-?smoke|steam|cloud|glow|thumb|splash|pics?/|prop-?disc|disc|blur|interior|wake|flag'))
+EXC = re.compile(opt.get('exclude', r'(?i)interior|panel|instrument|cockpit|hud|effect|weapon|store|armament|payload|livery|liveries|light|sound|shadow|smoke|contrail|pilot|seat|wash|missile|aim-?\d|gui|gauge|mfd|rwr|chaff|flare|refuel|dialog|services|pushback|airport/|ext-?pwr|operations|catering|followme|stairs|gpu|tug|ejecta|stick|throttle|flame|afterburn|vapor|vapour|bomb|drop|fuel-?tank|tank-?ext|_ai|-ai\b|tire-?smoke|steam|cloud|glow|thumb|splash|pics?/|prop-?disc|disc|blur|interior|wake|flag'))
 ONLY = re.compile(opt['onlyac']) if 'onlyac' in opt else None
 root_dir = adir
 name_dir = os.path.basename(os.path.normpath(adir))
@@ -51,6 +51,11 @@ def collect(xml_path, parent, depth, out_list):
     except Exception as e:
         print('XMLERR', xml_path, e); return
     xdir = os.path.dirname(xml_path)
+    # <PropertyList include="common.xml">: the included file's models belong to this one (737NG family)
+    inc = tree.get('include')
+    if inc:
+        fi = resolve(inc, xdir)
+        if fi and fi != xml_path: collect(fi, parent, depth + 1, out_list)
     pth = tree.find('path')
     if pth is not None and pth.text:
         p = pth.text.strip()

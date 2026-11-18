@@ -1,6 +1,7 @@
 /** Strategic map units & world effects. `attachUnitsLayer(globe, getGame)` mounts everything; returns a disposer + test handles. */
 import type { Game } from '../../core/game';
 import type { Globe } from '../globe/types';
+import { setAirportSource } from '../city3d/airplanes';
 import { attachCity3D, type City3D } from '../city3d';
 import { ModelPool, loadModelData } from './common';
 import { useUnitSelection } from './store';
@@ -21,6 +22,8 @@ export interface UnitsLayer {
 }
 
 export function attachUnitsLayer(globe: Globe, getGame: () => Game | null): UnitsLayer {
+  // parked civil aircraft follow the game's airports (size, country, damage)
+  setAirportSource(() => { const g = getGame(); return g ? { airports: g.world.airports, damage: g.state.world.airportDamage } : null; });
   const city = attachCity3D(globe);
   (window as unknown as { __city3d?: City3D }).__city3d = city;
   const layer: UnitsLayer = { strategic: null, world: null, pool: null, city, nearCluster: nearClusterDebug, destroy() { dead = true; city.destroy(); layer.world?.destroy(); layer.strategic?.destroy(); layer.pool?.destroy(); } };

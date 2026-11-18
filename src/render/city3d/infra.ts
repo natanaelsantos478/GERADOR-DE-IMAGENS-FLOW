@@ -10,6 +10,7 @@ export function buildInfra(area: VectorArea, tile: TileRef, ground: Ground, st: 
   let count = 0;
   for (const o of area.infra) {
     if (Math.abs(o.x) > half || Math.abs(o.y) > half) continue;
+    if (o.kind === 'airport_gate') continue; // a stand for parked aircraft (city3d/airplanes.ts), not a structure
     const S = pickStyle(st.infra.map((p) => ({ ...p, match: { kinds: p.match.kinds } })), { kind: o.kind });
     const z = ground(o.x, o.y), rot = hash(Math.round(o.x), Math.round(o.y), 21) * 3.14;
     m.frustum(o.x, o.y, z - 0.5, z + S.height, S.width / 2, (S.top ?? S.width / 2) , rot, S.color, PAT.BLANK);

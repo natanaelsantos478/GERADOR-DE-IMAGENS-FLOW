@@ -18,6 +18,8 @@ const CLASS_OF: Record<string, string> = {
   fighter: 'fighter', bomber: 'bomber', transport_plane: 'transport_plane', drone: 'drone',
   destroyer: 'destroyer', carrier: 'carrier', submarine: 'submarine', frigate: 'frigate',
   attack_heli: 'attack_heli', transport_heli: 'transport_heli',
+  // civil aircraft parked at airports (city3d/airplanes.ts)
+  airliner_narrow: 'airliner_narrow', airliner_wide: 'airliner_wide', airliner_regional: 'airliner_regional', bizjet: 'bizjet', light_plane: 'light_plane',
 };
 
 const hash = (s: string) => {

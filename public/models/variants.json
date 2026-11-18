@@ -6805,5 +6805,1663 @@
     "soldier_ru_f"
    ]
   }
+ },
+ "airliner_narrow": {
+  "default": "civil_737_800",
+  "byCountry": {
+   "AFG": [
+    "civil_737_800"
+   ],
+   "AGO": [
+    "civil_tu154"
+   ],
+   "ALB": [
+    "civil_a320"
+   ],
+   "ARE": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "ARG": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "ARM": [
+    "civil_tu154"
+   ],
+   "AUS": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "AUT": [
+    "civil_a320"
+   ],
+   "AZE": [
+    "civil_tu154"
+   ],
+   "BEL": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "BFA": [
+    "civil_tu154"
+   ],
+   "BGD": [
+    "civil_737_800"
+   ],
+   "BGR": [
+    "civil_a320"
+   ],
+   "BHR": [
+    "civil_737_800"
+   ],
+   "BIH": [
+    "civil_a320"
+   ],
+   "BLR": [
+    "civil_tu154"
+   ],
+   "BOL": [
+    "civil_737_800"
+   ],
+   "BRA": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "CAF": [
+    "civil_tu154"
+   ],
+   "CAN": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "CHE": [
+    "civil_a320"
+   ],
+   "CHL": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "CHN": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "CMR": [
+    "civil_tu154"
+   ],
+   "COG": [
+    "civil_tu154"
+   ],
+   "COL": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "CRI": [
+    "civil_737_800"
+   ],
+   "CUB": [
+    "civil_737_800",
+    "civil_tu154"
+   ],
+   "CYP": [
+    "civil_a320"
+   ],
+   "CZE": [
+    "civil_a320"
+   ],
+   "DEU": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "DNK": [
+    "civil_a320"
+   ],
+   "DOM": [
+    "civil_737_800"
+   ],
+   "DZA": [
+    "civil_737_800"
+   ],
+   "ECU": [
+    "civil_737_800"
+   ],
+   "EGY": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "ERI": [
+    "civil_tu154"
+   ],
+   "ESP": [
+    "civil_a320"
+   ],
+   "EST": [
+    "civil_a320"
+   ],
+   "ETH": [
+    "civil_737_800"
+   ],
+   "FIN": [
+    "civil_a320"
+   ],
+   "FRA": [
+    "civil_a320"
+   ],
+   "GBR": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "GEO": [
+    "civil_737_800"
+   ],
+   "GHA": [
+    "civil_737_800"
+   ],
+   "GRC": [
+    "civil_a320"
+   ],
+   "GTM": [
+    "civil_737_800"
+   ],
+   "HND": [
+    "civil_737_800"
+   ],
+   "HRV": [
+    "civil_a320"
+   ],
+   "HUN": [
+    "civil_a320"
+   ],
+   "IDN": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "IND": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "IRL": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "IRN": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "IRQ": [
+    "civil_737_800"
+   ],
+   "ISL": [
+    "civil_a320"
+   ],
+   "ISR": [
+    "civil_737_800"
+   ],
+   "ITA": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "JOR": [
+    "civil_737_800"
+   ],
+   "JPN": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "KAZ": [
+    "civil_tu154"
+   ],
+   "KEN": [
+    "civil_737_800"
+   ],
+   "KGZ": [
+    "civil_tu154"
+   ],
+   "KHM": [
+    "civil_tu154"
+   ],
+   "KOR": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "KWT": [
+    "civil_737_800"
+   ],
+   "LAO": [
+    "civil_tu154"
+   ],
+   "LBN": [
+    "civil_737_800"
+   ],
+   "LBY": [
+    "civil_tu154"
+   ],
+   "LKA": [
+    "civil_tu154"
+   ],
+   "LTU": [
+    "civil_a320"
+   ],
+   "LUX": [
+    "civil_a320"
+   ],
+   "LVA": [
+    "civil_a320"
+   ],
+   "MAR": [
+    "civil_737_800"
+   ],
+   "MDA": [
+    "civil_tu154"
+   ],
+   "MEX": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "MKD": [
+    "civil_a320"
+   ],
+   "MLI": [
+    "civil_tu154"
+   ],
+   "MLT": [
+    "civil_a320"
+   ],
+   "MMR": [
+    "civil_tu154"
+   ],
+   "MNE": [
+    "civil_a320"
+   ],
+   "MNG": [
+    "civil_tu154"
+   ],
+   "MOZ": [
+    "civil_tu154"
+   ],
+   "MYS": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "NER": [
+    "civil_tu154"
+   ],
+   "NGA": [
+    "civil_737_800"
+   ],
+   "NIC": [
+    "civil_tu154"
+   ],
+   "NLD": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "NOR": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "NPL": [
+    "civil_tu154"
+   ],
+   "NZL": [
+    "civil_737_800"
+   ],
+   "PAK": [
+    "civil_737_800"
+   ],
+   "PAN": [
+    "civil_737_800"
+   ],
+   "PER": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "PHL": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "POL": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "PRK": [
+    "civil_tu154"
+   ],
+   "PRT": [
+    "civil_a320"
+   ],
+   "PRY": [
+    "civil_737_800"
+   ],
+   "QAT": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "ROU": [
+    "civil_a320"
+   ],
+   "RUS": [
+    "civil_a320",
+    "civil_tu154"
+   ],
+   "SAU": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "SDN": [
+    "civil_tu154"
+   ],
+   "SEN": [
+    "civil_737_800"
+   ],
+   "SGP": [
+    "civil_737_800"
+   ],
+   "SLV": [
+    "civil_737_800"
+   ],
+   "SRB": [
+    "civil_a320"
+   ],
+   "SVK": [
+    "civil_a320"
+   ],
+   "SVN": [
+    "civil_a320"
+   ],
+   "SWE": [
+    "civil_a320"
+   ],
+   "SYR": [
+    "civil_tu154"
+   ],
+   "TCD": [
+    "civil_tu154"
+   ],
+   "THA": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "TJK": [
+    "civil_tu154"
+   ],
+   "TKM": [
+    "civil_tu154"
+   ],
+   "TUN": [
+    "civil_737_800"
+   ],
+   "TUR": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "TWN": [
+    "civil_737_800"
+   ],
+   "TZA": [
+    "civil_tu154"
+   ],
+   "UGA": [
+    "civil_tu154"
+   ],
+   "URY": [
+    "civil_737_800"
+   ],
+   "USA": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "UZB": [
+    "civil_tu154"
+   ],
+   "VEN": [
+    "civil_737_800"
+   ],
+   "VNM": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "YEM": [
+    "civil_tu154"
+   ],
+   "ZAF": [
+    "civil_737_800",
+    "civil_a320"
+   ],
+   "ZMB": [
+    "civil_tu154"
+   ],
+   "ZWE": [
+    "civil_tu154"
+   ]
+  }
+ },
+ "airliner_regional": {
+  "default": "civil_erj145",
+  "byCountry": {
+   "AFG": [
+    "civil_atr72"
+   ],
+   "AGO": [
+    "civil_tu134"
+   ],
+   "ALB": [
+    "civil_atr72"
+   ],
+   "ARE": [
+    "civil_atr72"
+   ],
+   "ARG": [
+    "civil_erj145",
+    "civil_atr72"
+   ],
+   "ARM": [
+    "civil_tu134"
+   ],
+   "AUS": [
+    "civil_crj200"
+   ],
+   "AUT": [
+    "civil_atr72"
+   ],
+   "AZE": [
+    "civil_tu134"
+   ],
+   "BEL": [
+    "civil_erj145"
+   ],
+   "BFA": [
+    "civil_tu134"
+   ],
+   "BGD": [
+    "civil_tu134"
+   ],
+   "BGR": [
+    "civil_atr72"
+   ],
+   "BHR": [
+    "civil_atr72"
+   ],
+   "BIH": [
+    "civil_atr72"
+   ],
+   "BLR": [
+    "civil_tu134"
+   ],
+   "BRA": [
+    "civil_erj145",
+    "civil_atr72"
+   ],
+   "CAF": [
+    "civil_tu134"
+   ],
+   "CAN": [
+    "civil_crj200"
+   ],
+   "CHE": [
+    "civil_atr72"
+   ],
+   "CHL": [
+    "civil_atr72"
+   ],
+   "CHN": [
+    "civil_erj145"
+   ],
+   "CMR": [
+    "civil_tu134"
+   ],
+   "COG": [
+    "civil_tu134"
+   ],
+   "COL": [
+    "civil_atr72"
+   ],
+   "CRI": [
+    "civil_atr72"
+   ],
+   "CUB": [
+    "civil_tu134"
+   ],
+   "CYP": [
+    "civil_atr72"
+   ],
+   "CZE": [
+    "civil_atr72"
+   ],
+   "DEU": [
+    "civil_crj200"
+   ],
+   "DNK": [
+    "civil_atr72"
+   ],
+   "DOM": [
+    "civil_atr72"
+   ],
+   "DZA": [
+    "civil_tu134"
+   ],
+   "ECU": [
+    "civil_atr72"
+   ],
+   "EGY": [
+    "civil_atr72"
+   ],
+   "ERI": [
+    "civil_tu134"
+   ],
+   "ESP": [
+    "civil_atr72"
+   ],
+   "EST": [
+    "civil_atr72"
+   ],
+   "ETH": [
+    "civil_tu134"
+   ],
+   "FIN": [
+    "civil_atr72"
+   ],
+   "FRA": [
+    "civil_atr72"
+   ],
+   "GBR": [
+    "civil_erj145"
+   ],
+   "GEO": [
+    "civil_atr72"
+   ],
+   "GHA": [
+    "civil_atr72"
+   ],
+   "GRC": [
+    "civil_erj145",
+    "civil_crj200"
+   ],
+   "GTM": [
+    "civil_atr72"
+   ],
+   "HND": [
+    "civil_atr72"
+   ],
+   "HRV": [
+    "civil_atr72"
+   ],
+   "HUN": [
+    "civil_atr72"
+   ],
+   "IDN": [
+    "civil_atr72"
+   ],
+   "IND": [
+    "civil_atr72"
+   ],
+   "IRL": [
+    "civil_atr72"
+   ],
+   "IRN": [
+    "civil_atr72"
+   ],
+   "IRQ": [
+    "civil_atr72"
+   ],
+   "ISL": [
+    "civil_atr72"
+   ],
+   "ISR": [
+    "civil_atr72"
+   ],
+   "ITA": [
+    "civil_atr72"
+   ],
+   "JOR": [
+    "civil_atr72"
+   ],
+   "JPN": [
+    "civil_atr72"
+   ],
+   "KAZ": [
+    "civil_crj200",
+    "civil_tu134"
+   ],
+   "KEN": [
+    "civil_erj145"
+   ],
+   "KGZ": [
+    "civil_tu134"
+   ],
+   "KHM": [
+    "civil_tu134"
+   ],
+   "KOR": [
+    "civil_atr72"
+   ],
+   "KWT": [
+    "civil_atr72"
+   ],
+   "LAO": [
+    "civil_tu134"
+   ],
+   "LBN": [
+    "civil_atr72"
+   ],
+   "LBY": [
+    "civil_tu134"
+   ],
+   "LKA": [
+    "civil_tu134"
+   ],
+   "LTU": [
+    "civil_atr72"
+   ],
+   "LUX": [
+    "civil_atr72"
+   ],
+   "LVA": [
+    "civil_atr72"
+   ],
+   "MAR": [
+    "civil_atr72"
+   ],
+   "MDA": [
+    "civil_tu134"
+   ],
+   "MEX": [
+    "civil_erj145"
+   ],
+   "MKD": [
+    "civil_atr72"
+   ],
+   "MLI": [
+    "civil_tu134"
+   ],
+   "MLT": [
+    "civil_atr72"
+   ],
+   "MMR": [
+    "civil_tu134"
+   ],
+   "MNE": [
+    "civil_atr72"
+   ],
+   "MNG": [
+    "civil_tu134"
+   ],
+   "MOZ": [
+    "civil_tu134"
+   ],
+   "MYS": [
+    "civil_atr72"
+   ],
+   "NER": [
+    "civil_tu134"
+   ],
+   "NGA": [
+    "civil_erj145"
+   ],
+   "NIC": [
+    "civil_tu134"
+   ],
+   "NLD": [
+    "civil_atr72"
+   ],
+   "NOR": [
+    "civil_atr72"
+   ],
+   "NPL": [
+    "civil_tu134"
+   ],
+   "NZL": [
+    "civil_atr72"
+   ],
+   "PAK": [
+    "civil_tu134"
+   ],
+   "PAN": [
+    "civil_atr72"
+   ],
+   "PER": [
+    "civil_atr72"
+   ],
+   "PHL": [
+    "civil_atr72"
+   ],
+   "POL": [
+    "civil_crj200"
+   ],
+   "PRK": [
+    "civil_tu134"
+   ],
+   "PRT": [
+    "civil_atr72"
+   ],
+   "PRY": [
+    "civil_atr72"
+   ],
+   "QAT": [
+    "civil_atr72"
+   ],
+   "ROU": [
+    "civil_atr72"
+   ],
+   "RUS": [
+    "civil_tu134"
+   ],
+   "SAU": [
+    "civil_atr72"
+   ],
+   "SDN": [
+    "civil_tu134"
+   ],
+   "SEN": [
+    "civil_atr72"
+   ],
+   "SGP": [
+    "civil_atr72"
+   ],
+   "SLV": [
+    "civil_atr72"
+   ],
+   "SRB": [
+    "civil_atr72"
+   ],
+   "SVK": [
+    "civil_atr72"
+   ],
+   "SVN": [
+    "civil_atr72"
+   ],
+   "SWE": [
+    "civil_atr72"
+   ],
+   "SYR": [
+    "civil_tu134"
+   ],
+   "TCD": [
+    "civil_tu134"
+   ],
+   "THA": [
+    "civil_atr72"
+   ],
+   "TJK": [
+    "civil_tu134"
+   ],
+   "TKM": [
+    "civil_tu134"
+   ],
+   "TUN": [
+    "civil_atr72"
+   ],
+   "TUR": [
+    "civil_atr72"
+   ],
+   "TWN": [
+    "civil_atr72"
+   ],
+   "TZA": [
+    "civil_tu134"
+   ],
+   "UGA": [
+    "civil_tu134"
+   ],
+   "UKR": [
+    "civil_tu134"
+   ],
+   "URY": [
+    "civil_atr72"
+   ],
+   "USA": [
+    "civil_erj145",
+    "civil_crj200"
+   ],
+   "UZB": [
+    "civil_tu134"
+   ],
+   "VEN": [
+    "civil_tu134"
+   ],
+   "VNM": [
+    "civil_atr72"
+   ],
+   "YEM": [
+    "civil_tu134"
+   ],
+   "ZAF": [
+    "civil_erj145"
+   ],
+   "ZMB": [
+    "civil_tu134"
+   ],
+   "ZWE": [
+    "civil_tu134"
+   ]
+  }
+ },
+ "airliner_wide": {
+  "default": "civil_787_8",
+  "byCountry": {
+   "AFG": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "ALB": [
+    "civil_a340_600"
+   ],
+   "ARE": [
+    "civil_747_400",
+    "civil_a340_600"
+   ],
+   "ARG": [
+    "civil_787_8"
+   ],
+   "AUS": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "AUT": [
+    "civil_a340_600"
+   ],
+   "BEL": [
+    "civil_a340_600"
+   ],
+   "BGR": [
+    "civil_a340_600"
+   ],
+   "BHR": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "BIH": [
+    "civil_a340_600"
+   ],
+   "BRA": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "CAN": [
+    "civil_787_8"
+   ],
+   "CHE": [
+    "civil_a340_600"
+   ],
+   "CHL": [
+    "civil_787_8"
+   ],
+   "CHN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "COL": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "CRI": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "CYP": [
+    "civil_a340_600"
+   ],
+   "CZE": [
+    "civil_a340_600"
+   ],
+   "DEU": [
+    "civil_747_400",
+    "civil_a340_600"
+   ],
+   "DNK": [
+    "civil_a340_600"
+   ],
+   "DOM": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "ECU": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "EGY": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "ESP": [
+    "civil_a340_600"
+   ],
+   "EST": [
+    "civil_a340_600"
+   ],
+   "ETH": [
+    "civil_787_8"
+   ],
+   "FIN": [
+    "civil_a340_600"
+   ],
+   "FRA": [
+    "civil_a340_600"
+   ],
+   "GBR": [
+    "civil_747_400",
+    "civil_787_8",
+    "civil_a340_600"
+   ],
+   "GEO": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "GHA": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "GRC": [
+    "civil_a340_600"
+   ],
+   "GTM": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "HND": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "HRV": [
+    "civil_a340_600"
+   ],
+   "HUN": [
+    "civil_a340_600"
+   ],
+   "IDN": [
+    "civil_787_8"
+   ],
+   "IND": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "IRL": [
+    "civil_a340_600"
+   ],
+   "IRN": [
+    "civil_a340_600"
+   ],
+   "IRQ": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "ISL": [
+    "civil_a340_600"
+   ],
+   "ISR": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "ITA": [
+    "civil_a340_600"
+   ],
+   "JOR": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "JPN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "KEN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "KOR": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "KWT": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "LBN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "LTU": [
+    "civil_a340_600"
+   ],
+   "LUX": [
+    "civil_a340_600"
+   ],
+   "LVA": [
+    "civil_a340_600"
+   ],
+   "MAR": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "MEX": [
+    "civil_787_8"
+   ],
+   "MKD": [
+    "civil_a340_600"
+   ],
+   "MLT": [
+    "civil_a340_600"
+   ],
+   "MNE": [
+    "civil_a340_600"
+   ],
+   "MYS": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "NGA": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "NLD": [
+    "civil_747_400",
+    "civil_a340_600"
+   ],
+   "NOR": [
+    "civil_787_8",
+    "civil_a340_600"
+   ],
+   "NZL": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "PAN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "PER": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "PHL": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "POL": [
+    "civil_787_8",
+    "civil_a340_600"
+   ],
+   "PRT": [
+    "civil_a340_600"
+   ],
+   "PRY": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "QAT": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "ROU": [
+    "civil_a340_600"
+   ],
+   "RUS": [
+    "civil_747_400"
+   ],
+   "SAU": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "SEN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "SGP": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "SLV": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "SRB": [
+    "civil_a340_600"
+   ],
+   "SVK": [
+    "civil_a340_600"
+   ],
+   "SVN": [
+    "civil_a340_600"
+   ],
+   "SWE": [
+    "civil_a340_600"
+   ],
+   "THA": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "TUN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "TUR": [
+    "civil_747_400"
+   ],
+   "TWN": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "URY": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "USA": [
+    "civil_747_400",
+    "civil_787_8"
+   ],
+   "VNM": [
+    "civil_787_8"
+   ],
+   "ZAF": [
+    "civil_a340_600"
+   ]
+  }
+ },
+ "bizjet": {
+  "default": "civil_citation",
+  "byCountry": {
+   "AFG": [
+    "civil_citation"
+   ],
+   "ALB": [
+    "civil_citation"
+   ],
+   "ARE": [
+    "civil_citation"
+   ],
+   "ARG": [
+    "civil_citation"
+   ],
+   "AUS": [
+    "civil_citation"
+   ],
+   "AUT": [
+    "civil_citation"
+   ],
+   "BEL": [
+    "civil_citation"
+   ],
+   "BGR": [
+    "civil_citation"
+   ],
+   "BHR": [
+    "civil_citation"
+   ],
+   "BIH": [
+    "civil_citation"
+   ],
+   "BRA": [
+    "civil_citation"
+   ],
+   "CAN": [
+    "civil_citation"
+   ],
+   "CHE": [
+    "civil_citation"
+   ],
+   "CHL": [
+    "civil_citation"
+   ],
+   "COL": [
+    "civil_citation"
+   ],
+   "CRI": [
+    "civil_citation"
+   ],
+   "CYP": [
+    "civil_citation"
+   ],
+   "CZE": [
+    "civil_citation"
+   ],
+   "DEU": [
+    "civil_citation"
+   ],
+   "DNK": [
+    "civil_citation"
+   ],
+   "DOM": [
+    "civil_citation"
+   ],
+   "ECU": [
+    "civil_citation"
+   ],
+   "EGY": [
+    "civil_citation"
+   ],
+   "ESP": [
+    "civil_citation"
+   ],
+   "EST": [
+    "civil_citation"
+   ],
+   "FIN": [
+    "civil_citation"
+   ],
+   "FRA": [
+    "civil_citation"
+   ],
+   "GBR": [
+    "civil_citation"
+   ],
+   "GEO": [
+    "civil_citation"
+   ],
+   "GHA": [
+    "civil_citation"
+   ],
+   "GRC": [
+    "civil_citation"
+   ],
+   "GTM": [
+    "civil_citation"
+   ],
+   "HND": [
+    "civil_citation"
+   ],
+   "HRV": [
+    "civil_citation"
+   ],
+   "HUN": [
+    "civil_citation"
+   ],
+   "IDN": [
+    "civil_citation"
+   ],
+   "IRL": [
+    "civil_citation"
+   ],
+   "IRQ": [
+    "civil_citation"
+   ],
+   "ISL": [
+    "civil_citation"
+   ],
+   "ISR": [
+    "civil_citation"
+   ],
+   "ITA": [
+    "civil_citation"
+   ],
+   "JOR": [
+    "civil_citation"
+   ],
+   "JPN": [
+    "civil_citation"
+   ],
+   "KEN": [
+    "civil_citation"
+   ],
+   "KOR": [
+    "civil_citation"
+   ],
+   "KWT": [
+    "civil_citation"
+   ],
+   "LBN": [
+    "civil_citation"
+   ],
+   "LTU": [
+    "civil_citation"
+   ],
+   "LUX": [
+    "civil_citation"
+   ],
+   "LVA": [
+    "civil_citation"
+   ],
+   "MAR": [
+    "civil_citation"
+   ],
+   "MEX": [
+    "civil_citation"
+   ],
+   "MKD": [
+    "civil_citation"
+   ],
+   "MLT": [
+    "civil_citation"
+   ],
+   "MNE": [
+    "civil_citation"
+   ],
+   "MYS": [
+    "civil_citation"
+   ],
+   "NGA": [
+    "civil_citation"
+   ],
+   "NLD": [
+    "civil_citation"
+   ],
+   "NOR": [
+    "civil_citation"
+   ],
+   "NZL": [
+    "civil_citation"
+   ],
+   "PAN": [
+    "civil_citation"
+   ],
+   "PER": [
+    "civil_citation"
+   ],
+   "PHL": [
+    "civil_citation"
+   ],
+   "POL": [
+    "civil_citation"
+   ],
+   "PRT": [
+    "civil_citation"
+   ],
+   "PRY": [
+    "civil_citation"
+   ],
+   "QAT": [
+    "civil_citation"
+   ],
+   "ROU": [
+    "civil_citation"
+   ],
+   "SAU": [
+    "civil_citation"
+   ],
+   "SEN": [
+    "civil_citation"
+   ],
+   "SGP": [
+    "civil_citation"
+   ],
+   "SLV": [
+    "civil_citation"
+   ],
+   "SRB": [
+    "civil_citation"
+   ],
+   "SVK": [
+    "civil_citation"
+   ],
+   "SVN": [
+    "civil_citation"
+   ],
+   "SWE": [
+    "civil_citation"
+   ],
+   "THA": [
+    "civil_citation"
+   ],
+   "TUN": [
+    "civil_citation"
+   ],
+   "TUR": [
+    "civil_citation"
+   ],
+   "TWN": [
+    "civil_citation"
+   ],
+   "URY": [
+    "civil_citation"
+   ],
+   "USA": [
+    "civil_citation"
+   ],
+   "ZAF": [
+    "civil_citation"
+   ]
+  }
+ },
+ "light_plane": {
+  "default": "civil_c172",
+  "byCountry": {
+   "AFG": [
+    "civil_c172"
+   ],
+   "ALB": [
+    "civil_c172"
+   ],
+   "ARE": [
+    "civil_c172"
+   ],
+   "ARG": [
+    "civil_c172"
+   ],
+   "AUS": [
+    "civil_c172"
+   ],
+   "AUT": [
+    "civil_c172"
+   ],
+   "BEL": [
+    "civil_c172"
+   ],
+   "BGR": [
+    "civil_c172"
+   ],
+   "BHR": [
+    "civil_c172"
+   ],
+   "BIH": [
+    "civil_c172"
+   ],
+   "BRA": [
+    "civil_c172"
+   ],
+   "CAN": [
+    "civil_c172"
+   ],
+   "CHE": [
+    "civil_c172"
+   ],
+   "CHL": [
+    "civil_c172"
+   ],
+   "COL": [
+    "civil_c172"
+   ],
+   "CRI": [
+    "civil_c172"
+   ],
+   "CYP": [
+    "civil_c172"
+   ],
+   "CZE": [
+    "civil_c172"
+   ],
+   "DEU": [
+    "civil_c172"
+   ],
+   "DNK": [
+    "civil_c172"
+   ],
+   "DOM": [
+    "civil_c172"
+   ],
+   "ECU": [
+    "civil_c172"
+   ],
+   "EGY": [
+    "civil_c172"
+   ],
+   "ESP": [
+    "civil_c172"
+   ],
+   "EST": [
+    "civil_c172"
+   ],
+   "FIN": [
+    "civil_c172"
+   ],
+   "FRA": [
+    "civil_c172"
+   ],
+   "GBR": [
+    "civil_c172"
+   ],
+   "GEO": [
+    "civil_c172"
+   ],
+   "GHA": [
+    "civil_c172"
+   ],
+   "GRC": [
+    "civil_c172"
+   ],
+   "GTM": [
+    "civil_c172"
+   ],
+   "HND": [
+    "civil_c172"
+   ],
+   "HRV": [
+    "civil_c172"
+   ],
+   "HUN": [
+    "civil_c172"
+   ],
+   "IDN": [
+    "civil_c172"
+   ],
+   "IRL": [
+    "civil_c172"
+   ],
+   "IRQ": [
+    "civil_c172"
+   ],
+   "ISL": [
+    "civil_c172"
+   ],
+   "ISR": [
+    "civil_c172"
+   ],
+   "ITA": [
+    "civil_c172"
+   ],
+   "JOR": [
+    "civil_c172"
+   ],
+   "JPN": [
+    "civil_c172"
+   ],
+   "KEN": [
+    "civil_c172"
+   ],
+   "KOR": [
+    "civil_c172"
+   ],
+   "KWT": [
+    "civil_c172"
+   ],
+   "LBN": [
+    "civil_c172"
+   ],
+   "LTU": [
+    "civil_c172"
+   ],
+   "LUX": [
+    "civil_c172"
+   ],
+   "LVA": [
+    "civil_c172"
+   ],
+   "MAR": [
+    "civil_c172"
+   ],
+   "MEX": [
+    "civil_c172"
+   ],
+   "MKD": [
+    "civil_c172"
+   ],
+   "MLT": [
+    "civil_c172"
+   ],
+   "MNE": [
+    "civil_c172"
+   ],
+   "MYS": [
+    "civil_c172"
+   ],
+   "NGA": [
+    "civil_c172"
+   ],
+   "NLD": [
+    "civil_c172"
+   ],
+   "NOR": [
+    "civil_c172"
+   ],
+   "NZL": [
+    "civil_c172"
+   ],
+   "PAN": [
+    "civil_c172"
+   ],
+   "PER": [
+    "civil_c172"
+   ],
+   "PHL": [
+    "civil_c172"
+   ],
+   "POL": [
+    "civil_c172"
+   ],
+   "PRT": [
+    "civil_c172"
+   ],
+   "PRY": [
+    "civil_c172"
+   ],
+   "QAT": [
+    "civil_c172"
+   ],
+   "ROU": [
+    "civil_c172"
+   ],
+   "SAU": [
+    "civil_c172"
+   ],
+   "SEN": [
+    "civil_c172"
+   ],
+   "SGP": [
+    "civil_c172"
+   ],
+   "SLV": [
+    "civil_c172"
+   ],
+   "SRB": [
+    "civil_c172"
+   ],
+   "SVK": [
+    "civil_c172"
+   ],
+   "SVN": [
+    "civil_c172"
+   ],
+   "SWE": [
+    "civil_c172"
+   ],
+   "THA": [
+    "civil_c172"
+   ],
+   "TUN": [
+    "civil_c172"
+   ],
+   "TUR": [
+    "civil_c172"
+   ],
+   "TWN": [
+    "civil_c172"
+   ],
+   "URY": [
+    "civil_c172"
+   ],
+   "USA": [
+    "civil_c172"
+   ],
+   "ZAF": [
+    "civil_c172"
+   ]
+  }
  }
 }

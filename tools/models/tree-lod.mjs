@@ -94,7 +94,9 @@ for (const sp of species) {
       const out = sharp(Buffer.from(img)).resize(L.tex, L.tex, { fit: 'fill' });
       t.setImage(new Uint8Array(png ? await out.png({ compressionLevel: 9 }).toBuffer() : await out.jpeg({ quality: 82 }).toBuffer()));
     }
-    await doc.transform(prune(), dedup(), quantize());
+    // no quantize(): it moves the dequantization into the node transform (scale ~4 + offset), and with
+    // EXT_mesh_gpu_instancing that node transform also scales every instance position -> trees hundreds of metres off
+    await doc.transform(prune(), dedup());
     const f = path.join(OUT, `${sp}_${lvl}.glb`);
     await io.write(f, doc);
     console.log(`${sp}_${lvl}`.padEnd(18), String(Math.round(tris)).padStart(5), 'tris', (fs.statSync(f).size / 1024).toFixed(0).padStart(4), 'KB');

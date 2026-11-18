@@ -15,7 +15,7 @@ import { setVegetationImagery } from './vegetation';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
-  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** trees standing at 0 m (sea / water): must stay 0 */ treesAtSeaLevel: number; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
+  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** civil aircraft parked at airport gates */ planes: number; /** trees standing at 0 m (sea / water): must stay 0 */ treesAtSeaLevel: number; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
   /** median / p90 frame time (ms) over the last ~120 rendered frames */ frameMs: { med: number; p90: number }; roadSegments: number; bridges: number; tris: number;
   cover: Record<string, number>; treePts: number; treeSp: Record<string, number>; landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
 }
@@ -146,6 +146,7 @@ export function attachCity3D(globe: Globe): City3D {
       if (t.state !== 'ready') continue;
       const d = Math.max(0, Cesium.Cartesian3.distance(cp, t.ref.origin) - t.ref.sizeM * 0.4);
       if (t.minor) t.minor.show = d < c.lodMinor;
+      if (t.planes) { t.planes.show(d < c.lodMinor); void t.planes.sync(); }
       if (d < c.treeDist * 1.1) void t.ensureTrees(styles()!); else if (t.trees && d > c.treeDist * 1.8) t.dropTrees();
       // a camera low among the trees (tactical close-ups) would sit inside the crowns: hide the trees then
       const inCanopy = agl < 12; // only hide them when the camera is really inside the crowns
@@ -226,7 +227,7 @@ export function attachCity3D(globe: Globe): City3D {
         active: on, agl: Math.round(agl), tiles: all.length, ready: all.filter((t) => t.state === 'ready').length, loading: all.filter((t) => t.state === 'loading').length, failed: all.filter((t) => t.state === 'failed').length,
         cover: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.cover)) a[k] = (a[k] ?? 0) + v; return a; }, {}), treePts: sum((t) => t.stats.treePts), treeSp: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.treeSp)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
         buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.trees?.stats().trees ?? 0), treeModels: sum((t) => t.trees?.stats().models ?? 0), treeTris: sum((t) => t.trees?.stats().tris ?? 0),
-        vegCover: all.map((t) => t.stats.vegCover), treesAtSeaLevel: sum((t) => (t.treePts ?? []).filter((p) => p.z <= 0.3).length), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
+        vegCover: all.map((t) => t.stats.vegCover), planes: sum((t) => t.planes?.count ?? 0), treesAtSeaLevel: sum((t) => (t.treePts ?? []).filter((p) => p.z <= 0.3).length), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
         treeLods: all.reduce((a, t) => { const l = t.trees?.stats().lods; if (l) l.forEach((v, i) => (a[i] += v)); return a; }, [0, 0, 0]), frameMs: frameMs(), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
         landmarks: lm.count(), loadMs: loadMs.slice(-12), genMs: all.map((t) => t.stats.genMs).filter(Boolean), source: [...new Set(all.map((t) => t.stats.source).filter(Boolean))], cachedTiles: cachedTiles(), timings: all.map((t) => t.stats.t).filter((x) => x.bld !== undefined), stylesLoaded: !!styles(),
         styleUse: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.styles)) a[k] = (a[k] ?? 0) + v; return a; }, {}),

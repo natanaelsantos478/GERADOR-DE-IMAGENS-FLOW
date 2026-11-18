@@ -146,6 +146,18 @@ Each model below is a real vehicle/aircraft/ship/person modelled by third-party 
 | frigate_perry | Oliver Hazard Perry-class frigate | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
 | amphib_lpd17 | San Antonio-class (LPD-17) | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
 | soldier_camo | Modern camo infantryman (Elite Soldier) | - | hc | CC-BY-3.0 |  | https://opengameart.org/content/elite-soldier-model |
+| civil_737_800 | Boeing 737-800 | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/737-800.zip |
+| civil_a320 | Airbus A320 | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/A320-family.zip |
+| civil_tu154 | Tupolev Tu-154B | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/tu154b.zip |
+| civil_747_400 | Boeing 747-400 | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/747-400.zip |
+| civil_787_8 | Boeing 787-8 | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/787-8.zip |
+| civil_a340_600 | Airbus A340-600 | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/A340-600.zip |
+| civil_erj145 | Embraer ERJ-145 | BRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Embraer-ERJ-145.zip |
+| civil_atr72 | ATR 72-500 | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/ATR-72-500.zip |
+| civil_crj200 | Bombardier CRJ-200 | CAN | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/CRJ-200.zip |
+| civil_tu134 | Tupolev Tu-134 | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Tu-134.zip |
+| civil_citation | Cessna Citation Bravo | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/Citation-Bravo.zip |
+| civil_c172 | Cessna 172 | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/c172r.zip |
 <!-- VARIANTS:END -->
 
 ## Textures (CC0-1.0, Poly Haven, https://polyhaven.com)

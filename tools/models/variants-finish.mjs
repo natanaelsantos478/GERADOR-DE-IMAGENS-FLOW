@@ -70,6 +70,8 @@ for (const cls of [...new Set(live.map((d) => d.cls))]) {
     if (alt.length) by[c] = alt.slice(0, 2).map((d) => d.id); }
   variants[cls] = { default: cls, byCountry: Object.fromEntries(Object.entries(by).sort()) };
 }
-fs.writeFileSync(path.join(PUB, 'variants.json'), JSON.stringify(variants, null, 1));
+// keep the classes this run did not rebuild (variants.json also holds hand-tuned classes: never drop them)
+const prevF = path.join(PUB, 'variants.json'), prev = fs.existsSync(prevF) ? JSON.parse(fs.readFileSync(prevF)) : {};
+fs.writeFileSync(prevF, JSON.stringify({ ...prev, ...variants }, null, 1));
 console.log('manifest', Object.keys(manifest).length, 'entries; variants classes', Object.keys(variants).join(','), 'invalid ISO3 dropped:', [...bad].join(' '));
 const total = fs.readdirSync(PUB).filter((f) => f.endsWith('.glb')).reduce((s, f) => s + fs.statSync(path.join(PUB, f)).size, 0); console.log('public/models glb total', (total / 1048576).toFixed(1), 'MB');
