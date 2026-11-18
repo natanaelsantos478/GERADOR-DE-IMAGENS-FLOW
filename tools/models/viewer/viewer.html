@@ -4,6 +4,25 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const CELL_W=400, CELL_H=300;
+// Side view of a model on a transparent background for billboard impostors (tools/models/tree-impostor.mjs):
+// orthographic, framed on the bounding box, flat-ish light; returns the PNG and the box size (model units).
+window.renderImpostor = async (url, W, H) => {
+  const r = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+  r.setPixelRatio(1); r.setSize(W,H); r.setClearColor(0x000000, 0); r.outputColorSpace = THREE.SRGBColorSpace;
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xffffff,0xaabbcc,3.4));
+  const dl=new THREE.DirectionalLight(0xffffff,1.6); dl.position.set(2,5,6); scene.add(dl);
+  const g = await new GLTFLoader().loadAsync(url);
+  scene.add(g.scene); g.scene.updateMatrixWorld(true);
+  const bb = new THREE.Box3().setFromObject(g.scene), size = bb.getSize(new THREE.Vector3()), c = bb.getCenter(new THREE.Vector3());
+  const w = Math.max(size.x, size.z), h = size.y;
+  // fit the box in the W:H frame (the quad keeps the same aspect)
+  const fw = Math.max(w, h * W / H), fh = fw * H / W;
+  const cam = new THREE.OrthographicCamera(-fw/2, fw/2, bb.min.y + fh, bb.min.y, 0.01, 1000);
+  cam.position.set(c.x, 0, c.z + 100); cam.lookAt(c.x, 0, c.z);
+  r.render(scene, cam);
+  return { png: r.domElement.toDataURL('image/png'), w: fw, h: fh, minY: bb.min.y };
+};
 window.renderSheet = async (items, cols) => {
   const rows = Math.ceil(items.length/cols);
   const W=cols*CELL_W, H=rows*CELL_H;

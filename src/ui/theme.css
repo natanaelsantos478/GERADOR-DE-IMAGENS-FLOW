@@ -123,7 +123,9 @@
 .modal-back { position: absolute; inset: 0; background: #05090dcc; display: grid; place-items: center; z-index: 30; }
 .modal { background: var(--panel-solid); border: 1px solid var(--line-2); border-radius: 10px; box-shadow: var(--shadow); width: min(760px, 94vw); max-height: 88vh; display: flex; flex-direction: column; }
 .modal .win-head { cursor: default; border-radius: 10px 10px 0 0; } .modal .win-body { padding: 16px; }
-.pick { position: absolute; top: 0; right: 0; bottom: 0; width: 440px; background: linear-gradient(270deg, #070b10f7 85%, #070b1000); padding: 22px 24px 22px 40px; display: flex; flex-direction: column; gap: 10px; }
+.pick { position: absolute; top: 0; right: 0; bottom: 0; width: 440px; background: linear-gradient(270deg, #070b10f7 85%, #070b1000); padding: 22px 24px 22px 40px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: thin; }
+/* short screens (1366x768 notebooks): the panel scrolls and the start button stays pinned at the bottom */
+html:not(.m) .pick > .row:last-child { position: sticky; bottom: -22px; margin-bottom: -22px; padding: 8px 0 22px; background: #070b10; }
 .pick-list { flex: 1; overflow-y: auto; min-height: 0; border: 1px solid var(--line); border-radius: var(--radius); background: #0b121a; scrollbar-width: thin; }
 .pick-list button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px; background: none; border: none; border-bottom: 1px solid #16222f; color: var(--text); font: inherit; cursor: pointer; text-align: left; }
 .pick-list button:hover { background: #172433; } .pick-list button.on { background: #14424b; }
@@ -164,5 +166,7 @@ div[style*="max-width: 420px"][style*="font-size: 10px"]:hover { width: auto; he
 .win-head h3, .topbar .stat { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar .sb-item { text-align: center; line-height: 1.1; overflow: hidden; }
 .tac-top { box-shadow: var(--shadow); }
+/* budget ledger: the two tables wrap one under the other when the panel is narrow (phone drawer) */
+.bud-ledger { flex-wrap: wrap; } .bud-ledger > .grow { min-width: 220px; }
 .pick-list button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chip { white-space: nowrap; }

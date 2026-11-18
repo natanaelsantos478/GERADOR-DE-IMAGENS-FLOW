@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "doc": "Tree styles. species: model files under public/models/nature/<file>.glb with the native height (m) of the glb. rules (first match wins, last is a catch-all) are evaluated per land-cover polygon: cover (wood|scrub|park), min/maxAbsLat, min/maxElev (m). `mix` = weighted species; density = trees per m2 (before the per-tile budget); height = real-world height range (m) of the instances.",
+  "doc": "Tree styles. species: model files under public/models/nature/<file>.glb with the native height (m) of the glb. rules (first match wins, last is a catch-all) are evaluated per land-cover polygon: cover (wood|scrub|park), min/maxAbsLat, min/maxElev (m). `mix` = weighted species; density = trees per m2 (before the per-tile budget); height = real-world height range (m) of the instances; crown (optional, default 1) widens the crowns horizontally (rainforest canopy trees are wider than the low-poly models).",
   "species": {
     "commontree_1": {"file": "commontree_1", "nativeHeight": 6.73},
     "commontree_2": {"file": "commontree_2", "nativeHeight": 6.97},
@@ -21,11 +21,11 @@
   "rules": [
     {"id": "scrub", "match": {"cover": ["scrub"]}, "mix": [{"species": "bush_common", "weight": 3}, {"species": "fern_1", "weight": 2}], "density": 0.02, "height": [1.0, 1.9]},
     {"id": "alpine-forest", "match": {"cover": ["wood", "park"], "minElev": 2200}, "mix": [{"species": "pine_2", "weight": 4}, {"species": "pine_4", "weight": 3}, {"species": "pine_5", "weight": 3}, {"species": "deadtree_1", "weight": 0.3}], "density": 0.0167, "height": [8, 15]},
-    {"id": "tropical-park", "match": {"cover": ["park"], "maxAbsLat": 25}, "mix": [{"species": "palm", "weight": 3}, {"species": "commontree_2", "weight": 2}, {"species": "commontree_5", "weight": 2}], "density": 0.006, "height": [8, 15]},
-    {"id": "tropical-forest", "match": {"cover": ["wood"], "maxAbsLat": 25}, "mix": [{"species": "commontree_1", "weight": 3}, {"species": "commontree_3", "weight": 3}, {"species": "commontree_4", "weight": 3}, {"species": "commontree_5", "weight": 3}], "density": 0.0167, "height": [9, 16]},
+    {"id": "tropical-park", "match": {"cover": ["park"], "maxAbsLat": 25}, "mix": [{"species": "palm", "weight": 3}, {"species": "commontree_2", "weight": 2}, {"species": "commontree_5", "weight": 2}], "density": 0.006, "height": [10, 18], "crown": 1.3},
+    {"id": "tropical-forest", "match": {"cover": ["wood"], "maxAbsLat": 25}, "mix": [{"species": "commontree_1", "weight": 3}, {"species": "commontree_3", "weight": 3}, {"species": "commontree_4", "weight": 3}, {"species": "commontree_5", "weight": 3}], "density": 0.0167, "height": [18, 30], "crown": 1.7},
     {"id": "boreal-forest", "match": {"cover": ["wood", "park"], "minAbsLat": 50}, "mix": [{"species": "pine_1", "weight": 4}, {"species": "pine_2", "weight": 3}, {"species": "pine_4", "weight": 3}, {"species": "pine_5", "weight": 3}, {"species": "commontree_5", "weight": 1}, {"species": "deadtree_3", "weight": 0.3}], "density": 0.0167, "height": [9, 16]},
     {"id": "temperate-park", "match": {"cover": ["park"]}, "mix": [{"species": "commontree_2", "weight": 4}, {"species": "commontree_5", "weight": 3}, {"species": "commontree_1", "weight": 2}, {"species": "pine_3", "weight": 1}], "density": 0.006, "height": [9, 17]},
-    {"id": "temperate-forest", "match": {"cover": ["wood"]}, "mix": [{"species": "commontree_1", "weight": 4}, {"species": "commontree_3", "weight": 3}, {"species": "commontree_4", "weight": 3}, {"species": "pine_1", "weight": 3}, {"species": "pine_3", "weight": 2}, {"species": "deadtree_1", "weight": 0.2}], "density": 0.0167, "height": [8, 15]},
+    {"id": "temperate-forest", "match": {"cover": ["wood"]}, "mix": [{"species": "commontree_1", "weight": 4}, {"species": "commontree_3", "weight": 3}, {"species": "commontree_4", "weight": 3}, {"species": "pine_1", "weight": 3}, {"species": "pine_3", "weight": 2}, {"species": "deadtree_1", "weight": 0.2}], "density": 0.0167, "height": [12, 22], "crown": 1.25},
     {"id": "generic", "match": {}, "mix": [{"species": "commontree_3", "weight": 1}], "density": 0.01, "height": [9, 16]}
   ]
 }

@@ -1,9 +1,13 @@
 /** One shared texture atlas (day + night) with every facade / roof texture of the style catalog: loaded once, every building shares it. */
 import type { Styles } from './styles';
+import { getQuality } from '../globe/quality';
 
-export const CELL = 256, COLS = 6;
+export const COLS = 6;
+/** Pixels per texture in the atlas: 128 on phones / low profile (4x less texture memory and bandwidth; facades are seen
+ * from hundreds of metres there), 256 otherwise. */
+export const cellPx = () => (['mobile', 'low'].includes(getQuality().id) ? 128 : 256);
 export interface AtlasCell { byte: number; mu: number; mv: number }
-export interface Atlas { sig: string; cells: Map<string, AtlasCell>; rows: number; day: HTMLCanvasElement; night: HTMLCanvasElement }
+export interface Atlas { sig: string; cells: Map<string, AtlasCell>; rows: number; cell: number; day: HTMLCanvasElement; night: HTMLCanvasElement }
 
 async function img(file: string): Promise<ImageBitmap> {
   const r = await fetch(new URL(`textures/city/${file}.jpg`, document.baseURI));
@@ -14,7 +18,7 @@ const cache = new Map<string, Promise<ImageBitmap>>();
 const load = (f: string) => cache.get(f) ?? (cache.set(f, img(f)), cache.get(f)!);
 
 /** Scales a day cell so every texture has the same mean brightness (the photographs range from 0.2 to 0.65): the style's tint then decides the final tone. */
-function normalize(g: CanvasRenderingContext2D, x: number, y: number, target: number) {
+function normalize(g: CanvasRenderingContext2D, x: number, y: number, target: number, CELL: number) {
   const im = g.getImageData(x, y, CELL, CELL), d = im.data;
   let sum = 0;
   for (let i = 0; i < d.length; i += 4) sum += (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11) / 255;
@@ -28,7 +32,7 @@ let current: { sig: string; p: Promise<Atlas | null> } | null = null;
 /** Build (once per texture catalog) the atlas; resolves null when the files are unavailable (buildings then use the procedural facade). */
 export function loadAtlas(st: Styles): Promise<Atlas | null> {
   const ids = Object.keys(st.textures);
-  const sig = JSON.stringify(st.textures);
+  const CELL = cellPx(), sig = `${CELL}|${JSON.stringify(st.textures)}`;
   if (current?.sig === sig) return current.p;
   const p = (async (): Promise<Atlas | null> => {
     if (!ids.length || ids.length > COLS * 10 || typeof document === 'undefined') return null;
@@ -40,11 +44,11 @@ export function loadAtlas(st: Styles): Promise<Atlas | null> {
         const d = st.textures[id], x = (i % COLS) * CELL, y = Math.floor(i / COLS) * CELL;
         const a = await load(d.file), b = d.night ? await load(d.night) : a;
         dctx.drawImage(a, x, y, CELL, CELL); nctx.drawImage(b, x, y, CELL, CELL);
-        normalize(dctx, x, y, id.startsWith('roof') ? 0.6 : 0.6);
+        normalize(dctx, x, y, id.startsWith('roof') ? 0.6 : 0.6, CELL);
         cells.set(id, { byte: i + 1, mu: d.mu, mv: d.mv });
       }));
     } catch (e) { console.warn('[city3d] textures unavailable, procedural facades used:', (e as Error).message); return null; }
-    return { sig, cells, rows, day, night };
+    return { sig, cells, rows, cell: CELL, day, night };
   })();
   current = { sig, p };
   return p;

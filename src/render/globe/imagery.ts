@@ -10,6 +10,12 @@ const SOURCES = {
   eox: { url: EOX, maxLevel: 13, credit: 'Imagens: Sentinel-2 cloudless © EOX IT Services GmbH (contém dados Copernicus Sentinel 2020)' },
 } as const;
 
+/** URL of one imagery tile (Web Mercator z/x/y) of an online source, or null past its max level. */
+export function imageryTileUrl(kind: 'esri' | 'eox', z: number, x: number, y: number): string | null {
+  const s = SOURCES[kind];
+  return z > s.maxLevel ? null : s.url.replace('{z}', `${z}`).replace('{y}', `${y}`).replace('{x}', `${x}`);
+}
+
 async function probe(kind: 'esri' | 'eox'): Promise<boolean> {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), 6000);

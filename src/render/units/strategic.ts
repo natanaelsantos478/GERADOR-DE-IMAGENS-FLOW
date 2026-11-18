@@ -10,6 +10,8 @@ import { clusterScreen, type ClusterItem } from './cluster';
 import { useUnitSelection } from './store';
 
 export const NEAR_H = 30_000;
+/** Camera height under which the 3D city appears and the unit models shrink toward their real size. */
+const CITY_H = 8_000;
 export const MAX_MODELS = 300;
 const CLUSTER_PX = 46;
 let clusterOn = true, drawn = 0, nGrouped = 0, nVis = 0, nGroups = 0, nPass = 0;
@@ -60,7 +62,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   const built = new Map<string, HTMLCanvasElement>();
   const glyphs = new Map<string, HTMLImageElement>();
   let lastHours = -1, dirty = true, lastRefresh = 0, dead = false;
-  let mul = 1;
+  let mul = 1, navalMul = 1;
 
   // ------------------------------------------------------------ images
   const barLevel = (v: FormationView) => `${Math.round(v.strength * 10)}:${Math.round(v.organization * 4)}`;
@@ -190,19 +192,27 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   function placeModels(fs: FS) {
     const n = fs.handles.length;
     const cols = Math.max(1, Math.ceil(Math.sqrt(n * 1.5)));
-    const sp = (fs.v.domain === 'naval' ? 260 : fs.v.domain === 'air' ? 160 : 70) * mul;
+    const naval = fs.v.domain === 'naval', m = naval ? navalMul : mul;
+    const sp = (naval ? 260 : fs.v.domain === 'air' ? 160 : 70) * m;
     const h = rad(fs.hdg), fx = Math.sin(h), fy = Math.cos(h);
     fs.handles.forEach((hd, i) => {
       const row = Math.floor(i / cols), col = i % cols;
       const right = (col - (Math.min(n, cols) - 1) / 2) * sp, back = row * sp;
       const [lo, la] = offsetLonLat(fs.lon, fs.lat, right * fy - back * fx, -right * fx - back * fy);
-      const ht = fs.v.domain === 'air' ? gh(lo, la) + 1500 + mul * 30 : fs.v.domain === 'naval' ? 0 : gh(lo, la);
-      pool.place(hd, lo, la, ht, fs.hdg, mul);
+      // a ship slot that falls on land (formation spread around a naval base) would hang over hills: keep only the icon there
+      if (naval && gh(lo, la) > 2) { pool.hide(hd); return; }
+      const ht = fs.v.domain === 'air' ? gh(lo, la) + 1500 + mul * 30 : naval ? 0 : gh(lo, la);
+      pool.place(hd, lo, la, ht, fs.hdg, m);
     });
   }
   function updateNear() {
     const cam = globe.cameraState();
-    mul = clamp(cam.height / 250, 3, 40);
+    // exaggeration for legibility from afar; it fades out below CITY_H, where the 3D city is drawn at real scale
+    // (a 150 m ship x20 became a 3 km hull over the Rio hills)
+    mul = cam.height >= CITY_H ? clamp(cam.height / 250, 3, 40) : clamp((cam.height / 250) * (cam.height / CITY_H) ** 2, 1, 40);
+    // ships are 100-330 m long already: x40 made a 6 km hull over Rio from 10 km up. ~4 % of the view width is enough
+    // (the icon carries legibility); real size under 2.5 km
+    navalMul = clamp(cam.height / 2500, 1, 40);
     const near = !mode.tactical && cam.height < NEAR_H;
     let budget = MAX_MODELS;
     const W = scene.canvas.clientWidth / 2, H = scene.canvas.clientHeight / 2;

@@ -164,3 +164,4 @@ Converted with tools/models/landmarks/convert.py (bpy); mbt_merkava and transpor
 
 ## Nature (`nature/*.glb`, CC0-1.0)
 Stylized Nature MegaKit (standard/free) by Quaternius, https://opengameart.org/content/stylized-nature-megakit (https://quaternius.com). Normal maps dropped, bark re-encoded to 256 px JPEG, leaves 512 px, meshes quantized: commontree_1..5, pine_1..5, deadtree_1, deadtree_3, fern_1, bush_common.
+Derived distance levels in `nature/lod/` (same licence): `<species>_1.glb` mid-detail (tools/models/tree-lod.mjs: bark simplified with meshoptimizer, leaf cards thinned and enlarged, 256 px textures) and `<species>_3.glb` billboard impostors (tools/models/tree-impostor.mjs: side render on two crossed quads, unlit). Regenerate with `cd tools/models && node tree-lod.mjs && node tree-impostor.mjs` (needs Chrome or Playwright Chromium).

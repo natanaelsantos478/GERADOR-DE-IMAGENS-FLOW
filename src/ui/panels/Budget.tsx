@@ -32,7 +32,7 @@ export function BudgetPanel() {
         </div>
       ))}
       <div className="sect-title">{t('ui.bud.ledger')}</div>
-      <div className="row" style={{ alignItems: 'flex-start' }}>
+      <div className="row bud-ledger" style={{ alignItems: 'flex-start' }}>
         <div className="grow"><Table columns={[{ key: 'k', label: t('ui.bud.revenue'), render: (l) => t(l.key) }, { key: 'v', label: '', right: true, render: (l) => <span className="good">{fmtMoney(l.amount, true)}</span> }]} rows={rev} rowKey={(l) => l.key} /></div>
         <div className="grow"><Table columns={[{ key: 'k', label: t('ui.bud.expense'), render: (l) => t(l.key) }, { key: 'v', label: '', right: true, render: (l) => <span className="bad">{fmtMoney(l.amount, true)}</span> }]} rows={exp} rowKey={(l) => l.key} /></div>
       </div>

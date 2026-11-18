@@ -133,13 +133,18 @@ O jogo tem layout responsivo e controles de toque (arrastar = mover, pinça = zo
 
 Instalar como app no Android Chrome: abra o endereço do jogo, depois Menu ⋮ → **Instalar app** (ou o botão "Instalar app" em Configurações → Jogo). O app abre em tela cheia, mantém a tela ligada durante a partida, pausa ao ir para segundo plano e salva automaticamente ao sair.
 
-## Publicar no Cloudflare Pages
+## Publicar no Cloudflare (Workers)
 
-O Pages limita cada arquivo a 25 MiB; `public/data/roads.json` passa disso. O script `tools/deploy/split-large-data.mjs` divide arquivos grandes em partes (`roads.json.p0.json`…) e o jogo as remonta ao carregar.
+O endereço principal é o Worker de arquivos estáticos (`wrangler.jsonc`, plano grátis): https://meridiano-jogo.juliocezaramarildoper3.workers.dev.
+A Overture Maps recusa pedidos vindos de sites `*.pages.dev`/`*.netlify.app` (cabeçalho Referer); nesses endereços a cidade 3D cai para o OpenFreeMap, com bem menos prédios. Em `workers.dev` ou num domínio próprio os prédios da Overture carregam.
+
+O Cloudflare limita cada arquivo a 25 MiB; `public/data/roads.json` passa disso. O script `tools/deploy/split-large-data.mjs` divide arquivos grandes em partes (`roads.json.p0.json`…) e o jogo as remonta ao carregar.
 
 ```
 npm run build:deploy
-npx wrangler pages deploy dist --project-name=meridiano
+npx wrangler deploy
 ```
+
+O projeto Pages antigo (`npx wrangler pages deploy dist --project-name=meridiano`, https://meridiano-ee9.pages.dev) continua funcionando, mas sem os prédios da Overture.
 
 `build:deploy` = build + divisão dos dados; falha se algum arquivo em `dist/` ficar acima de 25 MiB. Funciona também em subcaminho (base `./`).

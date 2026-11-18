@@ -1,6 +1,6 @@
 /** Custom appearance for the city mesh: vertex colours, procedural facade windows (no textures), sun-coherent lambert + sky ambient, distance haze. */
 import * as Cesium from 'cesium';
-import { CELL, COLS, type Atlas } from './atlas';
+import { COLS, type Atlas } from './atlas';
 
 const VS = `
 in vec3 position3DHigh;
@@ -104,7 +104,7 @@ function texture(scene: Cesium.Scene, c: HTMLCanvasElement): unknown {
 export function cityAppearance(scene: Cesium.Scene, atlas: Atlas | null): CityAppearance {
   const blank = document.createElement('canvas'); blank.width = blank.height = 4;
   const day = atlas?.day ?? blank, night = atlas?.night ?? blank;
-  const material = new Cesium.Material({ translucent: opacityDebug.legacy ? undefined : false, fabric: { uniforms: { u_atlasDay: day, u_atlasNight: night, u_night: 0, u_grid: new Cesium.Cartesian3(COLS, atlas?.rows ?? 1, CELL) }, source: MAT_SRC } });
+  const material = new Cesium.Material({ translucent: opacityDebug.legacy ? undefined : false, fabric: { uniforms: { u_atlasDay: day, u_atlasNight: night, u_night: 0, u_grid: new Cesium.Cartesian3(COLS, atlas?.rows ?? 1, atlas?.cell ?? 256) }, source: MAT_SRC } });
   if (atlas) { (material.uniforms as Record<string, unknown>).u_atlasDay = texture(scene, atlas.day); (material.uniforms as Record<string, unknown>).u_atlasNight = texture(scene, atlas.night); }
   const appearance = new Cesium.Appearance({
     material, translucent: false, closed: false,

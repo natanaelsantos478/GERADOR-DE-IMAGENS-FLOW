@@ -1,0 +1,9 @@
+// Cloudflare Workers (static assets only, free plan): the game served at meridiano-jogo.<account>.workers.dev.
+// Overture Maps refuses requests whose Referer is a *.pages.dev / *.netlify.app site, so the 3D city only gets its
+// buildings when the game is served from workers.dev (or an own domain). Deploy: npm run build:deploy && npx wrangler deploy
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "meridiano-jogo",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" }
+}
