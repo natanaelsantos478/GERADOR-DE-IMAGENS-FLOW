@@ -99,7 +99,7 @@ function placeByPhoto(area: VectorArea, tile: TileRef, ground: Ground, budget: n
     let w = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = r.mix[0].species;
     for (const q of r.mix) { if (w < q.weight) { sp = q.species; break; } w -= q.weight; }
     const [lo, hi] = r.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);
-    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: (k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1) * (r.crown ?? 1), sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
+    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: Math.min(1.5, (k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1) * (r.crown ?? 1)), sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
   }
   d.kept = out.length;
   lastDiag.set(out, d);
@@ -158,7 +158,7 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
     let r = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = rule.mix[0].species;
     for (const q of rule.mix) { if (r < q.weight) { sp = q.species; break; } r -= q.weight; }
     const [lo, hi] = rule.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);
-    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: (k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1) * (rule.crown ?? 1), sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
+    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: Math.min(1.5, (k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1) * (rule.crown ?? 1)), sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
   };
   polys.forEach((p, i) => {
     const b = bbox[i];
