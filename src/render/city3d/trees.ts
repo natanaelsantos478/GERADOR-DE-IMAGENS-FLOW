@@ -18,15 +18,97 @@ function inRing(r: number[], x: number, y: number): boolean {
   }
   return c;
 }
-const inPoly = (p: VPoly, x: number, y: number) => {
+/** Even-odd over all rings: the same rule the 2D canvas uses to paint the polygon (multi-part water areas). */
+export const inPolyEvenOdd = (p: VPoly, x: number, y: number) => p.rings.reduce((c, r) => (inRing(r, x, y) ? !c : c), false);
+export const inPoly = (p: VPoly, x: number, y: number) => {
   if (!inRing(p.rings[0], x, y)) return false;
   for (let k = 1; k < p.rings.length; k++) if (inRing(p.rings[k], x, y)) return false;
   return true;
 };
 
+/** Why candidate points of the last placement were kept or dropped (debug: `__city3d.treeDebug`). */
+export interface TreeDiag { candidates: number; blocked: number; water: number; lowGreen: number; sparse: number; forest: number; park: number; notInMap: number; kept: number; k: number }
+export const lastDiag = new WeakMap<TreePoint[], TreeDiag>();
+
+/** Scanline raster of the green polygons on the placement grid: 0 none, 1 wood/scrub, 2 park (cell centres). */
+function rasterPolys(polys: VPoly[], half: number, CELL: number, N: number): Uint8Array {
+  const g = new Uint8Array(N * N), xs: number[] = [];
+  for (const p of polys) {
+    const code = p.cls === 'park' ? 2 : 1;
+    let y0 = Infinity, y1 = -Infinity;
+    for (const r of p.rings) for (let i = 1; i < r.length; i += 2) { y0 = Math.min(y0, r[i]); y1 = Math.max(y1, r[i]); }
+    for (let j = Math.max(0, Math.floor((y0 + half) / CELL)); j <= Math.min(N - 1, Math.ceil((y1 + half) / CELL)); j++) {
+      const y = -half + (j + 0.5) * CELL;
+      xs.length = 0;
+      for (const r of p.rings) for (let a = 0, n = r.length / 2, b = n - 1; a < n; b = a++) {
+        const ya = r[a * 2 + 1], yb = r[b * 2 + 1];
+        if (ya > y !== yb > y) xs.push(r[a * 2] + ((y - ya) * (r[b * 2] - r[a * 2])) / (yb - ya));
+      }
+      xs.sort((u, v) => u - v);
+      for (let q = 0; q + 1 < xs.length; q += 2) {
+        for (let i = Math.max(0, Math.ceil((xs[q] + half) / CELL - 0.5)); i <= Math.min(N - 1, Math.floor((xs[q + 1] + half) / CELL - 0.5)); i++) if (!g[j * N + i] || code === 1) g[j * N + i] = code;
+      }
+    }
+  }
+  return g;
+}
+
 /**
- * Trees for a tile: at most `budget`, spacing widened automatically for big forests. Sources: the wood / scrub / park
- * polygons of the vector data and, where those are missing, the green pixels of the satellite photo (`veg`).
+ * Placement when the satellite photo is available, the same rule everywhere: every grid point takes the mean green of
+ * the photo in a small area around it (~60 m) and compares it with the vector map (wood / park polygons):
+ * - the vector map must mark vegetation (wood / scrub / park) AND the photo must be green around the point;
+ * - density follows the photo green (a dense canopy keeps every grid point);
+ * - little green (< 0.35): no tree, even inside a map polygon (land-cover rasters mark whole housing blocks as wood).
+ * Buildings and roads always block. Density follows the green share; the per-tile budget widens the spacing.
+ */
+function placeByPhoto(area: VectorArea, tile: TileRef, ground: Ground, budget: number, st: Styles, veg: VegMask, polys: VPoly[], blocked: Uint8Array, CELL: number, N: number): TreePoint[] {
+  const half = tile.sizeM / 2, absLat = Math.abs(tile.lat0), map = rasterPolys(polys, half, CELL, N);
+  // the vector map's water (sea, bays, lakes, wide rivers) vetoes the photo: murky green water reads as vegetation
+  const water = rasterPolys(area.water, half, CELL, N);
+  const rules = new Map<string, TreeRule>();
+  const rule = (cover: string, z: number) => { const key = `${cover}|${Math.round(z / 100)}`; let r = rules.get(key); if (!r) { r = pickStyle<TreeRule>(st.trees, { cover, absLat, elev: z }); rules.set(key, r); } return r; };
+  const forest = rule('wood', ground(0, 0));
+  const want = veg.cover * tile.sizeM * tile.sizeM * forest.density;
+  const k = want > budget ? Math.sqrt(want / budget) : 1, step = Math.sqrt(1 / forest.density) * k;
+  const d: TreeDiag = { candidates: 0, blocked: 0, water: 0, lowGreen: 0, sparse: 0, forest: 0, park: 0, notInMap: 0, kept: 0, k: Math.round(k * 100) / 100 };
+  const out: TreePoint[] = [];
+  for (let y = -half + step / 2; y < half; y += step) for (let x = -half + step / 2; x < half; x += step) {
+    const jx = x + (hash(Math.round(x * 3), Math.round(y * 3), 31) - 0.5) * step * 0.8, jy = y + (hash(Math.round(x * 3), Math.round(y * 3), 32) - 0.5) * step * 0.8;
+    if (Math.abs(jx) >= half || Math.abs(jy) >= half) continue;
+    d.candidates++;
+    const c = Math.floor((jy + half) / CELL) * N + Math.floor((jx + half) / CELL);
+    if (blocked[c]) { d.blocked++; continue; }
+    // map says water, or the ground is at sea level (the terrain flattens the sea to 0 m)
+    // raster cells hold the polygon test of their centre: on a boundary cell, test the exact tree point
+    const edge = (g: Uint8Array) => { const i = c % N, j = (c / N) | 0; for (let b = Math.max(0, j - 1); b <= Math.min(N - 1, j + 1); b++) for (let a2 = Math.max(0, i - 1); a2 <= Math.min(N - 1, i + 1); a2++) if (g[b * N + a2] !== g[c]) return true; return false; };
+    const inWater = edge(water) ? area.water.some((w) => inPolyEvenOdd(w, jx, jy)) : !!water[c];
+    if (inWater || ground(jx, jy) <= 0.3) { d.water++; continue; }
+    // green share in a small (~12 m) square around the point: one tree crown, not the neighbourhood
+    const a = veg.around(jx, jy, 6), here = veg.at(jx, jy), m = map[c];
+    if (a < 0.35 || here < 0.2) { d.lowGreen++; continue; }
+    // both maps must agree: the vector map says vegetation here (wood / scrub / park) AND the photo is green. Photo-only
+    // green (airport grass, lawns, riverbanks, backyards) gets no tree; map-only vegetation without green gets none either.
+    const inMap = edge(map) ? polys.some((q) => inPolyEvenOdd(q, jx, jy)) : !!m;
+    if (!inMap) { d.notInMap++; continue; }
+    const rnd = hash(Math.round(jx * 5), Math.round(jy * 5), 33);
+    // density follows the photo: dense canopy keeps every point, a half-green area about half of them
+    if (rnd > Math.min(1, (a - 0.25) / 0.5)) { d.sparse++; continue; }
+    const r = rule(m === 2 ? 'park' : 'wood', ground(jx, jy));
+    m === 2 ? d.park++ : d.forest++;
+    const z = ground(jx, jy), tw = r.mix.reduce((s, q) => s + q.weight, 0);
+    let w = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = r.mix[0].species;
+    for (const q of r.mix) { if (w < q.weight) { sp = q.species; break; } w -= q.weight; }
+    const [lo, hi] = r.height, hm = (lo + (hi - lo) * hash(Math.round(jx * 2), Math.round(jy * 2), 14)) * (k > 1 ? Math.min(1.15, 1 + (k - 1) * 0.05) : 1);
+    out.push({ x: jx, y: jy, z, yaw: hash(Math.round(jx), Math.round(jy), 15) * Math.PI * 2, s: hm / st.species[sp].nativeHeight, sw: (k > 1 ? Math.min(1.6, 1 + (k - 1) * 0.3) : 1) * (r.crown ?? 1), sp, far: hash(Math.round(jx), Math.round(jy), 16) < 0.5 });
+  }
+  d.kept = out.length;
+  lastDiag.set(out, d);
+  return out;
+}
+
+/**
+ * Trees for a tile: at most `budget`, spacing widened automatically for big forests. With the satellite photo the
+ * placement is `placeByPhoto` (photo green x vector map); without it, only the wood / scrub / park polygons.
  */
 export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budget: number, st: Styles, veg: VegMask | null = null): TreePoint[] {
   const half = tile.sizeM / 2, CELL = 4, N = Math.ceil(tile.sizeM / CELL);
@@ -48,20 +130,29 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
       for (let s = 0; s <= n; s++) { const x = l.pts[i] + (dx * s) / n, y = l.pts[i + 1] + (dy * s) / n; mark(x - w, y - w, x + w, y + w); }
     }
   }
+  // airports and ports never get trees (their grass reads green on the photo and land-cover rasters may call it scrub):
+  // the whole airport / port area plus runways (~60 m wide) and taxiways (~25 m) are blocked
+  const noTree = rasterPolys(area.landuse.filter((p) => p.cls === 'airport' || p.cls === 'port' || p.cls === 'transport'), half, CELL, N);
+  for (let i = 0; i < noTree.length; i++) if (noTree[i]) blocked[i] = 1;
+  for (const l of area.aeroways) {
+    const w = l.cls === 'runway' ? 32 : l.cls === 'taxiway' ? 14 : 8;
+    for (let i = 0; i + 3 < l.pts.length; i += 2) {
+      const dx = l.pts[i + 2] - l.pts[i], dy = l.pts[i + 3] - l.pts[i + 1], n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 4));
+      for (let s = 0; s <= n; s++) { const x = l.pts[i] + (dx * s) / n, y = l.pts[i + 1] + (dy * s) / n; mark(x - w, y - w, x + w, y + w); }
+    }
+  }
   const polys = [...area.landcover.filter((p) => p.cls === 'wood' || p.cls === 'scrub'), ...area.landuse.filter((p) => p.cls === 'park')];
+  if (veg) return placeByPhoto(area, tile, ground, budget, st, veg, polys, blocked, CELL, N);
   const bbox = polys.map((p) => { const r = p.rings[0]; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; for (let i = 0; i < r.length; i += 2) { x0 = Math.min(x0, r[i]); x1 = Math.max(x1, r[i]); y0 = Math.min(y0, r[i + 1]); y1 = Math.max(y1, r[i + 1]); } return [Math.max(x0, -half), Math.max(y0, -half), Math.min(x1, half), Math.min(y1, half)]; });
   const absLat = Math.abs(tile.lat0);
   const ruleOf = polys.map((p, i) => { const b = bbox[i], z = ground((b[0] + b[2]) / 2, (b[1] + b[3]) / 2); return pickStyle<TreeRule>(st.trees, { cover: p.cls, absLat, elev: z }); });
   const dens = (p: VPoly) => ruleOf[polys.indexOf(p)].density; // trees per m²
   let want = 0;
   polys.forEach((p, i) => { const b = bbox[i]; if (b[2] > b[0] && b[3] > b[1]) want += (b[2] - b[0]) * (b[3] - b[1]) * 0.55 * dens(p); }); // upper bound: bbox x fill ratio
-  // forest rule for photo-green ground outside the polygons (cached per 100 m of elevation)
-  const vegRules = new Map<number, TreeRule>();
-  const vegRule = (z: number) => { const b = Math.round(z / 100); let r = vegRules.get(b); if (!r) { r = pickStyle<TreeRule>(st.trees, { cover: 'wood', absLat, elev: z }); vegRules.set(b, r); } return r; };
-  const parkRule = (z: number) => { const b = 1e6 + Math.round(z / 100); let r = vegRules.get(b); if (!r) { r = pickStyle<TreeRule>(st.trees, { cover: 'park', absLat, elev: z }); vegRules.set(b, r); } return r; };
-  if (veg) want += veg.cover * tile.sizeM * tile.sizeM * vegRule(ground(0, 0)).density;
   const k = want > budget ? Math.sqrt(want / budget) : 1;
   const out: TreePoint[] = [], cap = budget * 4;
+  // no photo: the map's water and sea-level ground still veto (land-cover polygons may spill over bays and shores)
+  const water = rasterPolys(area.water, half, CELL, N);
   const push = (jx: number, jy: number, rule: TreeRule) => {
     const z = ground(jx, jy), tw = rule.mix.reduce((a, q) => a + q.weight, 0);
     let r = hash(Math.round(jx * 2), Math.round(jy * 2), 13) * tw, sp = rule.mix[0].species;
@@ -75,31 +166,13 @@ export function placeTrees(area: VectorArea, tile: TileRef, ground: Ground, budg
     const step = Math.sqrt(1 / dens(p)) * k, ps = hash(i, 7, 3) * step;
     for (let y = b[1] + ps; y < b[3] && out.length < cap; y += step) for (let x = b[0] + ps; x < b[2]; x += step) {
       const jx = x + (hash(Math.round(x * 3), Math.round(y * 3), 11) - 0.5) * step * 0.8, jy = y + (hash(Math.round(x * 3), Math.round(y * 3), 12) - 0.5) * step * 0.8;
-      if (Math.abs(jx) >= half || Math.abs(jy) >= half || blocked[Math.floor((jy + half) / CELL) * N + Math.floor((jx + half) / CELL)] || !inPoly(p, jx, jy)) continue;
+      if (Math.abs(jx) >= half || Math.abs(jy) >= half) continue;
+      const c = Math.floor((jy + half) / CELL) * N + Math.floor((jx + half) / CELL);
+      if (blocked[c] || water[c] || !inPoly(p, jx, jy) || ground(jx, jy) <= 0.3) continue;
       push(jx, jy, ruleOf[i]);
       if (out.length >= cap) break;
     }
   });
-  if (veg && out.length < cap) {
-    // photo-green cells: skip what the polygons already planted (occupancy within one spacing), soft edge on partly green cells
-    const r0 = vegRule(ground(0, 0)), step = Math.sqrt(1 / r0.density) * k, occ = new Uint8Array(N * N);
-    const rad = Math.max(1, Math.round(step / 2 / CELL));
-    for (const q of out) { const ci = Math.floor((q.x + half) / CELL), cj = Math.floor((q.y + half) / CELL); for (let j = Math.max(0, cj - rad); j <= Math.min(N - 1, cj + rad); j++) for (let i = Math.max(0, ci - rad); i <= Math.min(N - 1, ci + rad); i++) occ[j * N + i] = 1; }
-    for (let y = -half + step / 2; y < half && out.length < cap; y += step) for (let x = -half + step / 2; x < half; x += step) {
-      const jx = x + (hash(Math.round(x * 3), Math.round(y * 3), 31) - 0.5) * step * 0.8, jy = y + (hash(Math.round(x * 3), Math.round(y * 3), 32) - 0.5) * step * 0.8;
-      if (Math.abs(jx) >= half || Math.abs(jy) >= half) continue;
-      const c = Math.floor((jy + half) / CELL) * N + Math.floor((jx + half) / CELL);
-      if (blocked[c] || occ[c]) continue;
-      const g = veg.at(jx, jy);
-      if (g < 0.25 || hash(Math.round(jx * 5), Math.round(jy * 5), 33) > (g - 0.25) / 0.5) continue;
-      // green all around (~60 m square) = forest: tall canopy trees. A smaller green patch among houses = park/street
-      // trees (lower); isolated green specks (backyards, lawns between unmapped houses) get none
-      const a = veg.around(jx, jy, 30);
-      if (a < 0.4) continue;
-      push(jx, jy, a >= 0.75 ? vegRule(ground(jx, jy)) : parkRule(ground(jx, jy)));
-      if (out.length >= cap) break;
-    }
-  }
   // too many candidates (the bbox estimate is an upper bound): thin them uniformly over the whole tile instead of letting the first polygons eat the budget
   if (out.length > budget) {
     const r = budget / out.length;

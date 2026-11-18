@@ -10,12 +10,12 @@ import { onRuins, pinRuins } from './ruins';
 import { loadStyles, onStylesChange, reloadStyles, styles } from './styles';
 import { opacityDebug } from './appearance';
 import { cachedTiles, CityTile, sharedAppearance, tallBuildings, nearBuildings } from './tile';
-import { forceTreeLod } from './trees';
+import { forceTreeLod, inPolyEvenOdd, lastDiag } from './trees';
 import { setVegetationImagery } from './vegetation';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
-  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
+  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** trees standing at 0 m (sea / water): must stay 0 */ treesAtSeaLevel: number; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
   /** median / p90 frame time (ms) over the last ~120 rendered frames */ frameMs: { med: number; p90: number }; roadSegments: number; bridges: number; tris: number;
   cover: Record<string, number>; treePts: number; treeSp: Record<string, number>; landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
 }
@@ -43,6 +43,8 @@ export interface City3D {
   /** Test/debug: footprints of the loaded tiles closest to a point. */
   near(lon: number, lat: number, n?: number): ReturnType<typeof nearBuildings>;
   /** Test/debug: tree base vs the terrain Cesium draws (m; positive = floating), over up to `n` trees per tile. */
+  /** Test/debug: at a point, the photo green (here / ~60 m around), trees planted within `r` m and why the tile's candidates were dropped. */
+  treeDebug(lon: number, lat: number, r?: number): unknown;
   /** Test/debug: every visible tree at one detail level (0 full, 1 mid, 3 impostor) or by distance (null). */
   forceTreeLod(l: 0 | 1 | 3 | null): void;
   treeFit(n?: number): { tiles: { key: string; level: number; trees: number }[]; samples: number; floatP90: number; floatMax: number; sinkP90: number };
@@ -184,6 +186,13 @@ export function attachCity3D(globe: Globe): City3D {
     pinRuins,
     near: (lon, lat, n = 4) => nearBuildings(tiles.values(), lon, lat, n),
     forceTreeLod(l) { forceTreeLod(l); applyLod(); },
+    treeDebug(lon, lat, r = 120) {
+      const [gx, gy] = tileXY(lon, lat, TZ), t = tiles.get(`${Math.floor(gx)}/${Math.floor(gy)}`);
+      if (!t) return { tile: null };
+      const x = (gx - (t.ref.x + 0.5)) * t.ref.sizeM, y = -(gy - (t.ref.y + 0.5)) * t.ref.sizeM;
+      const near = (t.treePts ?? []).filter((p) => Math.hypot(p.x - x, p.y - y) < r);
+      return { tile: t.ref.key, state: t.state, waterPolys: (t.area?.water ?? []).length, waterClasses: [...new Set((t.area?.water ?? []).map((w) => w.cls))], photo: !!t.veg, greenHere: t.veg ? +t.veg.at(x, y).toFixed(2) : null, greenAround: t.veg ? +t.veg.around(x, y, 30).toFixed(2) : null, treesWithin: near.length, species: [...new Set(near.map((p) => p.sp))], sample: near.slice(0, 6).map((p) => { const [lo, la] = projector(t.ref).lonLat(p.x, p.y); return { lon: +lo.toFixed(5), lat: +la.toFixed(5), z: +p.z.toFixed(1), green: t.veg ? +t.veg.at(p.x, p.y).toFixed(2) : null, water: (t.area?.water ?? []).filter((w) => inPolyEvenOdd(w, p.x, p.y)).map((w) => w.cls), around: t.veg ? +t.veg.around(p.x, p.y, 30).toFixed(2) : null, sp: p.sp }; }), tileDiag: t.treePts ? lastDiag.get(t.treePts) ?? null : null };
+    },
     treeFit(n = 200) {
       const d: number[] = [], out: { key: string; level: number; trees: number }[] = [];
       for (const t of tiles.values()) {
@@ -216,7 +225,7 @@ export function attachCity3D(globe: Globe): City3D {
         active: on, agl: Math.round(agl), tiles: all.length, ready: all.filter((t) => t.state === 'ready').length, loading: all.filter((t) => t.state === 'loading').length, failed: all.filter((t) => t.state === 'failed').length,
         cover: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.cover)) a[k] = (a[k] ?? 0) + v; return a; }, {}), treePts: sum((t) => t.stats.treePts), treeSp: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.treeSp)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
         buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.trees?.stats().trees ?? 0), treeModels: sum((t) => t.trees?.stats().models ?? 0), treeTris: sum((t) => t.trees?.stats().tris ?? 0),
-        vegCover: all.map((t) => t.stats.vegCover), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
+        vegCover: all.map((t) => t.stats.vegCover), treesAtSeaLevel: sum((t) => (t.treePts ?? []).filter((p) => p.z <= 0.3).length), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
         treeLods: all.reduce((a, t) => { const l = t.trees?.stats().lods; if (l) l.forEach((v, i) => (a[i] += v)); return a; }, [0, 0, 0]), frameMs: frameMs(), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
         landmarks: lm.count(), loadMs: loadMs.slice(-12), genMs: all.map((t) => t.stats.genMs).filter(Boolean), source: [...new Set(all.map((t) => t.stats.source).filter(Boolean))], cachedTiles: cachedTiles(), timings: all.map((t) => t.stats.t).filter((x) => x.bld !== undefined), stylesLoaded: !!styles(),
         styleUse: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.styles)) a[k] = (a[k] ?? 0) + v; return a; }, {}),

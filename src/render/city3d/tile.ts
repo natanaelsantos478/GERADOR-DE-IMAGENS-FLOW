@@ -15,7 +15,7 @@ import { buildBridges, drawRoads } from './roads';
 import { styles as currentStyles, type Styles } from './styles';
 import { TileRubble } from './rubbleTile';
 import { placeTrees, TreeLayer, type TreePoint } from './trees';
-import { loadVegetation } from './vegetation';
+import { loadVegetation, type VegMask } from './vegetation';
 
 let sources: VectorTileSource[] | null = null;
 let appearance: CityAppearance | null = null, appearanceSig = '';
@@ -82,6 +82,8 @@ export class CityTile {
   roadLayer: Cesium.ImageryLayer | null = null;
   roadUrl = '';
   treePts: TreePoint[] | null = null;
+  /** satellite vegetation mask used for the last placement (debug) */
+  veg: VegMask | null = null;
   trees: TreeLayer | null = null;
   treeBusy = false;
   stats: TileStats = { buildings: 0, majorBuildings: 0, tris: 0, roads: 0, bridges: 0, infra: 0, trees: 0, loadMs: 0, genMs: 0, t: {}, source: '', styles: {}, cover: {}, treePts: 0, treeSp: {}, vegCover: -1 };
@@ -269,6 +271,7 @@ export class CityTile {
       if (!this.treePts) {
         const veg = await loadVegetation(this.ref, () => !this.dead);
         if (this.dead || my !== this.gen || !this.area) return;
+        this.veg = veg;
         this.stats.vegCover = veg ? Math.round(veg.cover * 100) / 100 : -1;
         this.treePts = placeTrees(this.area, this.ref, g, this.maxTrees, st, veg);
       }

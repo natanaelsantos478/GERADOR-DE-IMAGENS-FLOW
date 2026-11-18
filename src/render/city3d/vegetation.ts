@@ -31,29 +31,41 @@ export function isVegetation(r: number, g: number, b: number): boolean {
   return (2 * g - r - b) / s > 0.06 && g >= b;
 }
 
-const N = 512;
+const N = 1024;
 async function image(url: string): Promise<ImageBitmap | null> {
   try { const r = await fetch(url, { mode: 'cors' }); return r.ok ? await createImageBitmap(await r.blob()) : null; } catch { return null; }
 }
 
-/** Mask for tile `t` from z16 (ESRI, ~2.4 m/px at the equator) or z14 (EOX) imagery; null offline or on failure. */
+/**
+ * Mask for tile `t` from the closest imagery that stays affordable: ESRI z17 (~1.2 m/px, 64 images per city tile; z18
+ * would be 256 and the imagery server throttles bursts, which also starves the photo shown on the globe) (EOX stops at z13: no mask). Downloads are limited to 4 at a time. Null offline or when no image arrives.
+ */
 export async function loadVegetation(t: TileRef, alive: () => boolean): Promise<VegMask | null> {
   const kind = kindOf();
-  if (kind === 'offline') return null;
-  const z = kind === 'esri' ? 16 : 14, f = 2 ** (z - TZ), px = 256 * f;
+  // EOX stops at z13, coarser than the city tile itself: no mask then (the vector polygons alone place the trees)
+  if (kind !== 'esri') return null;
+  const z = 17, f = 2 ** (z - TZ), px = 256 * f;
   const urls: { u: string; dx: number; dy: number }[] = [];
   for (let dy = 0; dy < f; dy++) for (let dx = 0; dx < f; dx++) { const u = imageryTileUrl(kind, z, t.x * f + dx, t.y * f + dy); if (u) urls.push({ u, dx, dy }); }
   if (!urls.length) return null;
-  const imgs = await Promise.all(urls.map(async (q) => ({ ...q, img: await image(q.u) })));
-  if (!alive() || imgs.some((q) => !q.img)) { imgs.forEach((q) => q.img?.close()); return null; }
+  const imgs: { u: string; dx: number; dy: number; img: ImageBitmap | null }[] = [];
+  for (let i = 0; i < urls.length; i += 4) { imgs.push(...(await Promise.all(urls.slice(i, i + 4).map(async (q) => ({ ...q, img: await image(q.u) }))))); if (!alive()) break; }
+  // a missing image (the server has none over open sea, or one request failed) counts as "no green" there; only a tile
+  // with no image at all falls back to the polygons
+  if (!alive() || imgs.every((q) => !q.img)) { imgs.forEach((q) => q.img?.close()); return null; }
   const cv = new OffscreenCanvas(px, px), cx = cv.getContext('2d', { willReadFrequently: true });
   if (!cx) return null;
-  for (const q of imgs) { cx.drawImage(q.img!, q.dx * 256, q.dy * 256); q.img!.close(); }
+  for (const q of imgs) if (q.img) { cx.drawImage(q.img, q.dx * 256, q.dy * 256); q.img.close(); }
   const d = cx.getImageData(0, 0, px, px).data, v = new Float32Array(N * N), cnt = new Float32Array(N * N), k = N / px;
+  // texture: a canopy has light/shadow between neighbouring pixels (measured 12-25 luminance units in Rio's parks and the
+  // Tijuca forest); green water of bays and lagoons is smooth (0-1). Green without texture is not vegetation.
+  const L = (p: number) => 0.3 * d[p] + 0.59 * d[p + 1] + 0.11 * d[p + 2];
   for (let y = 0; y < px; y++) for (let x = 0; x < px; x++) {
     const p = (y * px + x) * 4, c = Math.floor(y * k) * N + Math.floor(x * k);
     cnt[c]++;
-    if (isVegetation(d[p], d[p + 1], d[p + 2])) v[c]++;
+    if (!isVegetation(d[p], d[p + 1], d[p + 2])) continue;
+    const l = L(p), grad = (x + 1 < px ? Math.abs(l - L(p + 4)) : 0) + (y + 1 < px ? Math.abs(l - L(p + px * 4)) : 0) + (x > 0 ? Math.abs(l - L(p - 4)) : 0);
+    if (grad >= 6) v[c]++;
   }
   let sum = 0;
   for (let i = 0; i < v.length; i++) { v[i] = cnt[i] ? v[i] / cnt[i] : 0; sum += v[i]; }
