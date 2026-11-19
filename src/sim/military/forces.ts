@@ -267,6 +267,22 @@ const place = (ctx: Ctx, c: CountryId, kind: 'city' | 'airport' | 'port'): { pos
   return [...idx].sort((a, b) => score(b) - score(a) || a - b).map((i) => ({ pos: [arr[i].lon, arr[i].lat] as LonLat, base: { kind, index: i } }));
 };
 
+/**
+ * Real garrisons (military.json `garrisons`, from public orders of battle / Wikidata: tools/military) for one domain,
+ * expanded to `n` formation sites in proportion to each garrison's personnel (largest remainder). Empty when the
+ * country has no data for that domain: the caller then falls back to cities / airports / ports.
+ */
+function garrisonSites(ctx: Ctx, c: CountryId, dom: 0 | 1 | 2, n: number): { pos: LonLat; base: BaseRef | null }[] {
+  const g = (ctx.world.military[c] as { garrisons?: [number, number, number, number][] } | undefined)?.garrisons?.filter((x) => x[3] === dom && (dom === 2 || !ctx.world.isSea(x[0], x[1])));
+  if (!g?.length || n <= 0) return [];
+  const W = g.reduce((s, x) => s + x[2], 0);
+  const share = g.map((x, i) => ({ i, q: (x[2] / W) * n })), out: { pos: LonLat; base: BaseRef | null }[] = [];
+  for (const s of share) for (let k = 0; k < Math.floor(s.q); k++) out.push({ pos: [g[s.i][0], g[s.i][1]], base: null });
+  share.sort((a, b) => (b.q % 1) - (a.q % 1) || b.q - a.q);
+  for (let k = 0; out.length < n && k < share.length; k++) out.push({ pos: [g[share[k].i][0], g[share[k].i][1]], base: null });
+  return out;
+}
+
 function distribute(totals: [UnitTemplateId, number][], n: number): Slot[][] {
   const buckets: Slot[][] = Array.from({ length: n }, () => []);
   totals.forEach(([t, k], ti) => {
@@ -282,7 +298,7 @@ function distribute(totals: [UnitTemplateId, number][], n: number): Slot[][] {
 
 const jitter = (ctx: Ctx, v: number) => v + (ctx.rng.next() - 0.5) * 0.12;
 
-function emitGroup(ctx: Ctx, c: CountryId, d: Domain, buckets: Slot[][], sites: { pos: LonLat; base: BaseRef }[], fallback: LonLat, exp: number) {
+function emitGroup(ctx: Ctx, c: CountryId, d: Domain, buckets: Slot[][], sites: { pos: LonLat; base: BaseRef | null }[], fallback: LonLat, exp: number) {
   buckets.forEach((slots, i) => {
     const site = sites.length ? sites[i % sites.length] : null;
     const pos: LonLat = site ? [jitter(ctx, site.pos[0]), jitter(ctx, site.pos[1])] : fallback;
@@ -315,7 +331,8 @@ export function initForces(ctx: Ctx): void {
     const L = landTot.reduce((a, [, k]) => a + k, 0);
     if (L > 0) {
       const n = Math.max(1, Math.min(70, Math.round(0.85 * Math.sqrt(L))));
-      emitGroup(ctx, c, 'land', distribute(landTot, n), place(ctx, c, 'city'), [cap.lon, cap.lat], exp);
+      const bk = distribute(landTot, n), gs = garrisonSites(ctx, c, 0, bk.length);
+      emitGroup(ctx, c, 'land', bk, gs.length ? gs : place(ctx, c, 'city'), [cap.lon, cap.lat], exp);
     }
     const airTot: [UnitTemplateId, number][] = [
       ['fighter', Math.ceil(num(inv.fighters) / 18)], ['bomber', Math.ceil(num(inv.bombers) / 12)],
@@ -325,8 +342,8 @@ export function initForces(ctx: Ctx): void {
     const A = airTot.reduce((a, [, k]) => a + k, 0);
     if (A > 0) {
       const n = Math.max(1, Math.min(35, Math.round(0.8 * Math.sqrt(A))));
-      const sites = place(ctx, c, 'airport');
-      emitGroup(ctx, c, 'air', distribute(airTot, n), sites.length ? sites : place(ctx, c, 'city'), [cap.lon, cap.lat], exp);
+      const bk = distribute(airTot, n), gs = garrisonSites(ctx, c, 1, bk.length), sites = place(ctx, c, 'airport');
+      emitGroup(ctx, c, 'air', bk, gs.length ? gs : sites.length ? sites : place(ctx, c, 'city'), [cap.lon, cap.lat], exp);
     }
     const ships = num(inv.destroyers) + num(inv.frigates) + num(inv.subs) + num(inv.carriers);
     const ports = place(ctx, c, 'port');
@@ -335,7 +352,11 @@ export function initForces(ctx: Ctx): void {
         ['carrier', num(inv.carriers)], ['destroyer', num(inv.destroyers)], ['frigate', num(inv.frigates)], ['submarine', num(inv.subs)],
         ['landing_ship', Math.round(ships * 0.15 + num(inv.carriers))],
       ];
-      emitGroup(ctx, c, 'naval', distribute(navTot, Math.max(1, Math.min(16, Math.ceil(ships / 6)))), ports, [cap.lon, cap.lat], exp);
+      // naval bases from the orders of battle, snapped to the nearest real port (ships must start in water)
+      const bk = distribute(navTot, Math.max(1, Math.min(16, Math.ceil(ships / 6))));
+      const near = (p: LonLat) => ports.reduce((b, q) => ((q.pos[0] - p[0]) ** 2 + (q.pos[1] - p[1]) ** 2 < (b.pos[0] - p[0]) ** 2 + (b.pos[1] - p[1]) ** 2 ? q : b), ports[0]);
+      const gs = garrisonSites(ctx, c, 2, bk.length).map((x) => near(x.pos));
+      emitGroup(ctx, c, 'naval', bk, gs.length ? gs : ports, [cap.lon, cap.lat], exp);
     }
     const nukes = num(inv.nukes);
     const cruise = Math.round(num(inv.destroyers) * 8 + num(inv.frigates) * 4 + num(inv.subs) * 3 + num(inv.bombers) * 2);

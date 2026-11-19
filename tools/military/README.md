@@ -7,7 +7,8 @@ Roda uma vez para gerar a posição inicial das tropas; depois o jogo simula soz
   fonte; efetivo ativo sem reservas). Países em guerra: só guarnição permanente e, quando houver fonte pública com
   semanas, a região de envio (`deployedRegion`), nunca coordenada. Parte das forças navais/aéreas veio da memória do
   leitor e precisa de conferência.
-- Prontos: ARG AUS CAN COL DZA ESP ETH FRA GRC IRQ JPN KOR MAR MEX NGA SAU TWN UKR.
-- Faltam: CHN IND USA RUS PRK PAK IRN VNM EGY IDN BRA MMR THA TUR DEU GBR ITA ISR PHL BGD POL VEN.
-- Próximo passo: script de montagem que relocaliza cada guarnição pela base de cidades/bases do jogo, distribui o
-  efetivo ativo pelo porte das unidades e gera `public/data/` para `initForces` (src/sim/military/forces.ts).
+- Ordens de batalha lidas (23): ARG AUS BGD CAN CHN COL DZA ESP ETH FRA GRC IRQ JPN KOR MAR MEX NGA PAK POL SAU TWN UKR VEN.
+  Outros 90 países usam as unidades do Wikidata. Sem dado: o jogo cai nas maiores cidades/aeroportos/portos.
+- `node tools/military/build-garrisons.mjs` grava `garrisons` em `public/data/military.json` ([lon, lat, efetivo, 0 terra/1 ar/2 mar]);
+  `initForces` (src/sim/military/forces.ts) distribui as formações iniciais por elas em proporção ao efetivo
+  (nenhuma guarnição passa de 15% do país; bases navais encaixadas no porto real mais próximo).
