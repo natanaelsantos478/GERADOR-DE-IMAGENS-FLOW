@@ -5,6 +5,7 @@
 import type { BattleId, CountryId, LonLat } from '../../core/contracts';
 import type { RngState } from '../../core/rng';
 import type { NavData } from '../../data/vector/nav';
+import type { Incident, IncidentLog } from './incidents';
 
 export type Side = 0 | 1;
 export type AiEngine = 'neural' | 'rules';
@@ -145,6 +146,12 @@ export interface Squad {
   fg: number;
   /** Next time (battle s) the neural AI re-evaluates this squad. */
   nt?: number;
+  /** Field incident slowing/stopping it (incidents.ts), squad leader entity (-1 = killed) and last "surrounded" report. */
+  inc?: Incident; lead?: number; encT?: number;
+  /** AI: reached its envelopment position and is now closing in (ai.ts). */
+  ring?: boolean;
+  /** Battle time until which a player's order overrides the AI on this squad (system.ts / ai.ts). */
+  man?: number;
 }
 export interface Proj {
   id: number; kind: 'bullet' | 'shell' | 'missile' | 'rocket' | 'bomb';
@@ -201,6 +208,8 @@ export interface Battle {
   result: TacticalResult | null;
   /** Disables the tactical AI entirely (scripted scenarios/tests). */
   noAi?: boolean;
+  /** Last field incidents / morale shocks (incidents.ts), newest last. */
+  incLog?: IncidentLog[];
   /** AI engine per side; undefined = rules; the game sets it from `ai.engine.neural`. */
   engine?: [AiEngine, AiEngine];
   /** Softmax temperature of the neural choice (difficulty); 0 = argmax. */

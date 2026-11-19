@@ -1,5 +1,6 @@
 /** Squad order execution (pathing, anchor movement) and element movement toward formation slots. */
 import { stepBreach } from './buildings';
+import { incidentPace } from './incidents';
 import { cellFactor, cellOf, findPath, inside, moveFactor } from './grid';
 import { mudMult, SURFACE_RULES } from './terrainRules';
 import { navCell, navCenter, navFactor, navOf, snapCell } from './nav';
@@ -66,7 +67,7 @@ function garrison(b: Battle, s: Squad): void {
 }
 
 /** Squad speed multiplier: commander, fatigue and mud. */
-export const squadPace = (b: Battle, s: Squad): number => (s.fx?.spd ?? 1) * (1 - 0.35 * s.fg) * (1 - 0.3 * (b.wx?.mud ?? 0) * (UNITS[s.kind].mob === 'foot' ? 0.5 : 1));
+export const squadPace = (b: Battle, s: Squad): number => incidentPace(b, s) * (s.fx?.spd ?? 1) * (1 - 0.35 * s.fg) * (1 - 0.3 * (b.wx?.mud ?? 0) * (UNITS[s.kind].mob === 'foot' ? 0.5 : 1));
 
 export function stepSquads(b: Battle): void {
   const c = cacheOf(b);

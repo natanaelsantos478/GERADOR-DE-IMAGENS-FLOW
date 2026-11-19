@@ -7,7 +7,9 @@ import type { Battle, Side, Squad } from './types';
 import { UNITS } from './units';
 import { cacheOf, nearby } from './util';
 
-export const aiControls = (b: Battle, s: Squad) => s.side !== b.player || b.auto[s.side] || s.ai;
+/** A player's order holds while it is being carried out (move/attack/occupy under way) and for at most 2 min. */
+const manual = (b: Battle, s: Squad) => s.man !== undefined && b.t < s.man && s.order !== 'idle';
+export const aiControls = (b: Battle, s: Squad) => s.side !== b.player || ((b.auto[s.side] || s.ai) && !manual(b, s));
 
 const MANEUVER = new Set(['infantry', 'special', 'engineer', 'mech', 'mbt']);
 
@@ -70,9 +72,21 @@ export function ruleAct(k: Ctx2, s: Squad, mi: number): Act | null {
   const py = Math.max(-half + 100, Math.min(half - 100, mp.y + (dxo / dd) * lateral * (attacker ? 1 : 0.3)));
   if (s.kind === 'recon') return { k: 'attackMove', x: px, y: py };
   if (s.kind === 'attackHeli') return near ? { k: 'attackMove', x: c.sqCx[near.id], y: c.sqCy[near.id] } : null;
+  // pursuit: armour and mechanised infantry run down a broken enemy close by
+  if ((s.kind === 'mbt' || s.kind === 'mech') && frac > 0.4) {
+    const fleeing = k.enemyAlive.find((e) => e.routed && Math.hypot(c.sqCx[e.id] - cx, c.sqCy[e.id] - cy) < 800);
+    if (fleeing) return { k: 'attack', x: 0, y: 0, target: fleeing.id };
+  }
   if (attacker) {
     if (Math.hypot(cx - mp.x, cy - mp.y) < mp.r * 0.8) return { k: 'dig', x: cx, y: cy };
-    return { k: 'attackMove', x: px, y: py, wedge: true };
+    // envelopment: the squads converge on the objective from up to five directions (front, both flanks and the two
+    // sides behind), so a defender in contact ends up fired at from several sides (incidents.ts: surrounded)
+    const axis = Math.atan2(mp.x - cx, mp.y - cy), slot = (m1 % 5) - 2, ang = axis + Math.PI + slot * (Math.PI / 4.5);
+    const R = Math.max(250, mp.r * 1.8);
+    const ex = Math.max(-half + 100, Math.min(half - 100, mp.x + Math.sin(ang) * R)), ey = Math.max(-half + 100, Math.min(half - 100, mp.y + Math.cos(ang) * R));
+    // first reach the encircling position (not in contact yet), then close in
+    if (Math.hypot(cx - ex, cy - ey) < 150 || nd < 450) s.ring = true;
+    return s.ring ? { k: 'attackMove', x: px, y: py, wedge: true } : { k: 'attackMove', x: ex, y: ey, wedge: true };
   }
   const dist = Math.hypot(cx - mp.x, cy - mp.y);
   if (near && nd < 700 && frac > 0.6 && (s.kind === 'mbt' || s.kind === 'mech') && Math.hypot(c.sqCx[near.id] - mp.x, c.sqCy[near.id] - mp.y) < mp.r * 2.5) return { k: 'attack', x: 0, y: 0, target: near.id };

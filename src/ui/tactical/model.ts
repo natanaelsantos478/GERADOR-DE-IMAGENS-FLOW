@@ -11,6 +11,8 @@ export interface TacModel {
   player: 0 | 1 | null; auto: boolean; ready: boolean; score: [number, number];
   objs: Pick<Objective, 'id' | 'name' | 'owner' | 'cap' | 'value'>[]; support: Support; timeScale: number; paused: boolean;
   squads: SquadCard[]; result: TacticalResult | null; center: [number, number]; countries: [string[], string[]]; withdrawing: boolean;
+  /** Last field incidents / morale shocks, newest first (squad name, side, kind, battle second). */
+  log: { t: number; side: 0 | 1; name: string; k: string }[];
 }
 
 /** Light read-model of the running tactical battle (no entity lists, so structural comparison stays cheap). */
@@ -35,6 +37,7 @@ export function tacModel(g: Game): TacModel | null {
       routed: q.routed, order: q.order, form: q.form, dug: r2(q.dug), smoke: q.smoke, fireFree: q.fireFree, ai: q.ai, cargo: q.cargo, x: Math.round(q.x), y: Math.round(q.y),
     })),
     result: b.result, center: b.center, countries: s.countries, withdrawing: b.withdrawing[ps],
+    log: (b.incLog ?? []).slice(-5).reverse().map((e) => ({ t: Math.round(e.t), side: e.side as 0 | 1, name: b.squads[e.sq]?.name ?? '', k: e.k })),
   };
 }
 

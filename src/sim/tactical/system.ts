@@ -137,8 +137,11 @@ export const tacticalSystem = defineSystem({
     switch (k) {
       case 'order': {
         if (side === null || (b.player !== null && side !== b.player)) return fail('tac.err.notYours');
-        if (b.auto[side]) return fail('tac.err.auto');
-        const r = issueOrder(b, side, (c as Command).squads as number[], (c as Command).order as Order);
+        // with the auto-commander on, the player's order overrides the AI for those squads until it is carried out
+        // (or 2 min pass); then the AI takes them over again from where they are
+        const ids = (c as Command).squads as number[];
+        const r = issueOrder(b, side, ids, (c as Command).order as Order);
+        if (r.ok) for (const id of ids) { const s = b.squads[id]; if (s) s.man = b.t + 120; }
         return r.ok ? { ok: true } : fail(r.reason);
       }
       case 'ready': if (side === null) return fail('tac.err.notYours'); b.ready[side] = true; return { ok: true };

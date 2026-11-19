@@ -6,6 +6,7 @@ import { acquire, fireWeapons, secondly, stepEffects, stepProjectiles } from './
 import { cellOf } from './grid';
 import { stepEnts, stepSquads } from './move';
 import { stepFires } from './terrainFx';
+import { stepIncidents } from './incidents';
 import { layout, newEnt } from './orders';
 import type { Battle, Objective, Rect, Side, Squad, SquadResult, TacticalBattleInput, TacticalMap, TacticalResult, UnitKind } from './types';
 import { UNITS } from './units';
@@ -81,7 +82,7 @@ function tick(b: Battle): void {
   fireWeapons(b);
   stepProjectiles(b);
   stepEffects(b);
-  if (b.tick % 20 === 0) { secondly(b); stepFires(b); objectives(b); victory(b); }
+  if (b.tick % 20 === 0) { secondly(b); stepIncidents(b); stepFires(b); objectives(b); victory(b); }
   if (b.tick % 40 === 20) runAi(b, 0); else if (b.tick % 40 === 0) runAi(b, 1);
 }
 

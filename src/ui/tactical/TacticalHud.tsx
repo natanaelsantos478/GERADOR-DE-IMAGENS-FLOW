@@ -4,6 +4,8 @@ import { useTacSelection } from '../../render/tactical/store';
 import { useTacTouch } from '../../render/tactical/touch';
 import type { FormationKind, Order } from '../../sim/tactical/types';
 import { fmtInt } from '../fmt';
+
+const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 import { t } from '../i18n';
 import { Progress } from '../kit/controls';
 import { Flag, Icon } from '../kit/Icon';
@@ -155,6 +157,13 @@ export function TacticalHud() {
           <button className="btn sm" data-testid="tac-exit" onClick={() => send('tac.exit', { resolve: 'auto' })}>{t('tac.exit')}</button>
         </div>
         {m.phase === 'deploy' && <div className="dim" style={{ fontSize: 12, textAlign: 'center' }}>{t('ui.tac.deployHelp')}</div>}
+        {m.phase === 'combat' && m.log.length > 0 && (
+          <div data-testid="tac-log" style={{ fontSize: 11, lineHeight: 1.35 }}>
+            {m.log.slice(0, 3).map((e, i) => (
+              <div key={`${e.t}-${i}`} className={e.side === m.player ? 'warn' : 'dim'}>{fmt(e.t)} · {e.name}: {t(`tac.inc.${e.k}`)}</div>
+            ))}
+          </div>
+        )}
       </div>
       <div className={`tac-left pe ${strip !== 'mine' ? 'm-off' : ''}`} data-testid="tac-squads">
         <div className="sect-title" style={{ margin: 0 }}>{t('ui.tac.yourSide')} · {alive(mine)}/{n0(mine)}</div>

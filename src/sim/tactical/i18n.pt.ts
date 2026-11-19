@@ -4,6 +4,8 @@ export const tacticalPt: Record<string, string> = {
   'tac.phase.deploy': 'Implantação',
   'tac.phase.combat': 'Combate',
   'tac.phase.ended': 'Fim da batalha',
+  'tac.inc.tire': 'pneu furado, parado para a troca', 'tac.inc.track': 'esteira solta, parado para o reparo', 'tac.inc.engine': 'pane no motor, parado',
+  'tac.inc.heat': 'soldado passou mal, avanço mais lento', 'tac.inc.surrounded': 'cercado, moral caindo', 'tac.inc.leader': 'comandante abatido',
   'tac.order.move': 'Mover', 'tac.order.attackMove': 'Atacar-mover', 'tac.order.attack': 'Atacar alvo', 'tac.order.hold': 'Manter posição',
   'tac.order.retreat': 'Recuar', 'tac.order.formation': 'Formação', 'tac.order.face': 'Direção de frente', 'tac.order.ceasefire': 'Cessar fogo',
   'tac.order.fireAtWill': 'Fogo à vontade', 'tac.order.dig': 'Entrincheirar', 'tac.order.smoke': 'Lançar fumaça', 'tac.order.dismount': 'Desembarcar infantaria',
