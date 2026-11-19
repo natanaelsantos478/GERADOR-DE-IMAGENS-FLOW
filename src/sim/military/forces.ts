@@ -296,12 +296,14 @@ function distribute(totals: [UnitTemplateId, number][], n: number): Slot[][] {
   return buckets.filter((b) => b.length);
 }
 
-const jitter = (ctx: Ctx, v: number) => v + (ctx.rng.next() - 0.5) * 0.12;
+const jitter = (ctx: Ctx, v: number, a: number) => v + (ctx.rng.next() - 0.5) * a;
 
 function emitGroup(ctx: Ctx, c: CountryId, d: Domain, buckets: Slot[][], sites: { pos: LonLat; base: BaseRef | null }[], fallback: LonLat, exp: number) {
   buckets.forEach((slots, i) => {
     const site = sites.length ? sites[i % sites.length] : null;
-    const pos: LonLat = site ? [jitter(ctx, site.pos[0]), jitter(ctx, site.pos[1])] : fallback;
+    // aircraft stay on their airfield; land units stay within ~1 km of a real garrison, ~6 km around a city otherwise
+    const a = d === 'air' ? 0 : site?.base?.kind === 'city' ? 0.12 : 0.02;
+    const pos: LonLat = site ? [jitter(ctx, site.pos[0], a), jitter(ctx, site.pos[1], a)] : fallback;
     // Jittered land points may fall in the sea: keep the exact base position then.
     const ok = d === 'naval' ? true : !ctx.world.isSea(pos[0], pos[1]);
     createFormation(ctx, c, d, ok && d !== 'naval' ? pos : (site?.pos ?? fallback), slots, site?.base ?? null, { exp: exp + ctx.rng.next() * 0.15 });
@@ -342,7 +344,17 @@ export function initForces(ctx: Ctx): void {
     const A = airTot.reduce((a, [, k]) => a + k, 0);
     if (A > 0) {
       const n = Math.max(1, Math.min(35, Math.round(0.8 * Math.sqrt(A))));
-      const bk = distribute(airTot, n), gs = garrisonSites(ctx, c, 1, bk.length), sites = place(ctx, c, 'airport');
+      const sites = place(ctx, c, 'airport'), bk = distribute(airTot, n);
+      // air units sit on a real airfield: the nearest one to the garrison, a military one preferred (cost x4 closer)
+      const snap = (p: LonLat) => {
+        let best: { pos: LonLat; base: BaseRef | null } = { pos: p, base: null }, bd = 0.8 ** 2;
+        for (const s of sites) {
+          const d = ((s.pos[0] - p[0]) ** 2 + (s.pos[1] - p[1]) ** 2) * (w.airports[s.base.index].military ? 0.25 : 1);
+          if (d < bd) { bd = d; best = s; }
+        }
+        return best;
+      };
+      const gs = garrisonSites(ctx, c, 1, bk.length).map((x) => snap(x.pos));
       emitGroup(ctx, c, 'air', bk, gs.length ? gs : sites.length ? sites : place(ctx, c, 'city'), [cap.lon, cap.lat], exp);
     }
     const ships = num(inv.destroyers) + num(inv.frigates) + num(inv.subs) + num(inv.carriers);

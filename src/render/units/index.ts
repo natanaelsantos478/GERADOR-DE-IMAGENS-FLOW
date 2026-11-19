@@ -39,6 +39,7 @@ export function attachUnitsLayer(globe: Globe, getGame: () => Game | null): Unit
       if (performance.now() - at > 500) { vis = new Set(layer.strategic?.states().map((s) => s.id)); at = performance.now(); }
       return vis.has(id);
     });
+    layer.strategic.setFx(layer.world.fx);
   });
   return layer;
 }

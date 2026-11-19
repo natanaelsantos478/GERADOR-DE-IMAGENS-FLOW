@@ -10,6 +10,8 @@ const V = (x: number, y: number) => new Cesium.Cartesian2(x, y);
 export interface FxApi {
   explosion(pos: LonLat, big?: boolean): void;
   nuke(pos: LonLat): void;
+  /** One shot at real scale (close-up battles): muzzle flash, tracer and impact. Positions are lon/lat/height (m). */
+  shot(from: [number, number, number], to: [number, number, number], kind: 'cannon' | 'rifle'): void;
   /** Keeps a fire+smoke column at `key`; call `stopFire` to remove. */
   fire(key: string, pos: LonLat, height?: number): void;
   stopFire(key: string): void;
@@ -38,7 +40,31 @@ export function createFx(globe: Globe): FxApi {
   /** Metres per on-screen pixel-ish scale so effects stay readable from far away. */
   const unit = () => clamp(globe.cameraHeight() / 120, 40, 40_000);
 
+  const tracers = scene.primitives.add(new Cesium.PolylineCollection()) as Cesium.PolylineCollection;
+  const burst = (p: [number, number, number], size: number, n: number, life: number, color: string) => add({
+    image: flame, startColor: C.fromCssColorString(color), endColor: C.fromCssColorString('#3a3a3a').withAlpha(0),
+    startScale: 0.5, endScale: 1.8, minimumParticleLife: life * 0.5, maximumParticleLife: life, minimumSpeed: size * 0.3, maximumSpeed: size * 1.2,
+    imageSize: V(size, size), sizeInMeters: true, emissionRate: 0, bursts: [new Cesium.ParticleBurst({ time: 0, minimum: n, maximum: n + 3 })],
+    lifetime: life, loop: false, emitter: new Cesium.SphereEmitter(size * 0.2), modelMatrix: enu([p[0], p[1]], p[2]),
+  }, life * 1000 + 400);
+
   return {
+    shot(from, to, kind) {
+      if (timed.size > 40) return;
+      const cannon = kind === 'cannon';
+      burst(from, cannon ? 3 : 0.8, cannon ? 8 : 3, cannon ? 0.5 : 0.15, '#fff2b0');
+      const line = tracers.add({
+        positions: Cesium.Cartesian3.fromDegreesArrayHeights([...from, ...to]), width: cannon ? 3 : 1.5,
+        material: Cesium.Material.fromType('Color', { color: C.fromCssColorString(cannon ? '#ffd27a' : '#ffe9a8').withAlpha(0.9) }),
+      });
+      const t1 = setTimeout(() => {
+        timers.delete(t1); tracers.remove(line);
+        burst(to, cannon ? 7 : 1.2, cannon ? 16 : 4, cannon ? 1.6 : 0.4, cannon ? '#ffb347' : '#d8c8a0');
+        globe.requestRender();
+      }, cannon ? 220 : 120);
+      timers.add(t1);
+      globe.requestRender();
+    },
     explosion(pos, big = false) {
       if (timed.size > 24) return;
       const u = unit() * (big ? 1.6 : 1);
@@ -106,6 +132,7 @@ export function createFx(globe: Globe): FxApi {
       timed.forEach((p) => scene.primitives.remove(p));
       fires.forEach((p) => scene.primitives.remove(p));
       timed.clear(); fires.clear();
+      scene.primitives.remove(tracers);
       lock();
     },
   };

@@ -4,7 +4,7 @@ import type { BBox } from '../../core/contracts';
 import type { CameraState, FlyOptions } from './types';
 
 const { Math: CM } = Cesium;
-export const MIN_HEIGHT = 20; // close enough to see the troops on the ground (collision detection keeps it above the terrain)
+export const MIN_HEIGHT = 5; // close enough to see the troops on the ground (collision detection keeps it above the terrain)
 export const MAX_HEIGHT = 3.2e7;
 
 export function configureCamera(viewer: Cesium.Viewer) {

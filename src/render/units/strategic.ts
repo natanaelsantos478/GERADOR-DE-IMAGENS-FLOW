@@ -8,6 +8,16 @@ import type { Globe } from '../globe/types';
 import { groundOf, mode, ModelPool, assetUrl, badgeCanvas, clamp, lerpAngle, offsetLonLat, rad, renderEvents, renderLock, svgImage, textBadge, type ModelHandle } from './common';
 import { clusterScreen, type ClusterItem } from './cluster';
 import { useUnitSelection } from './store';
+import { streetSpots } from '../city3d/spots';
+import type { FxApi } from './fx';
+
+/** Stable 0..1 per formation / model slot (same layout every frame). */
+const hash01 = (id: string, i: number, s: number) => {
+  let h = 2166136261 ^ s;
+  for (let k = 0; k < id.length; k++) h = Math.imul(h ^ id.charCodeAt(k), 16777619);
+  h = Math.imul(h ^ i, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
 
 export const NEAR_H = 30_000;
 /** Camera height under which the 3D city appears and the unit models shrink toward their real size. */
@@ -34,6 +44,10 @@ interface FS {
   ring?: Cesium.Billboard; count?: Cesium.Billboard;
   keys: { icon: string; bar: string; flag: string };
   handles: ModelHandle[];
+  /** where each handle was last placed (lon, lat, ground height) — the close-up combat shoots from/at these */
+  pts: [number, number, number][];
+  /** handles [0, nVeh) are the formation's units; the rest are soldiers dismounted beside the vehicles */
+  nVeh: number;
   modelSig: string;
   /** Lead of the screen-space group this formation belongs to (null: it is its own icon or the lead). */
   cluster: FS | null;
@@ -46,6 +60,8 @@ interface FS {
 }
 
 export interface StrategicApi {
+  /** Effects layer used for the close-up shots (world.ts owns it). */
+  setFx(fx: FxApi): void;
   /** Visible formation states (id → lon/lat/relation) for other layers (minimap, tests). */
   states(): { id: FormationId; lon: number; lat: number; rel: Rel; country: CountryId; clustered: boolean; groupN: number; models: number; modelIds: string[] }[];
   modelCount(): number;
@@ -114,7 +130,7 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       icon: mk({ width: 38, height: 38 }),
       flag: mk({ width: 22, height: 15, pixelOffset: V(-17, -17), image: iso ? assetUrl(`data/flags/${iso}.svg`) : undefined }),
       bar: mk({ width: 36, height: 9, pixelOffset: V(0, 26) }),
-      keys: { icon: '', bar: '', flag: iso ?? '' }, handles: [], modelSig: '', cluster: null, gN: 0, sx: 0, sy: 0, vis: false, hid: false,
+      keys: { icon: '', bar: '', flag: iso ?? '' }, handles: [], pts: [], nVeh: 0, modelSig: '', cluster: null, gN: 0, sx: 0, sy: 0, vis: false, hid: false,
     };
     return fs;
   }
@@ -167,7 +183,8 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
 
   // ------------------------------------------------------------ positions & models
   const cart = new Cesium.Cartesian3();
-  const liftOf = (fs: FS, near: boolean) => (near ? (fs.v.domain === 'air' ? 1500 + mul * 30 : fs.v.domain === 'naval' ? 0 : gh(fs.lon, fs.lat)) + mul * 22 : 0);
+  const airborne = (fs: FS) => fs.v.domain === 'air' && (fs.v.order === 'move' || fs.v.order === 'attack' || fs.v.order === 'patrol');
+  const liftOf = (fs: FS, near: boolean) => (near ? (airborne(fs) ? 1500 + mul * 30 : fs.v.domain === 'naval' ? 0 : gh(fs.lon, fs.lat)) + mul * 22 : 0);
   function applyPos(fs: FS) {
     const near = fs.handles.some((h) => h.model);
     Cesium.Cartesian3.fromDegrees(fs.gLon ?? fs.lon, fs.gLat ?? fs.lat, liftOf(fs, near), undefined, cart);
@@ -187,29 +204,64 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       const n = naval ? 1 : clamp(Math.round((ents * u.strength) / 4), 1, 3);
       for (let i = 0; i < n && out.length < (naval ? 6 : 12); i++) out.push(mid);
     }
+    fs.nVeh = out.length;
+    // up close, crews and infantry stand beside the land vehicles (2 per vehicle, the formation's own infantry model)
+    if (fs.v.domain === 'land' && mul < 1.5) {
+      const inf = out.find((m) => m.startsWith('soldier')) ?? resolveModel('soldier', cc, `${fs.id}:inf`, { mf: pool.manifest });
+      const veh = out.filter((m) => !m.startsWith('soldier')).length;
+      if (pool.info(inf)) for (let i = 0; i < Math.min(veh * 2, 12); i++) out.push(inf);
+    }
     return out;
   }
   function placeModels(fs: FS) {
     const n = fs.handles.length;
-    const cols = Math.max(1, Math.ceil(Math.sqrt(n * 1.5)));
+    const cols = Math.max(1, Math.ceil(Math.sqrt(Math.min(fs.nVeh || n, n) * 1.5)));
     const naval = fs.v.domain === 'naval', m = naval ? navalMul : mul;
     const sp = (naval ? 260 : fs.v.domain === 'air' ? 160 : 70) * m;
     const h = rad(fs.hdg), fx = Math.sin(h), fy = Math.cos(h);
+    const air = fs.v.domain === 'air', moving = fs.v.order === 'move' || fs.v.order === 'attack' || fs.v.order === 'patrol';
+    const parked = air && !moving, flying = air && !parked;
+    // standing still at real scale inside the 3D city: on the streets / military grounds (land) or the taxiways and aprons
+    // (aircraft), never inside a building; elsewhere a loose, irregular spread instead of a perfect grid
+    const nv = Math.min(fs.nVeh, n);
+    const spots = !naval && !moving && m < 1.5 ? streetSpots(fs.lon, fs.lat, nv, air ? 45 : 18, air) : null;
+    fs.pts.length = n;
+    const put = (hd: ModelHandle, i: number, lo: number, la: number, ht: number, hdg: number) => { pool.place(hd, lo, la, ht, hdg, m); fs.pts[i] = [lo, la, ht]; };
     fs.handles.forEach((hd, i) => {
-      const row = Math.floor(i / cols), col = i % cols;
-      const right = (col - (Math.min(n, cols) - 1) / 2) * sp, back = row * sp;
-      const [lo, la] = offsetLonLat(fs.lon, fs.lat, right * fy - back * fx, -right * fx - back * fy);
+      if (i >= nv) {
+        // a soldier beside vehicle (i - nv) % nv: 4-7 m to its side/rear, facing the same way, rifle ready in battle
+        const v = fs.pts[(i - nv) % Math.max(1, nv)];
+        if (!v || !nv) { pool.hide(hd); return; }
+        const side = (i % 2 ? 1 : -1) * (4 + hash01(fs.id, i, 4) * 3), back = (hash01(fs.id, i, 5) - 0.3) * 6, vh = rad(fs.hdg);
+        const [lo, la] = offsetLonLat(v[0], v[1], side * Math.cos(vh) - back * Math.sin(vh), -side * Math.sin(vh) - back * Math.cos(vh));
+        put(hd, i, lo, la, gh(lo, la), fs.hdg + (hash01(fs.id, i, 6) - 0.5) * 60);
+        if (!fs.v.battleId) pool.setAnim(hd, moving ? 'walk' : 'idle');
+        return;
+      }
+      const sp0 = spots?.[i];
+      if (sp0) { put(hd, i, sp0.lon, sp0.lat, sp0.h, sp0.hdg); return; }
+      let lo: number, la: number;
+      if (moving && !naval) {
+        // on the move: a column behind the lead vehicle
+        const back = i * sp * 0.6, side = (i % 2 ? 1 : -1) * sp * 0.08;
+        [lo, la] = offsetLonLat(fs.lon, fs.lat, side * fy - back * fx, -side * fx - back * fy);
+      } else {
+        const row = Math.floor(i / cols), col = i % cols, j1 = hash01(fs.id, i, 1) - 0.5, j2 = hash01(fs.id, i, 2) - 0.5;
+        const right = (col - (Math.min(n, cols) - 1) / 2 + j1 * 0.9) * sp, back = (row + j2 * 0.9) * sp;
+        [lo, la] = offsetLonLat(fs.lon, fs.lat, right * fy - back * fx, -right * fx - back * fy);
+      }
       // a ship slot that falls on land (formation spread around a naval base) would hang over hills: keep only the icon there
       if (naval && gh(lo, la) > 2) { pool.hide(hd); return; }
-      const ht = fs.v.domain === 'air' ? gh(lo, la) + 1500 + mul * 30 : naval ? 0 : gh(lo, la);
-      pool.place(hd, lo, la, ht, fs.hdg, m);
+      const ht = flying ? gh(lo, la) + 1500 + mul * 30 : naval ? 0 : gh(lo, la);
+      put(hd, i, lo, la, ht, fs.hdg + (moving ? 0 : (hash01(fs.id, i, 3) - 0.5) * 40));
     });
   }
   function updateNear() {
     const cam = globe.cameraState();
     // exaggeration for legibility from afar; it fades out below CITY_H, where the 3D city is drawn at real scale
     // (a 150 m ship x20 became a 3 km hull over the Rio hills)
-    mul = cam.height >= CITY_H ? clamp(cam.height / 250, 3, 40) : clamp((cam.height / 250) * (cam.height / CITY_H) ** 2, 1, 40);
+    // under ~1.5 km they are real size (on the streets); between that and CITY_H a mild boost keeps a 7 m tank readable
+    mul = cam.height >= CITY_H ? clamp(cam.height / 250, 3, 40) : Math.max(clamp(cam.height / 1000, 1, 8), clamp((cam.height / 250) * (cam.height / CITY_H) ** 2, 1, 40));
     // ships are 100-330 m long already: x40 made a 6 km hull over Rio from 10 km up. ~4 % of the view width is enough
     // (the icon carries legibility); real size under 2.5 km
     navalMul = clamp(cam.height / 2500, 1, 40);
@@ -240,8 +292,9 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     // markers: a member of a group shows nothing; the badge of a single formation hides once its model is on screen
     for (const fs of states.values()) {
       const hasModel = fs.handles.some((h) => h.model), member = fs.cluster !== null;
-      fs.icon.show = !fs.hid && !hasModel && !member; fs.flag.show = !fs.hid && !member; fs.bar.show = !fs.hid && !member;
-      const f = hasModel ? 1 : 0;
+      // the unit symbol stays over its models until the camera is close enough to see them (they hide among trees/blocks)
+      fs.icon.show = !fs.hid && (!hasModel || cam.height > 400) && !member; fs.flag.show = !fs.hid && !member; fs.bar.show = !fs.hid && !member;
+      const f = hasModel && !fs.icon.show ? 1 : 0;
       fs.flag.pixelOffset = V(-17, -17 - f * 10); fs.bar.pixelOffset = V(0, f ? 14 : 26);
     }
     globe.requestRender();
@@ -431,12 +484,37 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   refresh(true);
   updateNear();
 
+  // ------------------------------------------------------------ close-up combat: formations in a battle shoot at the enemy's models
+  let fx: FxApi | null = null;
+  const fireTimer = window.setInterval(() => {
+    if (dead || !fx || mul > 3 || document.hidden) return;
+    const fighting = [...states.values()].filter((fs) => fs.v.battleId && fs.pts.length);
+    for (const fs of fighting) {
+      const foes = fighting.filter((o) => o.v.battleId === fs.v.battleId && o.v.country !== fs.v.country);
+      const foe = foes[Math.floor(Math.random() * foes.length)];
+      for (let k = 0; k < 2; k++) {
+        const i = Math.floor(Math.random() * fs.pts.length), p = fs.pts[i], hd = fs.handles[i];
+        if (!p || !hd?.model?.show) continue;
+        const soldier = hd.modelId.startsWith('soldier');
+        if (!soldier && Math.random() > 0.3) continue;
+        // target: an enemy model, or a point ahead (enemy beyond the drawn area)
+        const t = foe?.pts.length ? foe.pts[Math.floor(Math.random() * foe.pts.length)] : null;
+        const [dlo, dla] = offsetLonLat(p[0], p[1], Math.sin(rad(fs.hdg)) * 250, Math.cos(rad(fs.hdg)) * 250);
+        const to: [number, number, number] = t ? [t[0] + (Math.random() - 0.5) * 1e-4, t[1] + (Math.random() - 0.5) * 1e-4, t[2] + 1] : [dlo, dla, gh(dlo, dla) + 0.5];
+        if (soldier) pool.setAnim(hd, 'shoot');
+        fx.shot([p[0], p[1], p[2] + (soldier ? 1.3 : 2.4) * m0(fs)], to, soldier ? 'rifle' : 'cannon');
+      }
+    }
+  }, 450);
+  const m0 = (fs: FS) => (fs.v.domain === 'naval' ? navalMul : mul);
+
   return {
+    setFx(f: FxApi) { fx = f; },
     states: () => [...states.values()].map((s) => ({ id: s.id, lon: s.lon, lat: s.lat, rel: s.rel, country: s.v.country, clustered: s.cluster !== null, groupN: s.gN, models: s.handles.length, modelIds: s.handles.map((h) => h.modelId) })),
     modelCount: () => [...states.values()].reduce((a, s) => a + s.handles.length, 0),
     destroy() {
       dead = true;
-      clearInterval(timer); clearTimeout(regroupTimer);
+      clearInterval(timer); clearInterval(fireTimer); clearTimeout(regroupTimer);
       scene.preRender.removeEventListener(onPre);
       unsubSel(); unPick(); unClick(); unBox(); unRight(); unCam(); unOverlay();
       for (const [id, fs] of states) remove(fs, id);

@@ -17,6 +17,7 @@ import { TileRubble } from './rubbleTile';
 import { placeTrees, TreeLayer, type TreePoint } from './trees';
 import { loadVegetation, type VegMask } from './vegetation';
 import { AirportPlanes, airfieldsIn } from './airplanes';
+import { LIVE, PlaceMarks } from './spots';
 
 let sources: VectorTileSource[] | null = null;
 let appearance: CityAppearance | null = null, appearanceSig = '';
@@ -87,6 +88,8 @@ export class CityTile {
   veg: VegMask | null = null;
   /** civil aircraft parked at this tile's airport gates */
   planes: AirportPlanes | null = null;
+  /** icons over hospitals, military areas and airfields */
+  marks: PlaceMarks | null = null;
   private vegRetryAt = 0;
   trees: TreeLayer | null = null;
   treeBusy = false;
@@ -99,7 +102,7 @@ export class CityTile {
   readonly rub = new TileRubble(this);
   private gen = 0;
   private rebuilding = false;
-  constructor(readonly ref: TileRef, readonly viewer: Cesium.Viewer, private roadPx: number, private maxTrees: number) {}
+  constructor(readonly ref: TileRef, readonly viewer: Cesium.Viewer, private roadPx: number, private maxTrees: number) { LIVE.add(this); }
 
   /** Fetch data (or reuse the memory cache) and generate the 3D with the current styles. */
   async load(st: Styles): Promise<void> {
@@ -207,6 +210,7 @@ export class CityTile {
     lap('png'); this.stats.t = T;
     this.planes = new AirportPlanes(scene, r, area, ground);
     void this.planes.sync();
+    this.marks = new PlaceMarks(scene, r, area, ground);
     this.stats.genMs = Math.round(performance.now() - t0);
   }
   private infraPrim: Cesium.Primitive | null = null;
@@ -219,6 +223,7 @@ export class CityTile {
     this.roadLayer = null;
     this.dropTrees();
     this.planes?.dispose(); this.planes = null;
+    this.marks?.dispose(); this.marks = null;
   }
   /** Styles changed: regenerate this tile from its cached data. */
   async regenerate(st: Styles) { if (this.state === 'ready') { await this.generate(st); this.rub.sync(); } this.viewer.scene.requestRender(); }
@@ -297,6 +302,8 @@ export class CityTile {
 
   dispose() {
     this.dead = true;
+    LIVE.delete(this);
+    this.marks?.dispose(); this.marks = null;
     this.clearGenerated();
     if (this.state === 'ready' && this.area && this.ground) {
       dataCache.set(this.ref.key, { area: this.area, ground: this.ground, source: this.stats.source });
