@@ -6,7 +6,7 @@ import { loadFixture, type Fixture, type FixtureName } from '../../data/vector/f
 import { decodeRle, encodeRle, SURF } from '../../data/vector/nav';
 import { createBattle, result, stepBattle } from './core';
 import { issueOrder } from './orders';
-import { buildMapFromWorld, defaultObjectives } from './mapWorld';
+import { buildMapFromWorld, defaultObjectives, TAC_N } from './mapWorld';
 import { canStand, components, mainComp, navCell, navCenter, navOf, snapCell } from './nav';
 import { navPath } from './navPath';
 import { scenarioInput, sideForce } from './scenario.test-util';
@@ -159,6 +159,6 @@ describe('real-map navigation', () => {
   it('without a vector area the procedural map is used (no error)', () => {
     const map = buildMapFromWorld(world, 7.75, 46.02, { vectorArea: null });
     expect(map.nav).toBeUndefined();
-    expect(map.heights.length).toBe(64 * 64);
+    expect(map.heights.length).toBe(TAC_N * TAC_N);
   });
 });

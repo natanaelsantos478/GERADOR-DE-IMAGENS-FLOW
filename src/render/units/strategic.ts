@@ -273,30 +273,8 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     // every soldier is animated (without a clip the skinned model stands in its T bind pose)
     for (const hd of fs.handles) if (hd.modelId.startsWith('soldier')) pool.setAnim(hd, fs.v.battleId ? 'shoot' : moving ? 'walk' : 'idle');
   }
-  /**
-   * Zooming into one of the player's battles (camera under 900 m, within 1.5 km of it) opens its tactical zone there:
-   * the detailed 8 km battlefield with every soldier and vehicle simulated. The auto-commander runs it; the player's
-   * own orders override it squad by squad. Asked once per battle (leaving the zone does not re-open it at once).
-   */
-  const zoneAsked = new Set<string>();
-  function maybeEnterZone(cam: ReturnType<Globe['cameraState']>) {
-    if (mode.tactical || cam.height - gh(cam.lon, cam.lat) > 900) return;
-    const g = getGame();
-    if (!g || g.state.tactical?.battle) return;
-    const me = g.state.meta.playerCountryId, k = Math.cos(rad(cam.lat));
-    for (const bt of g.ctx.api.military.battles()) {
-      if (zoneAsked.has(bt.id) || bt.tactical) continue;
-      if (!bt.attackerCountries.includes(me) && !bt.defenderCountries.includes(me)) continue;
-      if (Math.hypot((bt.pos[0] - cam.lon) * k, bt.pos[1] - cam.lat) * 111 > 1.5) continue;
-      zoneAsked.add(bt.id);
-      if (g.dispatch({ type: 'tac.start', country: me, battleId: bt.id } as never).ok) g.dispatch({ type: 'tac.auto', country: me, value: true } as never);
-      return;
-    }
-  }
-
   function updateNear() {
     const cam = globe.cameraState();
-    maybeEnterZone(cam);
     // exaggeration for legibility from afar; it fades out below CITY_H, where the 3D city is drawn at real scale
     // (a 150 m ship x20 became a 3 km hull over the Rio hills)
     // under ~1.5 km they are real size (on the streets); between that and CITY_H a mild boost keeps a 7 m tank readable

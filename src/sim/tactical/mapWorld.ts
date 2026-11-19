@@ -16,6 +16,8 @@ export interface MapOptions {
 }
 
 const M_PER_DEG = 111_320;
+/** Side of the detailed battle square (m) and its grid (cells per side): 10 x 10 km, 125 m cells. */
+export const TAC_SIZE_M = 10_000, TAC_N = 80;
 const hash2 = (seed: number, x: number, y: number) => {
   let h = Math.imul(x | 0, 0x27d4eb2d) ^ Math.imul(y | 0, 0x165667b1) ^ seed;
   h = Math.imul(h ^ (h >>> 15), 0x85ebca6b); h ^= h >>> 13;
@@ -34,7 +36,7 @@ function vnoise(seed: number, x: number, y: number): number {
  * Forest/scrub patches are procedural (no land-cover dataset), denser in rugged, non-arid terrain.
  */
 export function buildMapFromWorld(world: WorldStatic, lon: number, lat: number, opts: MapOptions = {}): TacticalMap {
-  const sizeM = opts.sizeM ?? 8000, n = opts.n ?? 64, cs = sizeM / n;
+  const sizeM = opts.sizeM ?? TAC_SIZE_M, n = opts.n ?? (opts.sizeM !== undefined ? 64 : TAC_N), cs = sizeM / n;
   const mPerLon = M_PER_DEG * Math.cos((lat * Math.PI) / 180);
   const seed = hashSeed(`${lon.toFixed(3)},${lat.toFixed(3)}`);
   const prov = world.nearestProvince(lon, lat, 150);

@@ -82,7 +82,7 @@ const dict: Record<string, string> = {
   'ui.mil.nukeWarn': 'ATAQUE NUCLEAR — irreversível', 'ui.mil.nukeType': 'Mortes em massa, radiação e condenação mundial. Digite CONFIRMAR para liberar o lançamento.',
   'ui.mil.battle': 'Batalha', 'ui.mil.battleOver': 'Batalha encerrada', 'ui.mil.attackers': 'Atacantes', 'ui.mil.defenders': 'Defensores', 'ui.mil.forecast': 'Previsão', 'ui.mil.balance': 'balanço',
   'ui.mil.stalemate': 'Equilíbrio: sem desfecho previsto.', 'ui.mil.etaBreak': 'Um lado cede em cerca de {d} dias.', 'ui.mil.inTactical': 'Em comando tático', 'ui.mil.notParticipant': 'Você não participa desta batalha.',
-  'ui.mil.commandBattle': 'Comandar batalha', 'ui.mil.autoResolve': 'Resolver automaticamente', 'ui.mil.autoResolving': 'A batalha será resolvida automaticamente enquanto o tempo corre.',
+  'ui.mil.commandBattle': 'Visualizar batalha detalhada', 'ui.mil.autoResolve': 'Resolver automaticamente', 'ui.mil.autoResolving': 'A batalha será resolvida automaticamente enquanto o tempo corre.',
   // production
   'ui.prod.queue': 'Fila de produção', 'ui.prod.emptyQueue': 'Fila vazia.', 'ui.prod.waiting': 'aguardando', 'ui.prod.cancel': 'Cancelar', 'ui.prod.catalog': 'Catálogo de unidades', 'ui.prod.qty': 'Qtd.',
   'ui.prod.produce': 'Produzir', 'ui.prod.pts': 'pts de indústria', 'ui.prod.cost': 'Custo', 'ui.prod.needsTech': 'Requer pesquisa: {tech}', 'ui.prod.noResources': 'Recursos insuficientes',
@@ -92,7 +92,7 @@ const dict: Record<string, string> = {
   'ui.intel.threat': 'Ameaça', 'ui.intel.threatHelp': 'Poder comparável ou superior ao seu e relação fria.', 'ui.intel.threats': 'Forças hostis em seu território', 'ui.intel.noThreats': 'Nenhuma força hostil visível em seu território.',
   'ui.intel.arsenal': 'Arsenal de ataque',
   // tactical
-  'ui.tac.yourSide': 'Seus esquadrões', 'ui.tac.enemy': 'Inimigo', 'ui.tac.men': 'Efetivo', 'ui.tac.morale': 'Moral', 'ui.tac.ammo': 'Munição', 'ui.tac.routed': 'em debandada', 'ui.tac.destroyed': 'destruído',
+  'ui.tac.yourSide': 'Seus esquadrões', 'ui.tac.enemy': 'Inimigo', 'ui.tac.men': 'Efetivo', 'ui.tac.morale': 'Moral', 'ui.tac.ammo': 'Munição', 'ui.tac.routed': 'em debandada', 'ui.tac.loading': 'Carregando batalha detalhada…', 'ui.tac.loadingHelp': 'Montando prédios, ruas e árvores da área de 10 × 10 km. A batalha fica pausada até terminar.', 'ui.tac.destroyed': 'destruído',
   'ui.tac.ord.idle': 'parado', 'ui.tac.ord.move': 'movendo', 'ui.tac.ord.amove': 'atacar-mover', 'ui.tac.ord.attack': 'atacando', 'ui.tac.ord.hold': 'mantendo', 'ui.tac.ord.retreat': 'recuando',
   'ui.tac.selectFirst': 'Selecione esquadrões primeiro.', 'ui.tac.multi': 'Multi', 'ui.tac.tools': 'Ferram.', 'ui.tac.route': 'Rota', 'ui.tac.routeGo': 'Ir', 'ui.tac.breach': 'Abrir caminho', 'ui.tac.occupy': 'Ocupar prédio', 'ui.tac.formation': 'Formação', 'ui.tac.pickDest': 'Clique no terreno para o destino', 'ui.tac.pickEnemy': 'Clique perto do inimigo a atacar', 'ui.tac.pickFront': 'Clique na direção da frente',
   'ui.tac.pick.artillery': 'Clique no ponto do bombardeio de artilharia', 'ui.tac.pick.airstrike': 'Clique no ponto do ataque aéreo', 'ui.tac.pick.drone': 'Clique no ponto do ataque de drone',

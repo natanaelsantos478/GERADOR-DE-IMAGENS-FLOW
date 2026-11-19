@@ -1,6 +1,7 @@
 /** Real terrain heights for the tactical grid, sampled from the same Terrarium tiles the globe uses (z13 ≈ 19 m/px). */
 import { loadElevTile, TILE_PX } from '../globe/elevTiles';
 import { M_PER_DEG } from '../units/common';
+import { TAC_N, TAC_SIZE_M } from '../../sim/tactical/mapWorld';
 
 const Z = 13;
 const tileOf = (lon: number, lat: number) => {
@@ -11,7 +12,7 @@ const tileOf = (lon: number, lat: number) => {
 };
 
 /** Heights (n*n, row-major from the south-west cell centre) around `lon/lat`, or null when tiles are unreachable. */
-export async function sampleGrid(lon: number, lat: number, sizeM = 8000, n = 64): Promise<number[] | null> {
+export async function sampleGrid(lon: number, lat: number, sizeM = TAC_SIZE_M, n = TAC_N): Promise<number[] | null> {
   const cs = sizeM / n, mPerLon = M_PER_DEG * Math.cos((lat * Math.PI) / 180);
   const pts: { lo: number; la: number }[] = [];
   for (let cy = 0; cy < n; cy++) for (let cx = 0; cx < n; cx++) pts.push({ lo: lon + ((cx + 0.5) * cs - sizeM / 2) / mPerLon, la: lat + ((cy + 0.5) * cs - sizeM / 2) / M_PER_DEG });

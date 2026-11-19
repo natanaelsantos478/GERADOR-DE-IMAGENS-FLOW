@@ -10,6 +10,7 @@ import type { Globe } from '../globe/types';
 import { M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
 import { useTacSelection } from './store';
 import { sampleGrid } from './terrain';
+import { TAC_N, TAC_SIZE_M } from '../../sim/tactical/mapWorld';
 import { prepareTacticalVector } from '../../data/vector/prepare';
 import type { NavData } from '../../data/vector/nav';
 import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
@@ -121,7 +122,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       cache.set(k, { heights: h, origin: [lon, lat] });
       // real vector map (Overture / OpenFreeMap) BEFORE tac.start: the sim reads it synchronously from this cache
       // slow links (tests through a proxy) can raise the per-source budget with window.__vectorTimeoutMs
-      const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: 64, timeoutMs: (window as unknown as { __vectorTimeoutMs?: number }).__vectorTimeoutMs });
+      const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: TAC_N, timeoutMs: (window as unknown as { __vectorTimeoutMs?: number }).__vectorTimeoutMs });
       cache.set(k, { heights: h, nav, origin: [lon, lat] });
     }).finally(() => pending.delete(k)); pending.set(k, p); }
     return p;
@@ -132,7 +133,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     origins.set(key(lon, lat), hit ? hit.origin : [lon, lat]);
     if (hit) return { heights: hit.heights, vectorArea: hit.nav ?? undefined };
     void prefetchAt(lon, lat);
-    const n = 64, sizeM = 8000, cs = sizeM / n, mPer = M_PER_DEG * Math.cos((lat * Math.PI) / 180), cg = new Cesium.Cartographic();
+    const n = TAC_N, sizeM = TAC_SIZE_M, cs = sizeM / n, mPer = M_PER_DEG * Math.cos((lat * Math.PI) / 180), cg = new Cesium.Cartographic();
     const hs: number[] = [];
     for (let cy = 0; cy < n; cy++) for (let cx = 0; cx < n; cx++) {
       Cesium.Cartographic.fromDegrees(lon + ((cx + 0.5) * cs - sizeM / 2) / mPer, lat + ((cy + 0.5) * cs - sizeM / 2) / M_PER_DEG, 0, cg);
@@ -236,7 +237,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       const m = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(b.center[0], b.center[1], 0));
       scene.light = new Cesium.DirectionalLight({ direction: Cesium.Matrix4.multiplyByPointAsVector(m, new Cesium.Cartesian3(-0.45, 0.3, -0.85), new Cesium.Cartesian3()), intensity: 3 });
     }
-    tcam = createTacCamera({ viewer, hAt: (x, y) => hAt(x, y), ll, resolve: resolveTarget });
+    tcam = createTacCamera({ viewer, hAt: (x, y) => hAt(x, y), ll, resolve: resolveTarget, half: b.map.sizeM / 2 });
     if (saved.mode !== 'satellite') globe.setMapMode('satellite');
     globe.setLayerVisible('fill', false);
     renderLock(globe, 'tac', true);

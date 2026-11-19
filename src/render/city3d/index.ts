@@ -51,6 +51,10 @@ export interface City3D {
   destroy(): void;
 }
 
+let current: City3D | null = null;
+/** The running 3D city (null before the globe mounts): the detailed battle view waits on it while loading. */
+export const currentCity3D = () => current;
+
 export function attachCity3D(globe: Globe): City3D {
   const viewer = globe.viewer, scene = viewer.scene, cam = viewer.camera;
   setVegetationImagery(() => globe.imageryProvider());
@@ -181,7 +185,7 @@ export function attachCity3D(globe: Globe): City3D {
   void Promise.all([loadLandmarks(), loadStyles()]).then(() => { ready = true; update(); }).catch((e) => console.warn('[city3d] styles unavailable, layer stays off:', (e as Error).message));
   const hot = import.meta.env.DEV ? setInterval(() => { if (on) void reloadStyles(); }, 2000) : 0;
 
-  return {
+  const api: City3D = {
     reloadStyles: (force = true) => reloadStyles(force),
     active: () => on,
     update,
@@ -244,9 +248,11 @@ export function attachCity3D(globe: Globe): City3D {
       return false;
     },
     destroy() {
-      destroyed = true; lm.destroy(); offNight(); offFrame(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
+      destroyed = true; if (current === api) current = null; lm.destroy(); offNight(); offFrame(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
       setActive(false);
     },
   };
+  current = api;
+  return api;
 }
 export { CITY_CONFIG } from './config';

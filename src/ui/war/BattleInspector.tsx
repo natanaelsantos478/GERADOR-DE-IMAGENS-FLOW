@@ -40,7 +40,7 @@ export function BattleInspector({ sel }: InspectorProps) {
       <div className="col" style={{ marginTop: 10 }}>
         {b.tactical ? <div className="chip warn">{t('ui.mil.inTactical')}</div> : (
           <>
-            <button className="btn primary" data-testid="btn-tac-start" disabled={!d.mine || d.tacBusy} title={!d.mine ? t('ui.mil.notParticipant') : undefined} onClick={() => dispatch({ type: 'tac.start', country: me(), battleId: id } as never)}><Icon name="attack" />{t('ui.mil.commandBattle')}</button>
+            <button className="btn primary" data-testid="btn-tac-start" disabled={d.tacBusy} onClick={() => dispatch({ type: 'tac.start', country: me(), battleId: id } as never)}><Icon name="attack" />{t('ui.mil.commandBattle')}</button>
             <button className="btn" data-testid="btn-tac-auto" onClick={() => { if (d.paused) dispatch({ type: 'game.resume', country: me() }); ui().toast(t('ui.mil.autoResolving')); ui().select(null); }}>{t('ui.mil.autoResolve')}</button>
           </>
         )}

@@ -5,7 +5,7 @@ import { loadWorldStatic } from '../../data/loadWorld';
 import { createBattle, result, snapshotBattle, stepBattle } from './core';
 import { los } from './grid';
 import { issueOrder } from './orders';
-import { buildMapFromWorld, defaultObjectives } from './mapWorld';
+import { buildMapFromWorld, defaultObjectives, TAC_N } from './mapWorld';
 import { flatMap, scenarioInput, sideForce } from './scenario.test-util';
 import type { Battle, TacticalBattleInput } from './types';
 
@@ -116,7 +116,7 @@ describe('tactical on real maps', () => {
   for (const [name, lon, lat] of places) {
     it(`AI x AI finishes with a winner: ${name}`, () => {
       const map = buildMapFromWorld(world, lon, lat);
-      expect(map.heights.length).toBe(64 * 64);
+      expect(map.heights.length).toBe(TAC_N * TAC_N);
       const input = { ...scenarioInput(map, name), objectives: defaultObjectives(map, 0) };
       const b = createBattle(input, 42);
       for (let i = 0; i < 1900 * 20 && b.phase !== 'ended'; i++) stepBattle(b, 0.05);

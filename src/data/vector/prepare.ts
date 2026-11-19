@@ -3,6 +3,7 @@ import type { NavData } from './nav';
 import { rasterizeNav } from './rasterize';
 import { loadFromSources, openFreeMapSource, overtureSource, type VectorTileSource } from './source';
 import { idbStore } from './tiles';
+import { TAC_SIZE_M } from '../../sim/tactical/mapWorld';
 
 export interface PrepareOptions {
   sizeM?: number; cell?: number;
@@ -24,7 +25,7 @@ export async function prepareTacticalVector(lon: number, lat: number, o: Prepare
   try {
     const store = idbStore();
     const srcs = o.sources ?? (o.fetchFn ? [overtureSource({ store, fetchFn: o.fetchFn }), openFreeMapSource({ store, fetchFn: o.fetchFn })] : (shared ??= [overtureSource({ store }), openFreeMapSource({ store })]));
-    const sizeM = o.sizeM ?? 8000;
+    const sizeM = o.sizeM ?? TAC_SIZE_M;
     const got = await loadFromSources(srcs, { lon, lat, sizeM }, o.timeoutMs);
     if (!got) return null;
     return rasterizeNav(got.area, { sizeM, cell: o.cell, heights: o.heights, hn: o.hn });

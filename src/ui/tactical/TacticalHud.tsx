@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { LonLat } from '../../core/contracts';
+import { currentCity3D } from '../../render/city3d';
 import { useTacSelection } from '../../render/tactical/store';
 import { useTacTouch } from '../../render/tactical/touch';
 import type { FormationKind, Order } from '../../sim/tactical/types';
 import { fmtInt } from '../fmt';
 
-const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 import { t } from '../i18n';
 import { Progress } from '../kit/controls';
 import { Flag, Icon } from '../kit/Icon';
@@ -107,6 +107,43 @@ function OrderBar({ m, strip, setStrip }: { m: TacModel; strip: Strip; setStrip(
   );
 }
 
+/**
+ * Loading screen of the detailed battle view: the battle stays paused until the area's buildings, roads and trees
+ * have loaded (or 25 s pass), then resumes as it was.
+ */
+function TacLoading({ id, paused }: { id: string; paused: boolean }) {
+  const [state, setState] = useState<{ id: string; done: boolean; pct: number }>({ id, done: false, pct: 0 });
+  useEffect(() => {
+    const was = paused;
+    dispatch({ type: 'tac.pause', country: me(), paused: true } as never);
+    const t0 = performance.now();
+    let seen = false;
+    const tick = window.setInterval(() => {
+      const s = currentCity3D()?.stats();
+      const busy = s ? s.loading + (s.active ? 0 : 1) : 1, ready = s?.ready ?? 0;
+      if (ready > 0) seen = true;
+      const el = performance.now() - t0, pct = Math.min(99, Math.round(seen ? (ready / Math.max(1, ready + busy)) * 100 : el / 250));
+      if ((seen && busy === 0 && el > 2500) || el > 25_000) {
+        window.clearInterval(tick);
+        if (!was) dispatch({ type: 'tac.pause', country: me(), paused: false } as never);
+        setState({ id, done: true, pct: 100 });
+      } else setState({ id, done: false, pct });
+    }, 400);
+    return () => window.clearInterval(tick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per battle
+  }, [id]);
+  if (state.done) return null;
+  return (
+    <div className="tac-loading" data-testid="tac-loading" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'grid', placeItems: 'center', background: 'rgba(8,12,18,0.82)', color: '#fff' }}>
+      <div style={{ textAlign: 'center', width: 280 }}>
+        <div style={{ fontSize: 16, marginBottom: 10 }}>{t('ui.tac.loading')}</div>
+        <Progress value={state.pct / 100} tone="good" />
+        <div className="dim" style={{ fontSize: 12, marginTop: 8 }}>{t('ui.tac.loadingHelp')}</div>
+      </div>
+    </div>
+  );
+}
+
 export function TacticalHud() {
   const m = useTacModel();
   const sel = useTacSelection((s) => s.selected);
@@ -131,6 +168,7 @@ export function TacticalHud() {
   const left = m.phase === 'deploy' ? Math.max(0, m.deployLimit - m.t) : Math.max(0, m.timeLimit - m.t);
   return (
     <>
+      <TacLoading id={m.id} paused={m.paused} />
       <div className={`tac-top pe ${topMin ? 'min' : ''} ${m.phase}`} data-testid="tac-top">
         <div className="row tac-info" style={{ gap: 10 }}>
           <button className="btn sm m-only" data-testid="tac-top-toggle" aria-expanded={!topMin} aria-label={t('tac.title')} onClick={() => setTopMin(!topMin)}>{topMin ? '▾' : '▴'}</button>
@@ -160,7 +198,7 @@ export function TacticalHud() {
         {m.phase === 'combat' && m.log.length > 0 && (
           <div data-testid="tac-log" style={{ fontSize: 11, lineHeight: 1.35 }}>
             {m.log.slice(0, 3).map((e, i) => (
-              <div key={`${e.t}-${i}`} className={e.side === m.player ? 'warn' : 'dim'}>{fmt(e.t)} · {e.name}: {t(`tac.inc.${e.k}`)}</div>
+              <div key={`${e.t}-${i}`} className={e.side === m.player ? 'warn' : 'dim'}>{clock(e.t)} · {e.name}: {t(`tac.inc.${e.k}`)}</div>
             ))}
           </div>
         )}
