@@ -65,11 +65,48 @@ function bbox(p: VPoly) {
   return [x0, y0, x1, y1];
 }
 
+/** Building footprints of a tile bucketed on a 40 m grid (built once per tile data). */
+const GRID = new WeakMap<VectorArea, Map<number, VPoly[]>>();
+const GC = 40, gk = (i: number, j: number) => i * 100003 + j;
+function grid(a: VectorArea) {
+  let g = GRID.get(a);
+  if (g) return g;
+  g = new Map();
+  for (const b of a.buildings) {
+    const [x0, y0, x1, y1] = bbox(b);
+    for (let i = Math.floor(x0 / GC); i <= Math.floor(x1 / GC); i++) for (let j = Math.floor(y0 / GC); j <= Math.floor(y1 / GC); j++) (g.get(gk(i, j)) ?? g.set(gk(i, j), []).get(gk(i, j))!).push(b);
+  }
+  GRID.set(a, g);
+  return g;
+}
+
+/**
+ * True when nothing built stands between two points (lon, lat, absolute height m): the straight line is sampled every
+ * 4 m and blocked where it passes through a building footprint below its roof. Unknown areas (no city tile) count as clear.
+ */
+export function lineOfSight(a: [number, number, number], b: [number, number, number]): boolean {
+  for (const t of LIVE) {
+    if (t.state !== 'ready' || !t.area || !t.ground) continue;
+    const half = t.ref.sizeM / 2, g = grid(t.area);
+    const loc = (p: [number, number, number]) => { const [gx, gy] = tileXY(p[0], p[1], TZ); return [(gx - (t.ref.x + 0.5)) * t.ref.sizeM, -(gy - (t.ref.y + 0.5)) * t.ref.sizeM]; };
+    const [ax, ay] = loc(a), [bx, by] = loc(b), L = Math.hypot(bx - ax, by - ay), n = Math.max(1, Math.ceil(L / 4));
+    for (let s = 1; s < n; s++) {
+      const f = s / n, x = ax + (bx - ax) * f, y = ay + (by - ay) * f;
+      if (Math.abs(x) > half || Math.abs(y) > half) continue;
+      const z = a[2] + (b[2] - a[2]) * f;
+      for (const p of g.get(gk(Math.floor(x / GC), Math.floor(y / GC))) ?? []) {
+        if (t.ground(x, y) + (p.h ?? 8) > z && inPolyEvenOdd(p, x, y)) return false;
+      }
+    }
+  }
+  return true;
+}
+
 /**
  * Up to `n` spots around lon/lat, at least `gap` m apart, within `radius` m.
  * `air`: taxiways, aprons and runways of the airfield instead of streets.
  */
-export function streetSpots(lon: number, lat: number, n: number, gap: number, air = false, radius = 900): Spot[] | null {
+export function streetSpots(lon: number, lat: number, n: number, gap: number, air = false, radius = 350): Spot[] | null {
   const ready = [...LIVE].filter((t) => t.state === 'ready' && t.area && t.ground);
   const s = ready.map((t) => t.ref.key).sort().join();
   if (s !== sig) { sig = s; cache.clear(); }

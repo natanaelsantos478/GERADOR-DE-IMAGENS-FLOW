@@ -7,11 +7,13 @@ import { clamp, renderLock, spriteCanvas } from './common';
 const C = Cesium.Color;
 const V = (x: number, y: number) => new Cesium.Cartesian2(x, y);
 
+/** cannon: tank gun / auto: autocannon or heavy MG / rifle: small arms / artillery: indirect fire (no tracer, lobbed shell). */
+export type ShotKind = 'cannon' | 'auto' | 'rifle' | 'artillery';
 export interface FxApi {
   explosion(pos: LonLat, big?: boolean): void;
   nuke(pos: LonLat): void;
   /** One shot at real scale (close-up battles): muzzle flash, tracer and impact. Positions are lon/lat/height (m). */
-  shot(from: [number, number, number], to: [number, number, number], kind: 'cannon' | 'rifle'): void;
+  shot(from: [number, number, number], to: [number, number, number], kind: ShotKind): void;
   /** Keeps a fire+smoke column at `key`; call `stopFire` to remove. */
   fire(key: string, pos: LonLat, height?: number): void;
   stopFire(key: string): void;
@@ -51,17 +53,18 @@ export function createFx(globe: Globe): FxApi {
   return {
     shot(from, to, kind) {
       if (timed.size > 40) return;
-      const cannon = kind === 'cannon';
-      burst(from, cannon ? 3 : 0.8, cannon ? 8 : 3, cannon ? 0.5 : 0.15, '#fff2b0');
-      const line = tracers.add({
-        positions: Cesium.Cartesian3.fromDegreesArrayHeights([...from, ...to]), width: cannon ? 3 : 1.5,
-        material: Cesium.Material.fromType('Color', { color: C.fromCssColorString(cannon ? '#ffd27a' : '#ffe9a8').withAlpha(0.9) }),
+      const big = kind === 'cannon' || kind === 'artillery';
+      const S = { cannon: [3, 0.5, 7, 1.6, 220], auto: [1.4, 0.2, 2.5, 0.6, 160], rifle: [0.8, 0.15, 1.2, 0.4, 120], artillery: [5, 0.8, 12, 2.4, 1400] }[kind];
+      burst(from, S[0], big ? 8 : 3, S[1], '#fff2b0');
+      const line = kind === 'artillery' ? null : tracers.add({
+        positions: Cesium.Cartesian3.fromDegreesArrayHeights([...from, ...to]), width: kind === 'cannon' ? 3 : kind === 'auto' ? 2 : 1.5,
+        material: Cesium.Material.fromType('Color', { color: C.fromCssColorString(kind === 'rifle' ? '#ffe9a8' : '#ffd27a').withAlpha(0.9) }),
       });
       const t1 = setTimeout(() => {
-        timers.delete(t1); tracers.remove(line);
-        burst(to, cannon ? 7 : 1.2, cannon ? 16 : 4, cannon ? 1.6 : 0.4, cannon ? '#ffb347' : '#d8c8a0');
+        timers.delete(t1); if (line) tracers.remove(line);
+        burst(to, S[2], big ? 16 : 4, S[3], big ? '#ffb347' : '#d8c8a0');
         globe.requestRender();
-      }, cannon ? 220 : 120);
+      }, S[4]);
       timers.add(t1);
       globe.requestRender();
     },

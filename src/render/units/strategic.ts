@@ -8,8 +8,21 @@ import type { Globe } from '../globe/types';
 import { groundOf, mode, ModelPool, assetUrl, badgeCanvas, clamp, lerpAngle, offsetLonLat, rad, renderEvents, renderLock, svgImage, textBadge, type ModelHandle } from './common';
 import { clusterScreen, type ClusterItem } from './cluster';
 import { useUnitSelection } from './store';
-import { streetSpots } from '../city3d/spots';
-import type { FxApi } from './fx';
+import { lineOfSight, streetSpots } from '../city3d/spots';
+import type { FxApi, ShotKind } from './fx';
+
+/**
+ * What each model can fire in the close-up combat (by catalog id prefix): weapon, range (m), chance per tick, muzzle
+ * height (m). Trucks, air-defence launchers, radars and engineering vehicles carry people/equipment, not guns: null.
+ */
+function weaponOf(id: string): { kind: ShotKind; range: number; rate: number; muzzle: number } | null {
+  if (id.startsWith('soldier')) return { kind: 'rifle', range: 450, rate: 0.6, muzzle: 1.35 };
+  if (id.startsWith('mbt')) return { kind: 'cannon', range: 2500, rate: 0.25, muzzle: 2.3 };
+  if (id.startsWith('ifv')) return { kind: 'auto', range: 1500, rate: 0.4, muzzle: 2.4 };
+  if (id.startsWith('apc') || id.startsWith('recon')) return { kind: 'auto', range: 900, rate: 0.35, muzzle: 2.3 };
+  if (id.startsWith('spg') || id.startsWith('mlrs') || id.startsWith('howitzer') || id.startsWith('artillery')) return { kind: 'artillery', range: 20_000, rate: 0.12, muzzle: 3 };
+  return null;
+}
 
 /** Stable 0..1 per formation / model slot (same layout every frame). */
 const hash01 = (id: string, i: number, s: number) => {
@@ -224,7 +237,10 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     // standing still at real scale inside the 3D city: on the streets / military grounds (land) or the taxiways and aprons
     // (aircraft), never inside a building; elsewhere a loose, irregular spread instead of a perfect grid
     const nv = Math.min(fs.nVeh, n);
-    const spots = !naval && !moving && m < 1.5 ? streetSpots(fs.lon, fs.lat, nv, air ? 45 : 18, air) : null;
+    // same spots at every zoom (only the gap grows with the exaggeration, in steps so the cache holds): a model must not
+    // jump to another street when the camera crosses a height
+    const step = m < 1.5 ? 1 : m < 3 ? 2.5 : 5;
+    const spots = !naval && !moving ? streetSpots(fs.lon, fs.lat, nv, (air ? 45 : 18) * step, air, air ? 1500 : 350 * Math.sqrt(step)) : null;
     fs.pts.length = n;
     const put = (hd: ModelHandle, i: number, lo: number, la: number, ht: number, hdg: number) => { pool.place(hd, lo, la, ht, hdg, m); fs.pts[i] = [lo, la, ht]; };
     fs.handles.forEach((hd, i) => {
@@ -235,7 +251,6 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
         const side = (i % 2 ? 1 : -1) * (4 + hash01(fs.id, i, 4) * 3), back = (hash01(fs.id, i, 5) - 0.3) * 6, vh = rad(fs.hdg);
         const [lo, la] = offsetLonLat(v[0], v[1], side * Math.cos(vh) - back * Math.sin(vh), -side * Math.sin(vh) - back * Math.cos(vh));
         put(hd, i, lo, la, gh(lo, la), fs.hdg + (hash01(fs.id, i, 6) - 0.5) * 60);
-        if (!fs.v.battleId) pool.setAnim(hd, moving ? 'walk' : 'idle');
         return;
       }
       const sp0 = spots?.[i];
@@ -255,6 +270,8 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
       const ht = flying ? gh(lo, la) + 1500 + mul * 30 : naval ? 0 : gh(lo, la);
       put(hd, i, lo, la, ht, fs.hdg + (moving ? 0 : (hash01(fs.id, i, 3) - 0.5) * 40));
     });
+    // every soldier is animated (without a clip the skinned model stands in its T bind pose)
+    for (const hd of fs.handles) if (hd.modelId.startsWith('soldier')) pool.setAnim(hd, fs.v.battleId ? 'shoot' : moving ? 'walk' : 'idle');
   }
   function updateNear() {
     const cam = globe.cameraState();
@@ -269,15 +286,21 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
     let budget = MAX_MODELS;
     const W = scene.canvas.clientWidth / 2, H = scene.canvas.clientHeight / 2;
     // models only for formations that are their own icon on screen (grouped ones are one icon with a count, their models are not drawn)
-    const cand = near ? [...states.values()].filter((fs) => fs.vis && fs.cluster === null && fs.gN === 0).sort((a, b) => (a.sx - W) ** 2 + (a.sy - H) ** 2 - ((b.sx - W) ** 2 + (b.sy - H) ** 2)) : [];
+    // close up, the formation's centre leaves the screen while its models are still in view: keep those within ~2 km
+    const kmFrom = (fs: FS) => Math.hypot((fs.lon - cam.lon) * Math.cos(rad(cam.lat)), fs.lat - cam.lat) * 111;
+    const cand = near ? [...states.values()].filter((fs) => (fs.vis || (cam.height < 3000 && !fs.hid && kmFrom(fs) < 2)) && fs.cluster === null && fs.gN === 0).sort((a, b) => (a.sx - W) ** 2 + (a.sy - H) ** 2 - ((b.sx - W) ** 2 + (b.sy - H) ** 2)) : [];
     const keep = new Set<FS>();
     for (const fs of cand) {
       if (budget <= 0) break;
       const want = desired(fs).slice(0, budget);
       const sig = want.join(',');
       if (sig !== fs.modelSig) {
-        fs.handles.forEach((h) => pool.release(h));
-        fs.handles = want.map((m) => pool.acquire(m, fs.tag)).filter(Boolean) as ModelHandle[];
+        // keep the models already drawn where the wanted list agrees (adding the soldiers on zoom-in must not reload the
+        // vehicles: a reloaded glb is invisible until it finishes loading — the "tank vanishes when I get closer")
+        const next: ModelHandle[] = [];
+        want.forEach((m, i) => { const old = fs.handles[i]; if (old && old.modelId === m) next.push(old); else { if (old) pool.release(old); const h = pool.acquire(m, fs.tag); if (h) next.push(h); } });
+        for (let i = want.length; i < fs.handles.length; i++) pool.release(fs.handles[i]);
+        fs.handles = next;
         fs.modelSig = sig;
       }
       budget -= fs.handles.length;
@@ -488,25 +511,31 @@ export function attachStrategic(globe: Globe, getGame: () => Game | null, pool: 
   let fx: FxApi | null = null;
   const fireTimer = window.setInterval(() => {
     if (dead || !fx || mul > 3 || document.hidden) return;
-    const fighting = [...states.values()].filter((fs) => fs.v.battleId && fs.pts.length);
+    const fighting = [...states.values()].filter((fs) => fs.v.battleId && fs.v.domain === 'land' && fs.pts.length);
+    const kLat = 111_320;
     for (const fs of fighting) {
-      const foes = fighting.filter((o) => o.v.battleId === fs.v.battleId && o.v.country !== fs.v.country);
-      const foe = foes[Math.floor(Math.random() * foes.length)];
-      for (let k = 0; k < 2; k++) {
+      const targets = fighting.filter((o) => o.v.battleId === fs.v.battleId && o.v.country !== fs.v.country).flatMap((o) => o.pts.filter(Boolean));
+      if (!targets.length) continue; // the enemy is not drawn here: nobody fires into empty streets
+      const kLon = kLat * Math.cos(rad(fs.lat));
+      for (let k = 0; k < 3; k++) {
         const i = Math.floor(Math.random() * fs.pts.length), p = fs.pts[i], hd = fs.handles[i];
         if (!p || !hd?.model?.show) continue;
-        const soldier = hd.modelId.startsWith('soldier');
-        if (!soldier && Math.random() > 0.3) continue;
-        // target: an enemy model, or a point ahead (enemy beyond the drawn area)
-        const t = foe?.pts.length ? foe.pts[Math.floor(Math.random() * foe.pts.length)] : null;
-        const [dlo, dla] = offsetLonLat(p[0], p[1], Math.sin(rad(fs.hdg)) * 250, Math.cos(rad(fs.hdg)) * 250);
-        const to: [number, number, number] = t ? [t[0] + (Math.random() - 0.5) * 1e-4, t[1] + (Math.random() - 0.5) * 1e-4, t[2] + 1] : [dlo, dla, gh(dlo, dla) + 0.5];
-        if (soldier) pool.setAnim(hd, 'shoot');
-        fx.shot([p[0], p[1], p[2] + (soldier ? 1.3 : 2.4) * m0(fs)], to, soldier ? 'rifle' : 'cannon');
+        const w = weaponOf(hd.modelId);
+        if (!w || Math.random() > w.rate) continue;
+        const muzzle: [number, number, number] = [p[0], p[1], p[2] + w.muzzle * mul];
+        // a target in range that the shooter can see (indirect fire: any target in range)
+        let to: [number, number, number] | null = null;
+        for (let tries = 0; tries < 4 && !to; tries++) {
+          const t = targets[Math.floor(Math.random() * targets.length)];
+          if (Math.hypot((t[0] - p[0]) * kLon, (t[1] - p[1]) * kLat) > w.range) continue;
+          const aim: [number, number, number] = [t[0], t[1], t[2] + 1.2];
+          if (w.kind === 'artillery' || lineOfSight(muzzle, aim)) to = [aim[0] + (Math.random() - 0.5) * 4e-5, aim[1] + (Math.random() - 0.5) * 4e-5, aim[2]];
+        }
+        if (!to) continue;
+        fx.shot(muzzle, to, w.kind);
       }
     }
   }, 450);
-  const m0 = (fs: FS) => (fs.v.domain === 'naval' ? navalMul : mul);
 
   return {
     setFx(f: FxApi) { fx = f; },
