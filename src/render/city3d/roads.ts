@@ -3,6 +3,7 @@ import type { VectorArea, VLine } from '../../data/vector/types';
 import { pickStyle, roadWidth, type RoadProfile, type Styles } from './styles';
 import type { TileRef } from './geo';
 import type { Ground } from './ground';
+import { paintGround, roadPattern, type GroundTex } from './groundPaint';
 import { Mesh, PAT } from './mesh';
 
 const ORDER = ['path', 'steps', 'track', 'service', 'minor', 'tertiary', 'secondary', 'primary', 'trunk', 'motorway', 'taxiway', 'runway', 'rail'];
@@ -12,13 +13,16 @@ export const widthOf = (st: Styles, cls: string): number => roadWidth(profile(st
 export interface RoadStats { segments: number; bridges: number }
 
 /** Vector raster of the tile: water tint + road profiles (real metre widths), north up. Bridges/tunnels are skipped (bridges are meshes). */
-export function drawRoads(area: VectorArea, tile: TileRef, px: number, st: Styles): { canvas: HTMLCanvasElement; stats: RoadStats } {
+/** `ground`: detailed battle view: own ground textures under everything (groundPaint.ts) and textured road surfaces. */
+export function drawRoads(area: VectorArea, tile: TileRef, px: number, st: Styles, ground?: GroundTex | null): { canvas: HTMLCanvasElement; stats: RoadStats } {
   const c = document.createElement('canvas');
   c.width = c.height = px;
   const g = c.getContext('2d')!;
   const k = px / tile.sizeM, half = tile.sizeM / 2;
   g.lineCap = 'round'; g.lineJoin = 'round';
   const stats: RoadStats = { segments: 0, bridges: 0 };
+  if (ground) paintGround(g, area, tile, k, half, ground);
+  const asphalt = ground ? roadPattern(g, ground, k, 'asphalt') : null, gravel = ground ? roadPattern(g, ground, k, 'gravel') : null;
   const path = (pts: number[], close = false) => {
     g.beginPath();
     for (let i = 0; i < pts.length / 2; i++) { const X = (pts[i * 2] + half) * k, Y = (half - pts[i * 2 + 1]) * k; if (i) g.lineTo(X, Y); else g.moveTo(X, Y); }
@@ -47,6 +51,8 @@ export function drawRoads(area: VectorArea, tile: TileRef, px: number, st: Style
     if (P.casing && !P.unpaved) strokeAll(P.casing, w + 1.1);
     if (P.edges) strokeAll('rgba(236,236,226,0.8)', w - 0.7);
     strokeAll(P.fill, P.edges ? w - 1.5 : w);
+    // own ground: the surface texture over the flat road colour (asphalt, or gravel on unpaved tracks)
+    if (asphalt && gravel) { g.globalAlpha = P.unpaved ? 0.85 : 0.5; strokeAll((P.unpaved ? gravel : asphalt) as unknown as string, P.edges ? w - 1.5 : w); g.globalAlpha = 1; }
     if (P.rails) strokeAll('rgba(190,190,190,0.7)', 0.4);
     if (P.marking === 'dashed') strokeAll('rgba(244,244,236,0.85)', 0.3, [3.2, 5.5]);
   }

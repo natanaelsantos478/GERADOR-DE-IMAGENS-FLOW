@@ -60,6 +60,9 @@ const ARID: number[][] = [
 const MONSOON: number[][] = [[68, 8, 95, 28, 1], [95, 5, 125, 23, 0.9], [-16, 5, 18, 14, 0.8], [-62, -10, -45, 3, 0.4]];
 
 const inBox = (b: number[], lon: number, lat: number) => lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3];
+/** 0..1 how arid a place is (deserts 1): the detailed battle view lays sand there as the base ground. */
+export const aridityAt = (lon: number, lat: number): number => boxStrength(ARID, lon, lat);
+
 function boxStrength(boxes: number[][], lon: number, lat: number): number {
   let v = 0;
   for (const b of boxes) if (inBox(b, lon, lat)) v = Math.max(v, b[4]);

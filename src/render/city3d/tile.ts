@@ -18,6 +18,8 @@ import { placeTrees, TreeLayer, type TreePoint } from './trees';
 import { loadVegetation, type VegMask } from './vegetation';
 import { AirportPlanes, airfieldsIn } from './airplanes';
 import { LIVE, PlaceMarks } from './spots';
+import { loadGroundTextures } from './groundPaint';
+import { mode } from '../units/common';
 
 let sources: VectorTileSource[] | null = null;
 let appearance: CityAppearance | null = null, appearanceSig = '';
@@ -88,6 +90,8 @@ export class CityTile {
   veg: VegMask | null = null;
   /** civil aircraft parked at this tile's airport gates */
   planes: AirportPlanes | null = null;
+  /** The road raster carries the own ground (detailed battle view) instead of being transparent over the photo. */
+  ownGround = false;
   /** icons over hospitals, military areas and airfields */
   marks: PlaceMarks | null = null;
   private vegRetryAt = 0;
@@ -195,7 +199,11 @@ export class CityTile {
     await tick();
     tm = performance.now();
     if (stale()) { this.clearGenerated(); return; }
-    const rd = drawRoads(area, r, this.roadPx, st);
+    // detailed battle view: own ground textures instead of the satellite photo, at a finer raster
+    const own = mode.tactical ? await loadGroundTextures() : null;
+    if (stale()) { this.clearGenerated(); return; }
+    this.ownGround = !!own;
+    const rd = drawRoads(area, r, this.roadPx, st, own); // same raster size as the normal view: the close-up detail comes from the 3D grass
     this.stats.roads = rd.stats.segments;
     lap('roadRaster');
     const br = buildBridges(area.roads, r, ground, rd.stats, st), inf = buildInfra(area, r, ground, st);

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { prepareArea } from '../../render/tactical';
 import { battlePreviews } from '../../sim/military';
 import { fmtDec, fmtPct } from '../fmt';
 import { goToWhere } from '../goto';
@@ -11,6 +13,8 @@ import { countryName, dispatch, me, useGame } from '../useGame';
 import { selectFormation } from './ForcesPanel';
 
 export function BattleInspector({ sel }: InspectorProps) {
+  // the detailed area (terrain + 10 km of real map) is prepared only now, for this battle, then the battle opens
+  const [preparing, setPreparing] = useState(false);
   const id = String(sel.id ?? '');
   const d = useGame((g, ctx) => {
     const b = battlePreviews(ctx).find((x) => x.id === id);
@@ -40,7 +44,7 @@ export function BattleInspector({ sel }: InspectorProps) {
       <div className="col" style={{ marginTop: 10 }}>
         {b.tactical ? <div className="chip warn">{t('ui.mil.inTactical')}</div> : (
           <>
-            <button className="btn primary" data-testid="btn-tac-start" disabled={d.tacBusy} onClick={() => dispatch({ type: 'tac.start', country: me(), battleId: id } as never)}><Icon name="attack" />{t('ui.mil.commandBattle')}</button>
+            <button className="btn primary" data-testid="btn-tac-start" disabled={d.tacBusy || preparing} onClick={() => { setPreparing(true); const lim = new Promise((r) => setTimeout(r, 90_000)); void Promise.race([prepareArea(d.b.pos[0], d.b.pos[1]), lim]).finally(() => { setPreparing(false); dispatch({ type: 'tac.start', country: me(), battleId: id } as never); }); }}><Icon name="attack" />{preparing ? t('ui.tac.loading') : t('ui.mil.commandBattle')}</button>
             <button className="btn" data-testid="btn-tac-auto" onClick={() => { if (d.paused) dispatch({ type: 'game.resume', country: me() }); ui().toast(t('ui.mil.autoResolving')); ui().select(null); }}>{t('ui.mil.autoResolve')}</button>
           </>
         )}

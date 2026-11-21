@@ -12,10 +12,11 @@ import { opacityDebug } from './appearance';
 import { cachedTiles, CityTile, sharedAppearance, tallBuildings, nearBuildings } from './tile';
 import { forceTreeLod, inPolyEvenOdd, lastDiag } from './trees';
 import { setVegetationImagery } from './vegetation';
+import { GrassLayer } from './grass';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
-  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** civil aircraft parked at airport gates */ planes: number; /** trees standing at 0 m (sea / water): must stay 0 */ treesAtSeaLevel: number; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
+  buildings: number; trees: number; treeModels: number; /** triangles of the drawn tree instances */ treeTris: number; /** cells per tree detail level [full, mid, impostor] */ treeLods: number[]; /** green share of each tile on the satellite photo */ vegCover: number[]; /** civil aircraft parked at airport gates */ planes: number; /** 3D grass tufts drawn (detailed battle view) */ grass: number; /** trees standing at 0 m (sea / water): must stay 0 */ treesAtSeaLevel: number; /** per tile: cell rebuilds / terrain re-seats */ treeRebuilds: string[];
   /** median / p90 frame time (ms) over the last ~120 rendered frames */ frameMs: { med: number; p90: number }; roadSegments: number; bridges: number; tris: number;
   cover: Record<string, number>; treePts: number; treeSp: Record<string, number>; landmarks: number; loadMs: number[]; genMs: number[]; source: string[]; cachedTiles: number; timings: Record<string, number>[]; styleUse: Record<string, number>; stylesLoaded: boolean;
 }
@@ -63,6 +64,8 @@ export function attachCity3D(globe: Globe): City3D {
   let ready = false, on = false, offSince = 0, destroyed = false, hidRoads = false, agl = Infinity, running = 0;
   const loadMs: number[] = [];
   const queue: CityTile[] = [];
+  const grass = new GrassLayer(scene);
+  (window as unknown as { __grass?: GrassLayer }).__grass = grass;
   const lm = new LandmarkLayer(viewer, (lo, la) => globe.heightAt(lo, la));
   const cfg = () => CITY_CONFIG[getQuality().id];
   const c2 = new Cesium.Cartesian2(), cg = new Cesium.Cartographic();
@@ -88,7 +91,7 @@ export function attachCity3D(globe: Globe): City3D {
       viewer.creditDisplay.removeStaticCredit(credit);
       if (hidRoads) { globe.setLayerVisible('roads', true); hidRoads = false; }
       for (const t of tiles.values()) t.dispose();
-      tiles.clear(); queue.length = 0;
+      tiles.clear(); queue.length = 0; grass.clear();
     }
     scene.requestRender();
   }
@@ -112,11 +115,21 @@ export function attachCity3D(globe: Globe): City3D {
     const limit = mode.tactical ? c.enableHTac : c.enableH, now = performance.now();
     if (ready) lm.update(15_000 * (getQuality().id === 'mobile' ? 0.5 : getQuality().id === 'low' ? 0.7 : 1));
     if (!styles() || !ready) return;
+    // entering / leaving the detailed battle view: the loaded tiles swap the satellite photo for the own ground (or back)
+    for (const t of tiles.values()) if (t.state === 'ready' && !t.generating && t.ownGround !== mode.tactical) void t.regenerate(styles()!).then(applyLod);
     if (agl > limit) { if (!offSince) offSince = now; if (on && now - offSince > 2500) setActive(false); return; }
     offSince = 0;
     if (!on) setActive(true);
     const f = focus();
     if (!f) return;
+    // detailed battle view: 3D grass around the point looked at, only when close enough to see it
+    if (mode.tactical && agl < 600) {
+      // around the ground just ahead of the camera (the screen-centre ray can land far away when the view is flat)
+      const ahead = Math.min(80, agl * 1.5), hd = cam.heading, k = 111_320;
+      const glon = Cesium.Math.toDegrees(p.longitude) + (Math.sin(hd) * ahead) / (k * Math.cos(p.latitude)), glat = Cesium.Math.toDegrees(p.latitude) + (Math.cos(hd) * ahead) / k;
+      grass.update(glon, glat, tiles.values()).catch((e) => console.warn('city3d grass', e));
+    }
+    else if (grass.count) grass.clear();
     const R = Math.min(6500, Math.max(900, f.dist * 0.95)), [fx, fy] = tileXY(f.lon, f.lat, TZ);
     const mPer = (2 * Math.PI * 6378137 * Math.cos((f.lat * Math.PI) / 180)) / 2 ** TZ, rt = Math.ceil(R / mPer) + 1;
     const cand: { x: number; y: number; d: number }[] = [];
@@ -231,7 +244,7 @@ export function attachCity3D(globe: Globe): City3D {
         active: on, agl: Math.round(agl), tiles: all.length, ready: all.filter((t) => t.state === 'ready').length, loading: all.filter((t) => t.state === 'loading').length, failed: all.filter((t) => t.state === 'failed').length,
         cover: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.cover)) a[k] = (a[k] ?? 0) + v; return a; }, {}), treePts: sum((t) => t.stats.treePts), treeSp: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.treeSp)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
         buildings: sum((t) => t.stats.buildings), trees: sum((t) => t.trees?.stats().trees ?? 0), treeModels: sum((t) => t.trees?.stats().models ?? 0), treeTris: sum((t) => t.trees?.stats().tris ?? 0),
-        vegCover: all.map((t) => t.stats.vegCover), planes: sum((t) => t.planes?.count ?? 0), treesAtSeaLevel: sum((t) => (t.treePts ?? []).filter((p) => p.z <= 0.3).length), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
+        vegCover: all.map((t) => t.stats.vegCover), planes: sum((t) => t.planes?.count ?? 0), grass: grass.count, treesAtSeaLevel: sum((t) => (t.treePts ?? []).filter((p) => p.z <= 0.3).length), treeRebuilds: all.map((t) => `${t.trees?.stats().rebuilds ?? 0}/${t.trees?.stats().reseats ?? 0}`),
         treeLods: all.reduce((a, t) => { const l = t.trees?.stats().lods; if (l) l.forEach((v, i) => (a[i] += v)); return a; }, [0, 0, 0]), frameMs: frameMs(), roadSegments: sum((t) => t.stats.roads), bridges: sum((t) => t.stats.bridges), tris: sum((t) => t.stats.tris),
         landmarks: lm.count(), loadMs: loadMs.slice(-12), genMs: all.map((t) => t.stats.genMs).filter(Boolean), source: [...new Set(all.map((t) => t.stats.source).filter(Boolean))], cachedTiles: cachedTiles(), timings: all.map((t) => t.stats.t).filter((x) => x.bld !== undefined), stylesLoaded: !!styles(),
         styleUse: all.reduce<Record<string, number>>((a, t) => { for (const [k, v] of Object.entries(t.stats.styles)) a[k] = (a[k] ?? 0) + v; return a; }, {}),
@@ -248,7 +261,7 @@ export function attachCity3D(globe: Globe): City3D {
       return false;
     },
     destroy() {
-      destroyed = true; if (current === api) current = null; lm.destroy(); offNight(); offFrame(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
+      destroyed = true; if (current === api) current = null; grass.clear(); lm.destroy(); offNight(); offFrame(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
       setActive(false);
     },
   };

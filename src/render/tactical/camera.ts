@@ -21,8 +21,8 @@ export const FIELD_RANGE = 7000;
 export const MAX_HEIGHT = 4500;
 /** How far past the field edge (m) the camera may drift before it is pulled back. */
 const EDGE = 600;
-const MIN_CLEAR = 38; // metres above terrain (a vehicle seen at ~35 px is drawn exaggerated: the camera must stay out of the models)
-export const MIN_ZOOM = 10; // metres from the orbit target / min range of focus()
+const MIN_CLEAR = 2; // metres above terrain: the detailed view goes down to eye level (grass, soldiers up close)
+export const MIN_ZOOM = 3; // metres from the orbit target / min range of focus()
 
 /** Takes over the camera controller for the battle; returns focus/frame and a disposer that restores the globe's limits. */
 export function createTacCamera(d: TacCameraDeps) {

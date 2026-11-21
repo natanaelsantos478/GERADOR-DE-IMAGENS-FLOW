@@ -11,7 +11,8 @@ import { M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, 
 import { useTacSelection } from './store';
 import { sampleGrid } from './terrain';
 import { TAC_N, TAC_SIZE_M } from '../../sim/tactical/mapWorld';
-import { prepareTacticalVector } from '../../data/vector/prepare';
+import { baseGround, loadGroundTextures } from '../city3d/groundPaint';
+import { prepareTacticalVectorOffThread } from '../../data/vector/prepare';
 import type { NavData } from '../../data/vector/nav';
 import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
 import { attackOrder } from './attackOrder';
@@ -106,6 +107,9 @@ function craterCanvas(): HTMLCanvasElement {
   return c;
 }
 
+/** Prepares the detailed battle area at lon/lat (terrain heights + real vector map, off the page thread); set by the mounted layer. */
+export let prepareArea: (lon: number, lat: number) => Promise<void> = () => Promise.resolve();
+
 export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): TacticalLayer {
   const viewer = globe.viewer, scene = viewer.scene;
   const cache = new Map<string, { heights: number[]; nav?: NavData | null; origin: [number, number] }>();
@@ -122,7 +126,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       cache.set(k, { heights: h, origin: [lon, lat] });
       // real vector map (Overture / OpenFreeMap) BEFORE tac.start: the sim reads it synchronously from this cache
       // slow links (tests through a proxy) can raise the per-source budget with window.__vectorTimeoutMs
-      const nav = await prepareTacticalVector(lon, lat, { heights: h, hn: TAC_N, timeoutMs: (window as unknown as { __vectorTimeoutMs?: number }).__vectorTimeoutMs });
+      const nav = await prepareTacticalVectorOffThread(lon, lat, { heights: h, hn: TAC_N, timeoutMs: (window as unknown as { __vectorTimeoutMs?: number }).__vectorTimeoutMs });
       cache.set(k, { heights: h, nav, origin: [lon, lat] });
     }).finally(() => pending.delete(k)); pending.set(k, p); }
     return p;
@@ -141,12 +145,12 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     }
     return { heights: hs };
   });
-  const timerPre = setInterval(() => {
-    const g = getGame();
-    if (g) for (const b of battlePreviews(g.ctx)) void prefetchAt(b.pos[0], b.pos[1]);
-  }, 4000);
+  // the detailed area is prepared ONLY for the battle the player opens (BattleInspector awaits it before tac.start)
+  prepareArea = (lon, lat) => prefetchAt(lon, lat);
 
   // ------------------------------------------------------------ per-battle state
+  /** Own base ground over the battle square (replaces the satellite photo there). */
+  let baseLayer: Cesium.ImageryLayer | null = null;
   let cur: { id: string; b: Battle; pool: ModelPool | null; ents: Map<number, E>; clat: number; clon: number; mPerLon: number } | null = null;
   let bills: Cesium.BillboardCollection, lines: Cesium.PolylineCollection, labels: Cesium.LabelCollection;
   const testLines: Cesium.Polyline[] = [];
@@ -239,6 +243,21 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     }
     tcam = createTacCamera({ viewer, hAt: (x, y) => hAt(x, y), ll, resolve: resolveTarget, half: b.map.sizeM / 2 });
     if (saved.mode !== 'satellite') globe.setMapMode('satellite');
+    // own ground over the whole 10 km square (the satellite photo is not shown inside the battle); the 3D city tiles
+    // near the camera paint the detailed ground (land cover, streets) over it
+    void loadGroundTextures().then((tex) => {
+      if (!tex || !cur || cur.id !== b.id) return;
+      const c = document.createElement('canvas'); c.width = c.height = 1024;
+      const g2 = c.getContext('2d')!, kind = baseGround(org[0], org[1]), pat = g2.createPattern(tex[kind], 'repeat')!;
+      const sc = (300 * (1024 / b.map.sizeM)) / tex[kind].width; pat.setTransform(new DOMMatrix([sc, 0, 0, sc, 0, 0]));
+      g2.fillStyle = pat; g2.fillRect(0, 0, 1024, 1024);
+      const [w0, s0] = ll(-b.map.sizeM / 2, -b.map.sizeM / 2), [e0, n0] = ll(b.map.sizeM / 2, b.map.sizeM / 2);
+      void Cesium.SingleTileImageryProvider.fromUrl(c.toDataURL('image/jpeg', 0.85), { rectangle: Cesium.Rectangle.fromDegrees(w0, s0, e0, n0) }).then((prov) => {
+        if (!cur || cur.id !== b.id) return;
+        baseLayer = viewer.imageryLayers.addImageryProvider(prov, 1);
+        scene.requestRender();
+      });
+    });
     globe.setLayerVisible('fill', false);
     renderLock(globe, 'tac', true);
     useTacSelection.getState().clear();
@@ -263,6 +282,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     craters = []; cur = null; fxs = []; ruinCache.clear(); ruinFx.clear(); smolder.clear(); ruinList = []; ruinN = -1; routeVis.clear(); setRuins([], 0); projLines = []; seenProj.clear(); objs = []; deployLines = []; squadLabels.clear(); squadMarks.clear(); selLines.clear(); garrLines.clear(); navB = null; smokeZones.clear(); wrecks = 0;
     renderLock(globe, 'tac', false);
     tcam?.destroy(); tcam = null;
+    if (baseLayer) { viewer.imageryLayers.remove(baseLayer, true); baseLayer = null; }
     if (saved) { scene.light = saved.light; if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); if (saved.roads) globe.setLayerVisible('roads', true); saved = null; }
     mode.tactical = false;
     useTacSelection.getState().clear();
@@ -844,7 +864,7 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     setCluster: (on) => { clusterOn = on; clNext = 0; },
     prefetch: async () => { const g = getGame(); if (g) await Promise.all(battlePreviews(g.ctx).map((b) => prefetchAt(b.pos[0], b.pos[1]))); },
     destroy() {
-      clearInterval(timer); clearInterval(timerPre); clearInterval(simTimer);
+      clearInterval(timer); clearInterval(simTimer);
       scene.preRender.removeEventListener(onPre);
       unFocus(); unPick(); unHover(); unClick(); unBox(); unRight();
       leave();
