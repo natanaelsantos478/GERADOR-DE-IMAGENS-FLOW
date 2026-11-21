@@ -91,6 +91,15 @@ Cada módulo de `src/sim` tipa sua fatia do estado, seus comandos e eventos por 
 sobre `src/core/contracts.ts` e registra seu sistema em `src/app/systems.ts`. O estado da simulação é JSON puro e
 determinístico (RNG semeado, sem `Date.now`).
 
+## Batalha detalhada de perto (LOD de proximidade)
+
+Abaixo de ~150 m da câmera (`window.__tactical.setNearRange(m)`; 0 desliga; perfis baixos usam raio e quantidade menores) as unidades trocam o modelo genérico por um modelo detalhado de `public/models/near/` (pipeline: `tools/models/fetch-near.sh` + `near-build.mjs`):
+- **Veículos** (MBT, IFV, APC, obus autopropulsado, caminhão, SAM*) têm partes separadas: a torre gira até o alvo (velocidade por classe), o canhão eleva conforme a distância e recua no tiro com clarão na boca, as rodas giram e a esteira "rola" com a velocidade, o casco acompanha a inclinação do terreno (arfagem e rolagem) e levanta poeira atrás das esteiras. Destruído: carcaça escura + fumaça.
+- **Soldados** usam o kit CC0 "Toon Shooter" (Quaternius): correr com fuzil, andar, atirar parado/andando, agachar (em cobertura, entrincheirado ou suprimido), morrer; fase e velocidade de animação diferentes por soldado; só os 150 mais próximos (menos nos perfis baixos) mantêm o esqueleto animado, os demais ficam em pose parada.
+- **Grama**: tufos gerados em código só perto da câmera (≤120 m no desktop, ≤50 m no celular, desligada no perfil baixo), só onde o mapa vetorial diz campo/grama/parque (ou o satélite está bem verde), balançando ao vento; padrão editável em `public/data/styles/grass.json`.
+- A troca de nível espera o modelo novo carregar (sem "pop") e tem histerese (sai de perto só a 1,2× o raio). Fotos: `docs/assets/near-*.png` (`e2e/near-photos.spec.ts`).
+(*) o SAM de perto é um caminhão com canhão antiaéreo; não há SAM com mísseis livre com partes separadas.
+
 ## Créditos e licenças
 
 - Fronteiras, províncias, cidades, aeroportos, portos, estradas e ferrovias: [Natural Earth](https://www.naturalearthdata.com/) (domínio público).

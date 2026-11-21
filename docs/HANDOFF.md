@@ -60,3 +60,9 @@ Também pronto (nov/2026): cidade 3D sob demanda (prédios texturizados via atla
 - Nunca usar nomes de modelos Gemini 2.0 (descontinuados) — conferir o modelo atual antes de qualquer menção.
 - O headless não tem GPU: testes visuais lentos; avançar a simulação por chamadas diretas (`window.__game`, `__globe`, `__units`, `__tactical`, `__ui`).
 - Limite de uso de 5 h por conta: poucos agentes em paralelo (2–3), cada um com diretórios próprios para não colidir.
+
+## Batalha detalhada de perto (LOD de proximidade) — onde está
+- `src/render/tactical/nearLod.ts` (lógica pura, testada): seleção near/far com histerese, orçamento por perfil, estado→animação do soldado, teto de esqueletos animados, matemática da torre/canhão/recuo/rodas/esteira. `vehicleRig.ts` aplica isso nos nós do glTF (Cesium `ModelNode`) e rola a esteira com um shader. `layer.ts` (`planNear`, `swapLod`, `animateSoldier`, `animateVehicle`, `muzzleShot`) liga tudo à sim tática; depuração: `__tactical.lod()`, `setNearRange(m)`, `fireAt(id)`, `rigSet(id, {...})`.
+- Modelos de perto em `public/models/near/` (manifest próprio `near/manifest.json`, mesclado em `loadModelData`); pipeline `tools/models/fetch-near.sh` + `near-build.mjs`. Licenças em `public/models/LICENSES.md`.
+- Grama: `src/render/city3d/grass.ts` + `grassScatter.ts`, padrão `public/data/styles/grass.json`; `__city3d.grass` (`stats`, `probe`, `findGrass`, `setEnabled`, `setObstacles`).
+- Fotos/medições: `NEAR_PHOTOS=1 E2E_PORT=5190 npx playwright test e2e/near-photos.spec.ts` (contra `npx vite --port 5190`) → `docs/assets/near-*.png`, `near-perf.json`.
