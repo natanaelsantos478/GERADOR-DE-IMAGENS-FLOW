@@ -177,3 +177,19 @@ Converted with tools/models/landmarks/convert.py (bpy); mbt_merkava and transpor
 ## Nature (`nature/*.glb`, CC0-1.0)
 Stylized Nature MegaKit (standard/free) by Quaternius, https://opengameart.org/content/stylized-nature-megakit (https://quaternius.com). Normal maps dropped, bark re-encoded to 256 px JPEG, leaves 512 px, meshes quantized: commontree_1..5, pine_1..5, deadtree_1, deadtree_3, fern_1, bush_common.
 Derived distance levels in `nature/lod/` (same licence): `<species>_1.glb` mid-detail (tools/models/tree-lod.mjs: bark simplified with meshoptimizer, leaf cards thinned and enlarged, 256 px textures) and `<species>_3.glb` billboard impostors (tools/models/tree-impostor.mjs: side render on two crossed quads, unlit). Regenerate with `cd tools/models && node tree-lod.mjs && node tree-impostor.mjs` (needs Chrome or Playwright Chromium).
+
+## Close-range ("near") models (`near/*.glb`, `near/manifest.json`; used by the detailed battle view under ~150 m)
+Built by `tools/models/fetch-near.sh` + `tools/models/near-build.mjs`. Changes made (CC-BY "changes indicated"): vertex colours recoloured to olive drab where needed, box-projected UVs and tiling CC0 Poly Haven detail/normal/roughness textures added (green_metal_rust, rubber_tiles), parts kept as named nodes so the game can turn the turret, elevate/recoil the gun and spin the wheels; track triangles marked (vertex alpha 0.5) for the tread-scroll shader; composites assembled in code from the parts of two models (marked "composite").
+
+| modelId | source model(s) | author | licence |
+|---|---|---|---|
+| near_mbt | Medium Tank (https://polyfork.dev/asset/medium-tank-65da6b) | Polyfork | CC BY 4.0 |
+| near_apc | Armoured Half-Track (https://polyfork.dev/asset/armoured-half-track-3deded) | Polyfork | CC BY 4.0 |
+| near_ifv (composite) | Armoured Half-Track hull + Defense Turret (https://polyfork.dev/asset/defense-turret-12ba8d) | Polyfork | CC BY 4.0 |
+| near_spg (composite) | Medium Tank hull / running gear + Towed Field Howitzer (https://polyfork.dev/asset/towed-field-howitzer-bb9a08) top carriage as rotating turret | Polyfork | CC BY 4.0 |
+| near_truck | Military Cargo Truck (https://polyfork.dev/asset/military-cargo-truck-652f66) | Polyfork | CC BY 4.0 |
+| near_sam (composite, substitute) | Eight-Wheel Industrial Hauler (olive) + Anti-Aircraft Gun (https://polyfork.dev/asset/anti-aircraft-gun-93cc80): an AA gun truck stands in for a missile launcher (no free SAM launcher with separate parts was found) | Polyfork | CC BY 4.0 |
+| nsoldier, nsoldier_des, nsoldier_urb, nsoldier_ru | Character_Soldier of the Toon Shooter Game Kit (one rifle kept; 3 recolours); clips Idle, Walk, Run_Gun, Run_Shoot, Walk_Shoot, Idle_Shoot, Duck, Death | Quaternius (https://quaternius.com/packs/toonshootergamekit.html) | CC0 |
+
+Credit line (CC BY 4.0): "<name> by Polyfork (https://polyfork.dev), CC BY 4.0". The Toon Shooter files were taken from a public GitHub mirror of the kit (jwh781101-ship-it/nantu-arena-assets) because the Google Drive download of the original is over quota; the files are Quaternius' CC0 assets, unchanged apart from removing the unused weapons.
+The grass of the detailed view is generated in code (no model); its pattern is `public/data/styles/grass.json`.

@@ -48,11 +48,19 @@ export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a
 export const lerpAngle = (a: number, b: number, t: number) => a + ((((b - a) % 360) + 540) % 360 - 180) * t;
 
 // ------------------------------------------------------------------ manifest
-export interface ModelInfo { file: string; lengthM: number; yawOffsetDeg: number; zOffsetM: number; nativeSize: [number, number, number]; animations?: string[]; animationRoles?: Record<string, string> }
+/** Close-range model rig: named glTF nodes the battle view moves (turret yaw, gun elevation + recoil, wheel spin, steering) and the tread band. */
+export interface NearRig {
+  turret?: string; gun?: string; recoil?: string; recoilM?: number; elevate?: string; wheels?: string[]; wheelR?: number; steer?: string[];
+  track?: { midY: number }; muzzle?: { fwd: number; up: number; node: string; /** turret pivot ahead of the model origin (model units) */ pivot?: number }; turretY?: number;
+}
+export interface ModelInfo { file: string; lengthM: number; yawOffsetDeg: number; zOffsetM: number; nativeSize: [number, number, number]; animations?: string[]; animationRoles?: Record<string, string>; /** close-range (detailed) model: public/models/near */ near?: boolean; group?: string; rig?: NearRig }
 export type Manifest = Record<string, ModelInfo>;
 let manifestP: Promise<Manifest> | null = null;
 export const loadManifest = () => (manifestP ??= fetch(new URL('models/manifest.json', document.baseURI)).then((r) => r.json() as Promise<Manifest>));
-export const loadModelData = () => Promise.all([loadManifest(), loadVariants()]).then(([mf]) => mf);
+/** Close-range models (tools/models/near-build.mjs): their own manifest so make-manifest.mjs never erases them; merged into the main one. */
+let nearP: Promise<Manifest> | null = null;
+export const loadNearManifest = () => (nearP ??= fetch(new URL('models/near/manifest.json', document.baseURI)).then((r) => (r.ok ? (r.json() as Promise<Manifest>) : {})).catch(() => ({} as Manifest)));
+export const loadModelData = () => Promise.all([loadManifest(), loadVariants(), loadNearManifest()]).then(([mf, , near]) => ({ ...mf, ...near }));
 export const assetUrl = (p: string) => new URL(p, document.baseURI).href;
 
 // ------------------------------------------------------------------ glb pool
@@ -68,10 +76,14 @@ export interface ModelHandle {
   tint: number;
   pend: Cesium.Matrix4 | null;
   shown: boolean;
+  /** start offset (s) and speed factor of the clips, so units never animate in sync */
+  ph?: { phase: number; speed: number };
 }
 const HPR = new Cesium.HeadingPitchRoll();
 const SCRATCH = new Cesium.Cartesian3();
 
+/** Pseudo clip role: stop updating the skeleton (cap on simultaneously animated characters). */
+export const FREEZE = '__freeze';
 export class ModelPool {
   private free = new Map<string, Cesium.Model[]>();
   private all = new Set<Cesium.Model>();
@@ -151,7 +163,7 @@ export class ModelPool {
   }
   setAnim(h: ModelHandle, role: string, once = false) {
     const info = this.mf[h.modelId];
-    const name = info?.animationRoles?.[role] ?? role;
+    const name = role === FREEZE ? FREEZE : info?.animationRoles?.[role] ?? role;
     if (h.wantAnim === name) return;
     h.wantAnim = name;
     h.once = once;
@@ -163,8 +175,12 @@ export class ModelPool {
     if (!m.activeAnimations) return;
     m.activeAnimations.removeAll();
     m.activeAnimations.animateWhilePaused = true;
+    if (h.wantAnim === FREEZE) { h.anim = FREEZE; return; } // skeleton no longer updated: the pose stays as it was
     try {
-      m.activeAnimations.add({ name: h.wantAnim, loop: h.once ? Cesium.ModelAnimationLoop.NONE : Cesium.ModelAnimationLoop.REPEAT, multiplier: 1 });
+      const ph = h.ph;
+      // a start time in the past = the clip begins part-way through (phase variation between units)
+      const startTime = ph && !h.once ? Cesium.JulianDate.addSeconds((this.scene as unknown as { frameState: { time: Cesium.JulianDate } }).frameState.time, -ph.phase, new Cesium.JulianDate()) : undefined;
+      m.activeAnimations.add({ name: h.wantAnim, loop: h.once ? Cesium.ModelAnimationLoop.NONE : Cesium.ModelAnimationLoop.REPEAT, multiplier: ph?.speed ?? 1, startTime });
       h.anim = h.wantAnim;
     } catch { /* clip missing in this glb */ }
   }

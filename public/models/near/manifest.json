@@ -1,0 +1,476 @@
+{
+ "near_mbt": {
+  "file": "near/near_mbt.glb",
+  "lengthM": 9.8,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   3,
+   2.854,
+   6.86
+  ],
+  "near": true,
+  "group": "mbt",
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 2534,
+  "bytes": 597024,
+  "notes": "Polyfork \"Medium Tank\" (parts kept as nodes) + CC0 Poly Haven detail textures; track triangles marked for the tread shader",
+  "rig": {
+   "turret": "turret",
+   "gun": "gun",
+   "recoil": "gun",
+   "recoilM": 0.35,
+   "elevate": "gun",
+   "wheels": [
+    "wheel-l1",
+    "wheel-l2",
+    "wheel-l3",
+    "wheel-l4",
+    "wheel-l5",
+    "sprocket-l",
+    "idler-l",
+    "wheel-r1",
+    "wheel-r2",
+    "wheel-r3",
+    "wheel-r4",
+    "wheel-r5",
+    "sprocket-r",
+    "idler-r"
+   ],
+   "wheelR": 0.44,
+   "track": {
+    "midY": 0.5
+   },
+   "muzzle": {
+    "fwd": 3.96,
+    "up": 1.9,
+    "pivot": 0,
+    "node": "turret"
+   },
+   "turretY": 1.56
+  }
+ },
+ "near_apc": {
+  "file": "near/near_apc.glb",
+  "lengthM": 6.5,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.3,
+   2.55,
+   6.04
+  ],
+  "near": true,
+  "group": "apc",
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 2652,
+  "bytes": 607420,
+  "notes": "Polyfork \"Armoured Half-Track\" + CC0 Poly Haven detail textures",
+  "rig": {
+   "wheels": [
+    "wheel-fl",
+    "wheel-fr",
+    "sprockets",
+    "idlers"
+   ],
+   "wheelR": 0.43,
+   "steer": [
+    "steer-fl",
+    "steer-fr"
+   ],
+   "track": {
+    "midY": 0.4
+   }
+  }
+ },
+ "near_ifv": {
+  "file": "near/near_ifv.glb",
+  "lengthM": 7,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.3,
+   4.453,
+   6.04
+  ],
+  "near": true,
+  "group": "ifv",
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": true,
+  "triangles": 3288,
+  "bytes": 706220,
+  "notes": "Polyfork \"Armoured Half-Track\" hull + \"Defense Turret\" on the roof (composite, own assembly)",
+  "rig": {
+   "turret": "turret",
+   "gun": "boom-lower",
+   "recoil": "boom-upper",
+   "recoilM": 0.18,
+   "elevate": "boom-lower",
+   "wheels": [
+    "wheel-fl",
+    "wheel-fr",
+    "sprockets",
+    "idlers"
+   ],
+   "wheelR": 0.43,
+   "steer": [
+    "steer-fl",
+    "steer-fr"
+   ],
+   "track": {
+    "midY": 0.4
+   },
+   "muzzle": {
+    "fwd": 1.36,
+    "up": 4.12,
+    "pivot": -0.44,
+    "node": "turret"
+   },
+   "turretY": 3.7
+  }
+ },
+ "near_spg": {
+  "file": "near/near_spg.glb",
+  "lengthM": 9,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   3,
+   2.317,
+   6.05
+  ],
+  "near": true,
+  "group": "spg",
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": true,
+  "triangles": 2706,
+  "bytes": 622984,
+  "notes": "Polyfork \"Medium Tank\" hull/running gear + \"Towed Field Howitzer\" turntable, boom and barrel as a rotating turret (composite, own assembly)",
+  "rig": {
+   "turret": "turret",
+   "gun": "boom-lower",
+   "recoil": "recoil",
+   "recoilM": 0.5,
+   "elevate": "boom-lower",
+   "wheels": [
+    "wheel-l1",
+    "wheel-l2",
+    "wheel-l3",
+    "wheel-l4",
+    "wheel-l5",
+    "sprocket-l",
+    "idler-l",
+    "wheel-r1",
+    "wheel-r2",
+    "wheel-r3",
+    "wheel-r4",
+    "wheel-r5",
+    "sprocket-r",
+    "idler-r"
+   ],
+   "wheelR": 0.44,
+   "track": {
+    "midY": 0.5
+   },
+   "muzzle": {
+    "fwd": 3.27,
+    "up": 2.12,
+    "pivot": -0.45,
+    "node": "turret"
+   },
+   "turretY": 1.5
+  }
+ },
+ "near_truck": {
+  "file": "near/near_truck.glb",
+  "lengthM": 8.6,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.38,
+   2.4,
+   6.145
+  ],
+  "near": true,
+  "group": "truck",
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": false,
+  "triangles": 2284,
+  "bytes": 550932,
+  "notes": "Polyfork \"Military Cargo Truck\" + CC0 Poly Haven detail textures",
+  "rig": {
+   "wheels": [
+    "wheel-fl",
+    "wheel-fr",
+    "wheel-ml",
+    "wheel-mr",
+    "wheel-rl",
+    "wheel-rr"
+   ],
+   "wheelR": 0.48,
+   "steer": [
+    "steer-fl",
+    "steer-fr"
+   ]
+  }
+ },
+ "near_sam": {
+  "file": "near/near_sam.glb",
+  "lengthM": 12,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   4,
+   4.8,
+   12
+  ],
+  "near": true,
+  "group": "sam",
+  "license": "CC-BY-4.0",
+  "author": "Polyfork",
+  "source": "https://polyfork.dev",
+  "substitute": true,
+  "triangles": 2774,
+  "bytes": 627068,
+  "notes": "Polyfork \"Eight-Wheel Industrial Hauler\" (olive) + \"Anti-Aircraft Gun\" turntable: an AA gun truck stands in for a missile launcher (no free SAM launcher model with separate parts was found)",
+  "rig": {
+   "turret": "turret",
+   "gun": "boom-lower",
+   "recoil": "boom-upper",
+   "recoilM": 0.3,
+   "elevate": "boom-lower",
+   "wheels": [
+    "wheel-1l",
+    "wheel-1r",
+    "wheel-2l",
+    "wheel-2r",
+    "wheel-3l",
+    "wheel-3r",
+    "wheel-4l",
+    "wheel-4r"
+   ],
+   "wheelR": 0.95,
+   "steer": [
+    "steer-1l",
+    "steer-1r",
+    "steer-2l",
+    "steer-2r"
+   ],
+   "muzzle": {
+    "fwd": 1.5,
+    "up": 3.98,
+    "pivot": -2.6,
+    "node": "turret"
+   },
+   "turretY": 1.55
+  }
+ },
+ "nsoldier": {
+  "file": "near/nsoldier.glb",
+  "lengthM": 2.206,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.725,
+   2.224,
+   1.853
+  ],
+  "near": true,
+  "group": "soldier",
+  "license": "CC0-1.0",
+  "author": "Quaternius (Toon Shooter Game Kit)",
+  "source": "https://quaternius.com/packs/toonshootergamekit.html",
+  "substitute": false,
+  "triangles": 6956,
+  "bytes": 685740,
+  "notes": "Character_Soldier, only the AK kept; files taken from a public GitHub mirror (jwh781101-ship-it/nantu-arena-assets) because the Google Drive quota of the original download is exhausted",
+  "animationRoles": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run_Gun",
+   "shoot": "Idle_Shoot",
+   "runShoot": "Run_Shoot",
+   "walkShoot": "Walk_Shoot",
+   "crouch": "Duck",
+   "death": "Death"
+  },
+  "animations": [
+   "Death",
+   "Duck",
+   "HitReact",
+   "Idle",
+   "Idle_Shoot",
+   "Jump",
+   "Jump_Idle",
+   "Jump_Land",
+   "No",
+   "Punch",
+   "Run",
+   "Run_Gun",
+   "Run_Shoot",
+   "Walk",
+   "Walk_Shoot",
+   "Wave",
+   "Yes"
+  ]
+ },
+ "nsoldier_des": {
+  "file": "near/nsoldier_des.glb",
+  "lengthM": 2.206,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.725,
+   2.224,
+   1.853
+  ],
+  "near": true,
+  "group": "soldier",
+  "license": "CC0-1.0",
+  "author": "Quaternius (Toon Shooter Game Kit)",
+  "source": "https://quaternius.com/packs/toonshootergamekit.html",
+  "substitute": false,
+  "triangles": 6956,
+  "bytes": 685644,
+  "notes": "Character_Soldier recoloured (des)",
+  "animationRoles": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run_Gun",
+   "shoot": "Idle_Shoot",
+   "runShoot": "Run_Shoot",
+   "walkShoot": "Walk_Shoot",
+   "crouch": "Duck",
+   "death": "Death"
+  },
+  "animations": [
+   "Death",
+   "Duck",
+   "HitReact",
+   "Idle",
+   "Idle_Shoot",
+   "Jump",
+   "Jump_Idle",
+   "Jump_Land",
+   "No",
+   "Punch",
+   "Run",
+   "Run_Gun",
+   "Run_Shoot",
+   "Walk",
+   "Walk_Shoot",
+   "Wave",
+   "Yes"
+  ]
+ },
+ "nsoldier_urb": {
+  "file": "near/nsoldier_urb.glb",
+  "lengthM": 2.206,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.725,
+   2.224,
+   1.853
+  ],
+  "near": true,
+  "group": "soldier",
+  "license": "CC0-1.0",
+  "author": "Quaternius (Toon Shooter Game Kit)",
+  "source": "https://quaternius.com/packs/toonshootergamekit.html",
+  "substitute": false,
+  "triangles": 6956,
+  "bytes": 685648,
+  "notes": "Character_Soldier recoloured (urb)",
+  "animationRoles": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run_Gun",
+   "shoot": "Idle_Shoot",
+   "runShoot": "Run_Shoot",
+   "walkShoot": "Walk_Shoot",
+   "crouch": "Duck",
+   "death": "Death"
+  },
+  "animations": [
+   "Death",
+   "Duck",
+   "HitReact",
+   "Idle",
+   "Idle_Shoot",
+   "Jump",
+   "Jump_Idle",
+   "Jump_Land",
+   "No",
+   "Punch",
+   "Run",
+   "Run_Gun",
+   "Run_Shoot",
+   "Walk",
+   "Walk_Shoot",
+   "Wave",
+   "Yes"
+  ]
+ },
+ "nsoldier_ru": {
+  "file": "near/nsoldier_ru.glb",
+  "lengthM": 2.206,
+  "yawOffsetDeg": 0,
+  "zOffsetM": 0,
+  "nativeSize": [
+   2.725,
+   2.224,
+   1.853
+  ],
+  "near": true,
+  "group": "soldier",
+  "license": "CC0-1.0",
+  "author": "Quaternius (Toon Shooter Game Kit)",
+  "source": "https://quaternius.com/packs/toonshootergamekit.html",
+  "substitute": false,
+  "triangles": 6956,
+  "bytes": 685648,
+  "notes": "Character_Soldier recoloured (ru)",
+  "animationRoles": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run_Gun",
+   "shoot": "Idle_Shoot",
+   "runShoot": "Run_Shoot",
+   "walkShoot": "Walk_Shoot",
+   "crouch": "Duck",
+   "death": "Death"
+  },
+  "animations": [
+   "Death",
+   "Duck",
+   "HitReact",
+   "Idle",
+   "Idle_Shoot",
+   "Jump",
+   "Jump_Idle",
+   "Jump_Land",
+   "No",
+   "Punch",
+   "Run",
+   "Run_Gun",
+   "Run_Shoot",
+   "Walk",
+   "Walk_Shoot",
+   "Wave",
+   "Yes"
+  ]
+ }
+}

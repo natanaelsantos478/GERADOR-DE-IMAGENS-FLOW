@@ -7,7 +7,10 @@ import type { Battle, Ent, Order } from '../../sim/tactical/types';
 import { UNITS } from '../../sim/tactical/units';
 import { battlePreviews } from '../../sim/military';
 import type { Globe } from '../globe/types';
-import { M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
+import { FREEZE, M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
+import { getQuality } from '../globe/quality';
+import { RIG_GROUPS, animPhase, budgetFor, chooseAnimated, flashOn, hurryOrder, nearModelFor, setNearRange, newRig, planLod, recoilAt, soldierRole, stepRig, type LodCand, type Lod, type RigState } from './nearLod';
+import { applyRig, rigOf } from './vehicleRig';
 import { useTacSelection } from './store';
 import { sampleGrid } from './terrain';
 import { TAC_N, TAC_SIZE_M } from '../../sim/tactical/mapWorld';
@@ -17,6 +20,7 @@ import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
 import { attackOrder } from './attackOrder';
 import { clusterScreen, type ClusterItem } from '../units/cluster';
 import { setRuins, type Ruin } from '../city3d/ruins';
+import { currentCity3D } from '../city3d';
 import { styles as cityStyles } from '../city3d/styles';
 
 const SIDE_COLOR = ['#4da3ff', '#ff5a4d'] as const;
@@ -28,9 +32,17 @@ const MAX_ENTS = 900;
 
 export interface TacticalLayer {
   active(): boolean;
-  stats(): { shown: number; models: number; ents: number; proj: number; fx: number; clusters: number; clustered: number };
+  stats(): { shown: number; models: number; ents: number; proj: number; fx: number; clusters: number; clustered: number; /** close-range LOD: units asked to use the detailed model, animated / frozen soldier skeletons */ near: number; animated: number; frozen: number };
   /** Screen-space grouping of overlapping units into one count icon (default on). */
   setCluster(on: boolean): void;
+  /** Test/debug: per unit, which level of detail it uses (near = detailed model), its model, distance to the camera and turret angle. */
+  lod(): { id: number; kind: string; side: number; x: number; y: number; alive: boolean; near: boolean; want: string; model: string; ready: boolean; dist: number; turret: number | null; fz: number }[];
+  /** Test/debug: fire the visual shot of a unit: near vehicle = muzzle flash, smoke and recoil along its turret; soldier = holds the firing pose and flashes the rifle. */
+  fireAt(id: number): boolean;
+  /** Test/debug: overwrite fields of a near vehicle's rig state (tread `scroll`, `wheel` angle, `turret`, `elev`). */
+  rigSet(id: number, patch: Partial<{ scroll: number; wheel: number; turret: number; elev: number; steer: number }>): boolean;
+  /** Distance (m) under which units use the detailed model (default 150). */
+  setNearRange(m: number): void;
   sample(n?: number): unknown[];
   /** Resolves when terrain heights for every current strategic battle are cached. */
   prefetch(): Promise<void>;
@@ -49,7 +61,15 @@ export interface TacticalLayer {
   ents(): { id: number; sq: number; side: number; kind: string; x: number; y: number; alive: boolean; shown: boolean; ready: boolean }[];
   destroy(): void;
 }
-interface E { cl?: boolean; mul?: number; pitch?: number; styled?: boolean; wreckAt?: number; smokeT?: number; dustT?: number; dot?: Cesium.Billboard; h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
+interface E {
+  /** muzzle flash sprite of a near vehicle (shown for ~0.09 s after each shot, follows the barrel) */
+  flashB?: Cesium.Billboard; flashBig?: number;
+  roll?: number; yawRate?: number;
+  /** close-range LOD (tactical/nearLod.ts): ids of the far/near models, level asked by the planner, a near model still loading, last camera distance */
+  nearId?: string | null; farId?: string; want?: Lod; near?: boolean; pend?: ModelHandle; dist?: number;
+  /** vehicle rig state, last smoothed pose (speed / yaw rate), last shot and last time a target was held; skeleton freeze state (0 animated, 1 settling, 2 frozen) */
+  rig?: RigState; px?: number; py?: number; phd?: number; spd?: number; shotAt?: number; shotBrg?: number; tgT?: number; fz?: number; fzT?: number;
+  cl?: boolean; mul?: number; pitch?: number; styled?: boolean; wreckAt?: number; smokeT?: number; dustT?: number; dot?: Cesium.Billboard; h: ModelHandle; x: number; y: number; hd: number; shoot: number; dead: boolean; wreck?: Cesium.Billboard; ent: Ent }
 type FxKind = 'fire' | 'flame' | 'smoke' | 'ash' | 'dust' | 'flash' | 'debris';
 interface Fx { b: Cesium.Billboard; t0: number; size: number; grow: number; life: number; lon: number; lat: number; h0: number; z: number; vx: number; vy: number; vz: number; kind: FxKind; alpha: number }
 const MAX_FX = 240, MAX_CRATERS = 36;
@@ -329,18 +349,113 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     tcam.focus({ x: (x0 + x1) / 2, y: (y0 + y1) / 2 }, { range: clamp(ext * 1.35 + 500, 800, 10500), pitchDeg: -48, headingDeg: 0, durationS });
   }
 
+  // ------------------------------------------------------------ close-range LOD (see tactical/nearLod.ts)
+  const pool0 = () => cur?.pool ?? null;
+  let lodNext = 0, lodStats = { near: 0, animated: 0, frozen: 0 };
+  /** Every ~160 ms: who is within the near range (budget per graphics profile, nearest first, few swaps per call) and which soldiers keep their skeleton animated. */
+  function planNear(ents: Map<number, E>, now: number) {
+    lodNext = now + 160;
+    const bud = budgetFor(getQuality().id), cands: LodCand[] = [], snear: { id: number; dist: number }[] = [];
+    for (const [id, s] of ents) {
+      if (s.dist === undefined) continue;
+      const soldier = SOLDIER_KINDS.has(s.ent.kind);
+      cands.push({ id, dist: s.dist, near: s.want === 'near', soldier, can: !!s.nearId });
+      if (soldier && s.ent.alive && !s.cl) snear.push({ id, dist: s.dist });
+    }
+    for (const [id, l] of planLod(cands, bud)) { const s = ents.get(id); if (s) s.want = l; }
+    // skeleton budget: the nearest soldiers (any level) animate; the others hold an idle pose
+    const keep = chooseAnimated(snear, bud.maxAnimated);
+    let fz = 0;
+    for (const q of snear) { const s = ents.get(q.id)!; if (keep.has(q.id)) { if (s.fz) s.fz = 0; } else { fz++; if (!s.fz) { s.fz = 1; s.fzT = now; } } }
+    lodStats = { near: cands.filter((u) => ents.get(u.id)?.want === 'near').length, animated: keep.size, frozen: fz };
+    // grass is left out under vehicles (hull footprint, quantised to 6 m so it does not rebuild at every move) and ruins within ~200 m of the camera
+    const obs: { lon: number; lat: number; r: number }[] = [];
+    for (const [, s] of ents) {
+      if (SOLDIER_KINDS.has(s.ent.kind) || s.dist === undefined || s.dist > 200 || s.cl) continue;
+      const len = pool0()?.info(s.h.modelId)?.lengthM ?? 6, [lo, la] = ll(Math.round(s.x / 6) * 6, Math.round(s.y / 6) * 6);
+      obs.push({ lon: lo, lat: la, r: len * 0.45 });
+    }
+    for (const r of ruinList) obs.push({ lon: r.lon, lat: r.lat, r: Math.max(6, Math.sqrt(r.ring.length) * 2) });
+    currentCity3D()?.grass.setObstacles(obs);
+  }
+  /** Swaps a unit to the model of the level the planner asked for, keeping the old one on screen until the new one is ready (no pop). */
+  function swapLod(s: E, pool: ModelPool) {
+    const nearWanted = s.want === 'near';
+    if (s.nearId && s.farId && nearWanted !== !!s.near && !s.pend) {
+      const h = pool.acquire(nearWanted ? s.nearId : s.farId, { __tac: true, sq: s.ent.sq, ent: s.ent.id, side: s.ent.side });
+      if (h) { if (SOLDIER_KINDS.has(s.ent.kind)) h.ph = animPhase(s.ent.id); s.pend = h; }
+    }
+    if (s.pend?.model?.ready) {
+      pool.release(s.h);
+      s.h = s.pend; s.pend = undefined; s.near = nearWanted; s.styled = false; s.fz = 0; s.rig = undefined;
+      if (s.dead) { pool.setTint(s.h, 1); if (SOLDIER_KINDS.has(s.ent.kind)) pool.setAnim(s.h, s.near ? 'death' : 'Death', true); }
+    }
+  }
+  /** Soldier state -> clip (near: the rifle clips of the Toon Shooter kit; far: the generic run/shoot/idle). Skeletons beyond the budget hold a pose. */
+  function animateSoldier(s: E, e: Ent, sq: Battle['squads'][number], now: number, pool: ModelPool) {
+    const firing = s.shoot > now;
+    if (!s.near) {
+      if (s.fz === 1 && now - (s.fzT ?? now) > 500) s.fz = 2;
+      pool.setAnim(s.h, s.fz === 2 ? FREEZE : firing ? 'shoot' : e.moving ? 'run' : 'idle');
+      return;
+    }
+    const role = soldierRole({ alive: e.alive, moving: e.moving, hurry: hurryOrder(sq.order, sq.routed), firing, cover: sq.dug > 0.35 || sq.digging || (e.supp > 0.4 && !e.moving) });
+    // a frozen skeleton first settles in the idle pose (a clip removed at once would leave the bind pose), then stops updating
+    if (s.fz === 1 && now - (s.fzT ?? now) > 500) s.fz = 2;
+    pool.setAnim(s.h, s.fz === 2 ? FREEZE : s.fz === 1 ? 'idle' : role);
+  }
+  /** Near vehicle: turret toward the target, gun elevation by range, recoil after a shot, wheels / tread by speed, steering by yaw rate. */
+  function animateVehicle(s: E, e: Ent, b: Battle, now: number, dt: number, info: ReturnType<ModelPool['info']>, pool: ModelPool) {
+    const rt = rigOf(s.h.model, info?.rig);
+    if (!rt || !info?.rig) return;
+    const hd = (s.hd * Math.PI) / 180, group = info.group ?? 'apc';
+    if (s.px !== undefined && dt > 0 && dt < 0.5) {
+      const dx = s.x - s.px, dy = s.y - (s.py ?? s.y), raw = (dx * Math.sin(hd) + dy * Math.cos(hd)) / dt;
+      s.spd = (s.spd ?? 0) + (raw - (s.spd ?? 0)) * 0.3;
+      s.yawRate = (((hd - (s.phd ?? hd) + Math.PI * 3) % (Math.PI * 2)) - Math.PI) / dt;
+    }
+    s.px = s.x; s.py = s.y; s.phd = hd;
+    const ti = e.tg[0] >= 0 ? e.tg[0] : e.tg[1], t = ti >= 0 ? b.ents[ti] : undefined;
+    let bearing: number | undefined, range: number | undefined;
+    if (t && t.alive && !t.gone) { bearing = Math.atan2(t.x - s.x, t.y - s.y); range = Math.hypot(t.x - s.x, t.y - s.y); s.tgT = now; }
+    else if (s.shotAt && now - s.shotAt < 1500 && s.shotBrg !== undefined) bearing = s.shotBrg; // keeps aiming where it just fired
+    const shotAge = s.shotAt ? ((now - s.shotAt) / 1000) * fxSlow : 99; // slowFx() slows the recoil clock too (captures)
+    const vs = (info.lengthM / Math.max(...info.nativeSize)) * (s.mul ?? 1); // native units -> metres on screen (the tread / wheels roll in model units)
+    s.rig = stepRig(s.rig ?? newRig(), { group, dt: Math.min(dt, 0.1), hull: hd, bearing, range, shotAge, idleS: s.tgT ? (now - s.tgT) / 1000 : 99, speed: (s.spd ?? 0) / vs, yawRate: s.yawRate ?? 0, wheelR: info.rig.wheelR ?? 0.45 });
+    // pinned (photo mode) holds the shot at its peak: flash on, barrel fully kicked back
+    const age = s.shotAt ? (pinned ? 0.05 : shotAge) : 99;
+    applyRig(rt, s.rig, info.rig, recoilAt(age, info.rig.recoilM ?? 0, RIG_GROUPS[group]?.recoilS ?? 0.4));
+    const mz = info.rig.muzzle;
+    if (mz) {
+      const on = flashOn(age);
+      if (on && !s.flashB) { s.flashB = bills.add({ position: Cesium.Cartesian3.ZERO, sizeInMeters: true, show: false, disableDepthTestDistance: 0 }); s.flashB.setImage('fx-flash', imgs.flash); }
+      if (s.flashB) {
+        s.flashB.show = on;
+        if (on) {
+          const sc = (info.lengthM / Math.max(...info.nativeSize)) * (s.mul ?? 1), brg = hd + (s.rig.turret ?? 0), pv = (mz.pivot ?? 0) * sc;
+          s.flashB.position = P(s.x + Math.sin(hd) * pv + Math.sin(brg) * mz.fwd * sc, s.y + Math.cos(hd) * pv + Math.cos(brg) * mz.fwd * sc, mz.up * sc);
+          s.flashB.width = s.flashB.height = (group === 'mbt' || group === 'spg' ? 3.4 : 2.2) * sc * (1 + (0.09 - Math.min(0.09, age)) * 6);
+          s.flashB.color = C.WHITE.withAlpha(1 - (age / 0.09) * (age / 0.09));
+        }
+      }
+    }
+  }
+
   function updateEnts(b: Battle, now: number, dt: number) {
     const c = cur!, pool = c.pool!, k = 1 - Math.exp(-dt * 9);
     let n = 0;
     const camPos = viewer.camera.positionWC, tanH = Math.tan(((viewer.camera.frustum as Cesium.PerspectiveFrustum).fovy ?? 1) / 2), viewH = scene.canvas.clientHeight || 900;
+    if (now >= lodNext) planNear(c.ents, now);
     for (const e of b.ents) {
       if (e.gone || n++ >= MAX_ENTS) continue;
       let s = c.ents.get(e.id);
       const sq = b.squads[e.sq];
       if (!s) {
-        const h = pool.acquire(resolveModel(sq.modelId || UNITS[e.kind].model, sq.country, `${sq.ref}:${e.id}`, { mf: pool.manifest, needAnim: SOLDIER_KINDS.has(e.kind) }), { __tac: true, sq: e.sq, ent: e.id, side: e.side });
+        const farId = resolveModel(sq.modelId || UNITS[e.kind].model, sq.country, `${sq.ref}:${e.id}`, { mf: pool.manifest, needAnim: SOLDIER_KINDS.has(e.kind) });
+        const h = pool.acquire(farId, { __tac: true, sq: e.sq, ent: e.id, side: e.side });
         if (!h) continue;
-        s = { h, x: e.x, y: e.y, hd: (e.h * 180) / Math.PI, shoot: 0, dead: false, ent: e };
+        if (SOLDIER_KINDS.has(e.kind)) h.ph = animPhase(e.id);
+        s = { h, x: e.x, y: e.y, hd: (e.h * 180) / Math.PI, shoot: 0, dead: false, ent: e, farId, nearId: nearModelFor(farId, (id) => !!pool.manifest[id]?.near) };
         c.ents.set(e.id, s);
       }
       s.ent = e;
@@ -351,24 +466,35 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
         if (!s.dead) {
           s.dead = true;
           pool.setTint(s.h, 1);
-          if (soldier) pool.setAnim(s.h, 'Death', true);
+          if (soldier) pool.setAnim(s.h, s.near ? 'death' : 'Death', true);
           else if (wrecks < 40) { wrecks++; s.wreck = bills.add({ position: Cesium.Cartesian3.ZERO, sizeInMeters: true, width: 12 * mul, height: 12 * mul, disableDepthTestDistance: 0 }); s.wreck.setImage('fx-dark', imgs.dark); }
           explode(e.x, e.y, soldier ? 3 : 9, false);
           s.wreckAt = wrecks;
         }
         if (s.wreck) {
           s.wreck.position = P(s.x, s.y, 3 * mul);
+          s.wreck.width = s.wreck.height = Math.min(12 * mul, (pool.info(s.h.modelId)?.lengthM ?? 8) * 1.1 * (s.mul ?? mul)); // the scorch disc follows the hull, not the zoom the camera had when it died
           if (!soldier && (s.wreckAt ?? 0) > wrecks - 14 && now > (s.smokeT ?? 0)) { s.smokeT = now + 650; spawnFx(s.x, s.y, 9 * mul, 'smoke', { grow: 2.4, life: 3.4, up: 3 * mul, vz: 4 * clamp(mul * 0.6, 1, 6) }); if (Math.random() < 0.3) spawnFx(s.x, s.y, 5 * mul, 'flame', { grow: 1.2, life: 0.5, up: 2 * mul, vz: 2 }); }
         }
-      } else if (!soldier && e.moving && now > (s.dustT ?? 0) && mul < 9) { s.dustT = now + 260; spawnFx(s.x - Math.sin(e.h) * 3, s.y - Math.cos(e.h) * 3, 7 * mul, 'dust', { grow: 2.2, life: 1.5, up: 1.2 * mul, vz: 1.2 }); }
-      if (e.alive && soldier) pool.setAnim(s.h, s.shoot > now ? 'shoot' : e.moving ? 'run' : 'idle');
+      } else if (!soldier && e.moving && now > (s.dustT ?? 0) && mul < 9) {
+        if (s.near) {
+          // close up: a dust puff behind each track, rate follows the speed
+          const nlen = pool.info(s.h.modelId)?.lengthM ?? 6, bk = nlen * 0.45 * (s.mul ?? 1), sx = Math.sin(e.h), cx = Math.cos(e.h);
+          s.dustT = now + clamp(260 - Math.abs(s.spd ?? 0) * 12, 90, 260);
+          for (const side of [-1, 1]) spawnFx(s.x - sx * bk + cx * side * nlen * 0.17, s.y - cx * bk - sx * side * nlen * 0.17, nlen * 0.45 * (s.mul ?? 1), 'dust', { grow: 2.4, life: 1.6, up: 0.5, vz: 0.9, alpha: 0.7 });
+        } else { s.dustT = now + 260; spawnFx(s.x - Math.sin(e.h) * 3, s.y - Math.cos(e.h) * 3, 7 * mul, 'dust', { grow: 2.2, life: 1.5, up: 1.2 * mul, vz: 1.2 }); }
+      }
       // Exaggeration from the distance to the camera so every unit keeps a readable on-screen size (soldiers ~22 px, vehicles ~34 px).
-      const info = pool.info(s.h.modelId), len = info?.lengthM ?? 3;
       const gh = hAt(s.x, s.y), [slon, slat] = ll(s.x, s.y);
       const dist = Math.max(20, Cesium.Cartesian3.distance(camPos, Cesium.Cartesian3.fromDegrees(slon, slat, gh)));
+      s.dist = dist;
+      swapLod(s, pool);
+      const info = pool.info(s.h.modelId), len = info?.lengthM ?? 3;
       const want = clamp((soldier ? 46 : 70) / (len * (viewH / (2 * dist * tanH))), 1, soldier ? 70 : 90);
       s.mul = s.mul === undefined ? want : s.mul + (want - s.mul) * k;
       const m = s.mul;
+      if (soldier && e.alive) animateSoldier(s, e, sq, now, pool);
+      if (!soldier && s.near && e.alive) animateVehicle(s, e, b, now, dt, info, pool);
       if (!s.dot) { const [k, img] = markImg(e.side, e.kind, true); s.dot = bills.add({ position: Cesium.Cartesian3.ZERO, width: 15, height: 15, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, disableDepthTestDistance: INF }); s.dot.setImage(k, img); }
       const inside = soldier && sq.gar !== undefined;
       s.dot.show = e.alive && !s.cl && (m > 6 || inside);
@@ -377,21 +503,40 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       if (mdl && !s.styled && e.alive) {
         s.styled = true;
         // Readable at any distance: brighter light, faint side tint, never smaller than a few pixels on screen.
-        mdl.lightColor = new Cesium.Cartesian3(3.2, 3.2, 3.2);
+        mdl.lightColor = s.near ? new Cesium.Cartesian3(3.4, 3.4, 3.4) : new Cesium.Cartesian3(3.2, 3.2, 3.2);
         mdl.color = C.fromCssColorString(SIDE_COLOR[e.side]); mdl.colorBlendMode = Cesium.ColorBlendMode.MIX; mdl.colorBlendAmount = 0.08;
         try { mdl.imageBasedLighting.imageBasedLightingFactor = new Cesium.Cartesian2(1.5, 1.5); } catch { /* older Cesium */ }
-        mdl.silhouetteColor = C.fromCssColorString(SIDE_COLOR[e.side]); mdl.silhouetteSize = soldier ? 2 : 2.5;
+        mdl.silhouetteColor = C.fromCssColorString(SIDE_COLOR[e.side]); mdl.silhouetteSize = s.near ? 0 : soldier ? 2 : 2.5;
       }
       // Vehicles pitch with the ground slope under hull length.
-      let pt = 0;
-      if (!soldier) { const dx = Math.sin((s.hd * Math.PI) / 180) * len * 0.35, dy = Math.cos((s.hd * Math.PI) / 180) * len * 0.35; pt = clamp((Math.atan2(mapH(s.x + dx, s.y + dy) - mapH(s.x - dx, s.y - dy), len * 0.7) * 180) / Math.PI, -18, 18); }
+      let pt = 0, rl = 0;
+      if (!soldier) {
+        const hr = (s.hd * Math.PI) / 180, dx = Math.sin(hr) * len * 0.35, dy = Math.cos(hr) * len * 0.35;
+        pt = clamp((Math.atan2(mapH(s.x + dx, s.y + dy) - mapH(s.x - dx, s.y - dy), len * 0.7) * 180) / Math.PI, -18, 18);
+        // sideways slope across the hull width (hull ~ 0.4 of its length): the vehicle leans with the ground
+        const wx = Math.cos(hr) * len * 0.2, wy = -Math.sin(hr) * len * 0.2;
+        rl = -clamp((Math.atan2(mapH(s.x + wx, s.y + wy) - mapH(s.x - wx, s.y - wy), len * 0.4) * 180) / Math.PI, -14, 14);
+      }
       s.pitch = (s.pitch ?? pt) + (pt - (s.pitch ?? pt)) * k;
-      pool.place(s.h, slon, slat, gh, s.hd, m, soldier && s.dead ? 90 : 0, !(soldier && sq.gar !== undefined && e.alive) && !s.cl, s.pitch);
+      s.roll = (s.roll ?? rl) + (rl - (s.roll ?? rl)) * k;
+      pool.place(s.h, slon, slat, gh, s.hd, m, soldier ? (s.dead && !s.near ? 90 : 0) : s.roll, !(soldier && sq.gar !== undefined && e.alive) && !s.cl, s.pitch);
     }
     if (c.ents.size > n) {
       const live = new Set(b.ents.filter((e) => !e.gone).map((e) => e.id));
-      for (const [id, s] of c.ents) if (!live.has(id)) { pool.release(s.h); if (s.wreck) bills.remove(s.wreck); if (s.dot) bills.remove(s.dot); c.ents.delete(id); }
+      for (const [id, s] of c.ents) if (!live.has(id)) { pool.release(s.h); if (s.wreck) bills.remove(s.wreck); if (s.dot) bills.remove(s.dot); if (s.flashB) bills.remove(s.flashB); c.ents.delete(id); }
     }
+  }
+
+  /** Close-range shot of a vehicle: starts the recoil clock and the muzzle flash sprite (drawn in animateVehicle at the real muzzle: turret bearing + barrel length, gun height) and puffs smoke. False when the unit is not a near vehicle. */
+  function muzzleShot(sh: E, brg: number, kind: string, now: number): boolean {
+    const info = sh.near && !SOLDIER_KINDS.has(sh.ent.kind) ? cur!.pool!.info(sh.h.modelId) : undefined, mz = info?.rig?.muzzle;
+    if (!info || !mz) return false;
+    const sc = (info.lengthM / Math.max(...info.nativeSize)) * (sh.mul ?? 1);
+    sh.shotAt = now; sh.shotBrg = brg;
+    // pivot: where the turret turns, ahead of the hull origin along the hull; the barrel then points along the turret bearing
+    const hr = (sh.hd * Math.PI) / 180, pv = (mz.pivot ?? 0) * sc, mx = sh.x + Math.sin(hr) * pv + Math.sin(brg) * mz.fwd * sc, my = sh.y + Math.cos(hr) * pv + Math.cos(brg) * mz.fwd * sc;
+    if (kind !== 'bullet') spawnFx(mx + Math.sin(brg) * 1.6 * sc, my + Math.cos(brg) * 1.6 * sc, 3.5 * sc, 'smoke', { grow: 2, life: 1.3, up: mz.up * sc, vz: 1.2, alpha: 0.7 });
+    return true;
   }
 
   function updateProjectiles(b: Battle, now: number) {
@@ -412,12 +557,15 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       i++;
       if (!seenProj.has(p.id)) {
         if (now > nextShotEv) { nextShotEv = now + 70; renderEvents.emit({ type: 'tacShot', kind: p.kind, side: p.side, pos: ll(p.x0, p.y0), dist }); }
-        if (p.kind !== 'bomb' && (p.kind !== 'bullet' || Math.random() < 0.35)) {
+        let shooter: E | undefined;
+        if (p.kind !== 'bomb') for (const [, s] of cur!.ents) if (s.ent.side === p.side && s.ent.alive && Math.abs(s.ent.x - p.x0) < 6 && Math.abs(s.ent.y - p.y0) < 6) { shooter = s; s.shoot = now + 450; break; }
+        if (shooter && muzzleShot(shooter, Math.atan2(p.x1 - p.x0, p.y1 - p.y0), p.kind, now)) {
+          // close up: clarao at the real muzzle, gun kicks back (see muzzleShot)
+        } else if (p.kind !== 'bomb' && (p.kind !== 'bullet' || Math.random() < 0.35)) {
           const ux = (p.x1 - p.x0) / Math.max(1, dist), uy = (p.y1 - p.y0) / Math.max(1, dist), big = p.kind === 'bullet' ? 2.2 : p.kind === 'shell' ? 7 : 5;
           spawnFx(p.x0 + ux * big * 0.6, p.y0 + uy * big * 0.6, big * Math.max(1, mul * 0.7), 'flash', { grow: 0.8, life: p.kind === 'bullet' ? 0.09 : 0.16, up: 2 * clamp(mul * 0.7, 1, 10) });
           if (p.kind === 'shell') spawnFx(p.x0 + ux * 6, p.y0 + uy * 6, 9 * mul, 'smoke', { grow: 2, life: 1.4, up: 2.5 * mul, vz: 2 });
         }
-        if (p.kind !== 'bomb') for (const [, s] of cur!.ents) if (s.ent.side === p.side && s.ent.alive && Math.abs(s.ent.x - p.x0) < 6 && Math.abs(s.ent.y - p.y0) < 6) { s.shoot = now + 450; break; }
       }
       seenProj.set(p.id, { x1: p.x1, y1: p.y1, kind: p.kind, side: p.side });
     }
@@ -836,12 +984,29 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     explodeAt: (x, y, r = 12) => { testFx = true; explode(x, y, r); testFx = false; },
     holdFx: (on) => { held = on; },
     slowFx: (k) => { fxSlow = Math.max(0, k); },
-    pinFx: (on) => { pinned = on; if (on) for (const f of fxs) f.b.show = false; },
+    pinFx: (on) => { pinned = on; if (on) { for (const f of fxs) f.b.show = false; for (const [, s] of cur?.ents ?? []) if (s.wreck) s.wreck.show = false; } },
     tracerAt: (x0, y0, x1, y1) => { const l = lines.add({ positions: [P(x0, y0, 2.5), P(x1, y1, 2.5)], width: 5, material: Cesium.Material.fromType('PolylineGlow', { color: C.fromCssColorString('#ffd060'), glowPower: 0.4, taperPower: 0.9 }) }); testLines.push(l); },
     ents: () => [...(cur?.ents.values() ?? [])].map((e) => ({ id: e.ent.id, sq: e.ent.sq, side: e.ent.side, kind: e.ent.kind, x: e.ent.x, y: e.ent.y, alive: e.ent.alive, shown: !!e.h.model?.show, ready: !!e.h.model?.ready })),
     sample: (n = 5) => [...(cur?.ents.values() ?? [])].slice(0, n).map((e) => { const [lo, la] = ll(e.x, e.y); return { id: e.ent.id, x: Math.round(e.x), y: Math.round(e.y), h: Math.round(hAt(e.x, e.y)), shown: !!e.h.model?.show, ready: !!e.h.model?.ready, scale: e.h.model?.scale, screen: globe.toScreen(lo, la, hAt(e.x, e.y)) }; }),
-    stats: () => ({ shown: [...(cur?.ents.values() ?? [])].filter((e) => e.h.model?.show).length, models: cur?.pool?.liveCount ?? 0, ents: cur?.ents.size ?? 0, proj: cur?.b.proj.length ?? 0, fx: fxs.filter((f) => f.b.show).length, clusters: clGroups, clustered: clMembers }),
+    stats: () => ({ shown: [...(cur?.ents.values() ?? [])].filter((e) => e.h.model?.show).length, models: cur?.pool?.liveCount ?? 0, ents: cur?.ents.size ?? 0, proj: cur?.b.proj.length ?? 0, fx: fxs.filter((f) => f.b.show).length, clusters: clGroups, clustered: clMembers, ...lodStats }),
     setCluster: (on) => { clusterOn = on; clNext = 0; },
+    lod: () => [...(cur?.ents.values() ?? [])].map((e) => ({ id: e.ent.id, kind: e.ent.kind, side: e.ent.side, x: e.ent.x, y: e.ent.y, alive: e.ent.alive, near: !!e.near, want: e.want ?? 'far', model: e.h.modelId, ready: !!e.h.model?.ready, dist: Math.round(e.dist ?? -1), turret: e.rig ? Math.round((e.rig.turret * 180) / Math.PI) : null, fz: e.fz ?? 0 })),
+    fireAt: (id) => {
+      const s = cur?.ents.get(id);
+      if (!s) return false;
+      testFx = true;
+      try {
+        if (SOLDIER_KINDS.has(s.ent.kind)) { // keeps the firing pose for a minute and flashes the rifle
+          s.shoot = performance.now() + 60_000;
+          const b = (s.hd * Math.PI) / 180, k = s.mul ?? 1;
+          spawnFx(s.x + Math.sin(b) * 0.9 * k, s.y + Math.cos(b) * 0.9 * k, 0.9 * k, 'flash', { grow: 0.8, life: 0.09, up: 1.25 * k });
+          return true;
+        }
+        return muzzleShot(s, (s.hd * Math.PI) / 180 + (s.rig?.turret ?? 0), 'shell', performance.now());
+      } finally { testFx = false; }
+    },
+    rigSet: (id, patch) => { const s = cur?.ents.get(id); if (!s?.rig) return false; Object.assign(s.rig, patch); return true; },
+    setNearRange: (m) => { setNearRange(m); lodNext = 0; },
     prefetch: async () => { const g = getGame(); if (g) await Promise.all(battlePreviews(g.ctx).map((b) => prefetchAt(b.pos[0], b.pos[1]))); },
     destroy() {
       clearInterval(timer); clearInterval(timerPre); clearInterval(simTimer);

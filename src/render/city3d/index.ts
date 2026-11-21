@@ -12,6 +12,7 @@ import { opacityDebug } from './appearance';
 import { cachedTiles, CityTile, sharedAppearance, tallBuildings, nearBuildings } from './tile';
 import { forceTreeLod, inPolyEvenOdd, lastDiag } from './trees';
 import { setVegetationImagery } from './vegetation';
+import { GrassField } from './grass';
 
 export interface City3DStats {
   active: boolean; agl: number; tiles: number; ready: number; loading: number; failed: number;
@@ -48,6 +49,8 @@ export interface City3D {
   /** Test/debug: every visible tree at one detail level (0 full, 1 mid, 3 impostor) or by distance (null). */
   forceTreeLod(l: 0 | 1 | 3 | null): void;
   treeFit(n?: number): { tiles: { key: string; level: number; trees: number }[]; samples: number; floatP90: number; floatMax: number; sinkP90: number };
+  /** Grass tufts around the camera (pattern: public/data/styles/grass.json); `setObstacles` keeps the footprint of vehicles / ruins clear. */
+  grass: GrassField;
   destroy(): void;
 }
 
@@ -59,6 +62,7 @@ export function attachCity3D(globe: Globe): City3D {
   const viewer = globe.viewer, scene = viewer.scene, cam = viewer.camera;
   setVegetationImagery(() => globe.imageryProvider());
   const tiles = new Map<string, CityTile>();
+  const grass = new GrassField(viewer, () => tiles.values());
   const credit = new Cesium.Credit(ATTRIBUTION, true);
   let ready = false, on = false, offSince = 0, destroyed = false, hidRoads = false, agl = Infinity, running = 0;
   const loadMs: number[] = [];
@@ -88,7 +92,7 @@ export function attachCity3D(globe: Globe): City3D {
       viewer.creditDisplay.removeStaticCredit(credit);
       if (hidRoads) { globe.setLayerVisible('roads', true); hidRoads = false; }
       for (const t of tiles.values()) t.dispose();
-      tiles.clear(); queue.length = 0;
+      tiles.clear(); queue.length = 0; grass.clear();
     }
     scene.requestRender();
   }
@@ -157,6 +161,7 @@ export function attachCity3D(globe: Globe): City3D {
       // trees stand on the same ground surface as the buildings (no per-level re-seating: that made some float)
       if (t.trees) t.trees.update(cp, { near: c.treeNear, mid: c.treeMid, far: c.treeDist }, inCanopy);
     }
+    grass.update();
     scene.requestRender();
   }
 
@@ -186,6 +191,7 @@ export function attachCity3D(globe: Globe): City3D {
   const hot = import.meta.env.DEV ? setInterval(() => { if (on) void reloadStyles(); }, 2000) : 0;
 
   const api: City3D = {
+    grass,
     reloadStyles: (force = true) => reloadStyles(force),
     active: () => on,
     update,
@@ -249,7 +255,7 @@ export function attachCity3D(globe: Globe): City3D {
     },
     destroy() {
       destroyed = true; if (current === api) current = null; lm.destroy(); offNight(); offFrame(); off(); offStyles(); offRuins(); if (hot) clearInterval(hot); clearInterval(timer); stop();
-      setActive(false);
+      setActive(false); grass.destroy();
     },
   };
   current = api;
