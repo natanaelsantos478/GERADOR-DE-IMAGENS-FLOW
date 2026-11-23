@@ -5,7 +5,11 @@ import { loadElevTile, newRequest, TILE_PX } from './elevTiles';
 const GRID = 65;
 /** Heightmap size per terrain tile (city3d/ground.ts reproduces the drawn surface from it). */
 export const TERRAIN_GRID = GRID;
+/** Finest terrain level: 13 for the whole globe; the detailed battle view raises it to 14 (half the grid spacing) inside its 10 km field. */
+let maxLevel = 13;
 export const TERRAIN_MAX_LEVEL = 13;
+export const terrainMaxLevel = () => maxLevel;
+export const setTerrainMaxLevel = (n: number) => { maxLevel = Math.max(TERRAIN_MAX_LEVEL, Math.min(14, Math.round(n))); };
 
 export function createTerrariumTerrain(): Cesium.TerrainProvider {
   const tilingScheme = new Cesium.WebMercatorTilingScheme();
@@ -26,10 +30,10 @@ export function createTerrariumTerrain(): Cesium.TerrainProvider {
     hasVertexNormals: false,
     availability: undefined,
     getLevelMaximumGeometricError: (level: number) => levelZeroError / (1 << level),
-    getTileDataAvailable: (_x: number, _y: number, level: number) => level <= TERRAIN_MAX_LEVEL,
+    getTileDataAvailable: (_x: number, _y: number, level: number) => level <= maxLevel,
     loadTileDataAvailability: () => undefined,
     requestTileGeometry(x: number, y: number, level: number, request?: Cesium.Request) {
-      if (level > TERRAIN_MAX_LEVEL) return undefined;
+      if (level > maxLevel) return undefined;
       const req = request ?? newRequest();
       const p = loadElevTile(level, x, y, req);
       if (!p) return undefined; // throttled: Cesium retries

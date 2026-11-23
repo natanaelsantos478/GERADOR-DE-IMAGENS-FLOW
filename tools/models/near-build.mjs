@@ -183,19 +183,9 @@ const PFMETA = { license: 'CC-BY-4.0', author: 'Polyfork', source: 'https://poly
     rig: { turret: 'turret', gun: 'boom-lower', recoil: 'boom-upper', recoilM: 0.3, elevate: 'boom-lower', wheels: ['wheel-1l', 'wheel-1r', 'wheel-2l', 'wheel-2r', 'wheel-3l', 'wheel-3r', 'wheel-4l', 'wheel-4r'], wheelR: 0.95, steer: ['steer-1l', 'steer-1r', 'steer-2l', 'steer-2r'], muzzle: muzzle(doc, 'turret', 'tip-muzzle'), turretY: 1.55 } });
 }
 
-// ------------------------------------------------------------------ soldiers (Quaternius Toon Shooter Game Kit, CC0)
-const WEAPONS = ['GrenadeLauncher', 'Knife_1', 'Knife_2', 'Pistol', 'Revolver', 'Revolver_Small', 'RocketLauncher', 'ShortCannon', 'Shotgun', 'Shovel', 'SMG', 'Sniper', 'Sniper_2'];
-const WAYS = { nsoldier: null, nsoldier_des: { main: [0.62, 0.5, 0.32], pants: [0.5, 0.4, 0.26] }, nsoldier_urb: { main: [0.34, 0.38, 0.44], pants: [0.2, 0.22, 0.26] }, nsoldier_ru: { main: [0.3, 0.33, 0.17], pants: [0.22, 0.25, 0.14] } };
-const ROLES = { idle: 'Idle', walk: 'Walk', run: 'Run_Gun', shoot: 'Idle_Shoot', runShoot: 'Run_Shoot', walkShoot: 'Walk_Shoot', crouch: 'Duck', death: 'Death' };
-for (const [id, way] of Object.entries(WAYS)) {
-  const doc = await io.read(path.join(SRC, 'toon', 'Character_Soldier.gltf'));
-  for (const n of doc.getRoot().listNodes()) if (WEAPONS.includes(n.getName())) n.dispose();
-  for (const m of doc.getRoot().listMaterials()) {
-    const f = way && (m.getName() === 'Character_Main' ? way.main : m.getName() === 'Pants' ? way.pants : null);
-    if (f) m.setBaseColorFactor([f[0], f[1], f[2], 1]);
-  }
-  await emit(id, doc, { group: 'soldier', heightM: 1.8, license: 'CC0-1.0', author: 'Quaternius (Toon Shooter Game Kit)', source: 'https://quaternius.com/packs/toonshootergamekit.html', animationRoles: ROLES,
-    notes: id === 'nsoldier' ? 'Character_Soldier, only the AK kept; files taken from a public GitHub mirror (jwh781101-ship-it/nantu-arena-assets) because the Google Drive quota of the original download is exhausted' : `Character_Soldier recoloured (${id.replace('nsoldier_', '')})` });
-}
+// ------------------------------------------------------------------ soldiers
+// The soldiers (nsoldier*, soldier_*) are no longer built here: the cartoon Toon Shooter characters were removed. The realistic ones come from the
+// Blender kit (tools/models/soldados/exportar_soldados.py + quantize-soldier.mjs); keep their entries when this script rewrites the manifest.
+try { const prev = JSON.parse(fs.readFileSync(path.join(OUT, 'manifest.json'), 'utf8')); for (const [k, v] of Object.entries(prev)) if (k.startsWith('nsoldier')) MANI[k] = v; } catch { /* first run */ }
 fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify(MANI, null, 1));
 console.log('near manifest', Object.keys(MANI).length, 'models');

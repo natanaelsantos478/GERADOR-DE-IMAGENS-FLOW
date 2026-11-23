@@ -28,7 +28,6 @@ Procedural ground slabs (airport, port, military_base, city_block, plant_hydro d
 | mlrs | Mobile SAM (actually rocket launcher truck) | Sketlux | CC0 |
 | sam (composite, substitute) | 8-Wheel Industrial Hauler (olive) + procedural launch canisters (own work, CC0) | Polyfork / own | CC BY 4.0 / CC0 |
 | radar (composite) | 8-Wheel Industrial Hauler (olive) + Sensor Dish | Polyfork | CC BY 4.0 |
-| soldier | Soldier_Male (Ultimate Animated Character Pack; idle/run/walk/shoot...) + AssaultRifle_1 (Ultimate Gun Pack) | Quaternius | CC0 |
 | attack_heli | Attack Chopper | Geibu3D | CC BY 4.0 |
 | transport_heli | Cimpletoon helicopter02 | yd | CC0 |
 | fighter | Cimpletoon stealthfighter (recoloured) | yd | CC0 |
@@ -145,7 +144,6 @@ Each model below is a real vehicle/aircraft/ship/person modelled by third-party 
 | destroyer_cg47 | Ticonderoga-class cruiser (CG-47) | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
 | frigate_perry | Oliver Hazard Perry-class frigate | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
 | amphib_lpd17 | San Antonio-class (LPD-17) | USA | FlightGear project contributors | GPL-2.0-or-later | SA | https://sourceforge.net/p/flightgear/fgdata/ci/next/tree/Models/Maritime/Military/ |
-| soldier_camo | Modern camo infantryman (Elite Soldier) | - | hc | CC-BY-3.0 |  | https://opengameart.org/content/elite-soldier-model |
 | civil_737_800 | Boeing 737-800 | USA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/737-800.zip |
 | civil_a320 | Airbus A320 | FRA | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/A320-family.zip |
 | civil_tu154 | Tupolev Tu-154B | RUS | FlightGear FGAddon contributors | GPL-2.0-or-later | SA | https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-trunk/tu154b.zip |
@@ -189,7 +187,25 @@ Built by `tools/models/fetch-near.sh` + `tools/models/near-build.mjs`. Changes m
 | near_spg (composite) | Medium Tank hull / running gear + Towed Field Howitzer (https://polyfork.dev/asset/towed-field-howitzer-bb9a08) top carriage as rotating turret | Polyfork | CC BY 4.0 |
 | near_truck | Military Cargo Truck (https://polyfork.dev/asset/military-cargo-truck-652f66) | Polyfork | CC BY 4.0 |
 | near_sam (composite, substitute) | Eight-Wheel Industrial Hauler (olive) + Anti-Aircraft Gun (https://polyfork.dev/asset/anti-aircraft-gun-93cc80): an AA gun truck stands in for a missile launcher (no free SAM launcher with separate parts was found) | Polyfork | CC BY 4.0 |
-| nsoldier, nsoldier_des, nsoldier_urb, nsoldier_ru | Character_Soldier of the Toon Shooter Game Kit (one rifle kept; 3 recolours); clips Idle, Walk, Run_Gun, Run_Shoot, Walk_Shoot, Idle_Shoot, Duck, Death | Quaternius (https://quaternius.com/packs/toonshootergamekit.html) | CC0 |
 
-Credit line (CC BY 4.0): "<name> by Polyfork (https://polyfork.dev), CC BY 4.0". The Toon Shooter files were taken from a public GitHub mirror of the kit (jwh781101-ship-it/nantu-arena-assets) because the Google Drive download of the original is over quota; the files are Quaternius' CC0 assets, unchanged apart from removing the unused weapons.
+Credit line (CC BY 4.0): "<name> by Polyfork (https://polyfork.dev), CC BY 4.0".
 The grass of the detailed view is generated in code (no model); its pattern is `public/data/styles/grass.json`.
+
+## Soldiers (nsoldier, nsoldier_des, nsoldier_urb, nsoldier_ru and soldier_nato, soldier_ru, soldier_desert, soldier_urban; soldier and soldier_cn reuse the US / Russian files)
+Built in Blender from a kit (tools/models/soldados/): ONE skinned mesh and ONE atlas material per model, camouflage tints baked into the atlas; near level about 11,700 triangles / 1 MB, far level about 2,900 triangles / 0.3 MB; clips Idle_Loop, Walk_Loop, Jog_Fwd_Loop, Crouch_Idle_Loop, Death01, Pistol_Aim_Neutral. The earlier cartoon soldiers (Quaternius Toon Shooter Game Kit and Ultimate Animated Character Pack) and the OpenGameArt "Elite Soldier" were removed from the game.
+
+| part | model | author | license |
+|---|---|---|---|
+| body + skeleton | Universal Base Characters [Standard], Superhero_Male (https://quaternius.com/packs/universalbasecharacters.html) | Quaternius | CC0 |
+| animations | Universal Animation Library [Standard] (https://quaternius.com/packs/universalanimationlibrary.html) | Quaternius | CC0 |
+| shirt, trousers, boots, gloves, vest, pads (re-fitted and re-tinted) | soldier_city (https://sketchfab.com/3d-models/636b5a7c7e0c400abda269ba382f3252) | buh-late | CC BY 4.0 |
+| backpack | Low Poly Game Ready Military Tactical Backpack (https://sketchfab.com/3d-models/95a4fc7300584384b56ce3add58dbc9f) | 1799danly | CC BY 4.0 |
+| plate carrier (US) | Tactical Plate Carrier Vest - Game Ready (https://sketchfab.com/3d-models/3b51e6329dbb4b0aa14e43f12eb6c42a) | txyrm70 | CC BY 4.0 |
+| helmet (US) | Tactical Helmet with Headset (https://sketchfab.com/3d-models/82adf376164f4d99a4e0b2949930e2ad) | txyrm70 | CC BY 4.0 |
+| helmet (Russian-bloc) | low-poly 6b47 (https://sketchfab.com/3d-models/7cb0a856205d4afc964484878fb73434) | katzeschwarz | CC BY 4.0 |
+| helmet (desert) | Helmet model 2005, wz. 2005 (https://sketchfab.com/3d-models/3bef9733977142599dc2275cf889fcef) | armoredwave | CC BY 4.0 |
+| helmet (urban) | Combat helmet K6-3 (https://sketchfab.com/3d-models/94701874d8b949718708b018c8d4f61d) | shamanoff | CC BY 4.0 |
+| AK-74, M4A1, RPG-7, M249 | Low-Poly AK-74 / M4a1 / RPG-7 / M249 SAW (https://sketchfab.com/tastytony) | TastyTony | CC BY 4.0 |
+
+Credit line (CC BY 4.0): "<name> by <author> (Sketchfab), CC BY 4.0".
+

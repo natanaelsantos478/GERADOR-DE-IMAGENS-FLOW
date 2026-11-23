@@ -100,7 +100,8 @@ export interface MapModeContext {
   /** Owner country of the province (or the synthetic territory). */
   countryOf(provinceId: ProvinceId): CountryId | null;
 }
-export type BaseStyle = 'satellite' | 'relief' | 'shade';
+/** `none`: no base photo / shading at all (the detailed battle view paints its own ground). */
+export type BaseStyle = 'satellite' | 'relief' | 'shade' | 'none';
 export interface MapMode {
   id: string;
   label: string;

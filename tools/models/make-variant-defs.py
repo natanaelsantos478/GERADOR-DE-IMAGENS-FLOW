@@ -122,7 +122,6 @@ D += [
 ]
 # ---------- OpenGameArt soldiers / misc ----------
 D += [
- dict(id='soldier_camo', cls='soldier', realName='Modern camo infantryman (Elite Soldier)', origin='', lengthM=1.8, src='oga', oga='elite-soldier-model', blend='x_elite_20120307.zip/elite/elite.obj', ops=[], author='hc', license='CC-BY-3.0', source='https://opengameart.org/content/elite-soldier-model', front='-z'),
 ]
 json.dump(D, open(os.path.join(H, 'variants.defs.json'), 'w'), indent=1)
 print(len(D), 'defs')

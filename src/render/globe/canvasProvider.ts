@@ -3,13 +3,13 @@ import * as Cesium from 'cesium';
 
 export type DrawTile = (g: CanvasRenderingContext2D, z: number, x: number, y: number, size: number) => boolean | void;
 
-export function createCanvasImagery(opts: { size: number; maxLevel: number; draw: DrawTile; credit?: string; minLevel?: number }): Cesium.ImageryProvider {
+export function createCanvasImagery(opts: { size: number; maxLevel: number; draw: DrawTile; credit?: string; minLevel?: number; /** only this part of the globe is requested */ rectangle?: Cesium.Rectangle }): Cesium.ImageryProvider {
   const tilingScheme = new Cesium.WebMercatorTilingScheme();
   const empty = document.createElement('canvas');
   empty.width = empty.height = 1;
   const p = {
     tilingScheme,
-    rectangle: tilingScheme.rectangle,
+    rectangle: opts.rectangle ?? tilingScheme.rectangle,
     tileWidth: opts.size,
     tileHeight: opts.size,
     minimumLevel: opts.minLevel ?? 0,

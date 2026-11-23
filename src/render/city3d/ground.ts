@@ -6,11 +6,11 @@
  * the terrain under the tile is still coarse.
  */
 import { loadElevTile, TILE_PX } from '../globe/elevTiles';
-import { TERRAIN_GRID } from '../globe/terrain';
+import { TERRAIN_GRID, terrainMaxLevel } from '../globe/terrain';
 import { TZ, type TileRef } from './geo';
 
 /** Finest terrain level (the city tiles use it for buildings, roads and bridges). */
-export const GROUND_LEVEL = 13;
+export const groundLevel = () => terrainMaxLevel();
 export type Ground = (x: number, y: number) => number;
 
 const G = TERRAIN_GRID;
@@ -29,7 +29,7 @@ function gridOf(src: Float32Array): Float32Array {
 }
 
 /** Sampler of the level-`z` terrain surface (z <= 13) in the local metres of tile `t`. */
-export async function loadGround(t: TileRef, alive: () => boolean, z = GROUND_LEVEL): Promise<Ground | null> {
+export async function loadGround(t: TileRef, alive: () => boolean, z = groundLevel()): Promise<Ground | null> {
   const f = 2 ** (TZ - z), tx = t.x >> (TZ - z), ty = t.y >> (TZ - z);
   let src: Float32Array | undefined;
   for (let i = 0; i < 60 && !src && alive(); i++) {

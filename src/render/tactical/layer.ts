@@ -9,12 +9,14 @@ import { battlePreviews } from '../../sim/military';
 import type { Globe } from '../globe/types';
 import { FREEZE, M_PER_DEG, ModelPool, assetUrl, clamp, lerpAngle, loadModelData, mode, renderEvents, renderLock, spriteCanvas, type ModelHandle } from '../units/common';
 import { getQuality } from '../globe/quality';
+import { setTerrainMaxLevel, terrainMaxLevel } from '../globe/terrain';
 import { RIG_GROUPS, animPhase, budgetFor, chooseAnimated, flashOn, hurryOrder, nearModelFor, setNearRange, newRig, planLod, recoilAt, soldierRole, stepRig, type LodCand, type Lod, type RigState } from './nearLod';
 import { applyRig, rigOf } from './vehicleRig';
 import { useTacSelection } from './store';
 import { sampleGrid } from './terrain';
 import { TAC_N, TAC_SIZE_M } from '../../sim/tactical/mapWorld';
 import { baseGround, loadGroundTextures } from '../city3d/groundPaint';
+import { createCanvasImagery } from '../globe/canvasProvider';
 import { prepareTacticalVectorOffThread } from '../../data/vector/prepare';
 import type { NavData } from '../../data/vector/nav';
 import { createTacCamera, type FocusOpts, type FocusTarget } from './camera';
@@ -29,6 +31,9 @@ const C = Cesium.Color;
 const V = (x: number, y: number) => new Cesium.Cartesian2(x, y);
 const INF = Number.POSITIVE_INFINITY;
 const SOLDIER_KINDS = new Set(['infantry', 'special', 'engineer']);
+/** A unit whose real-size model would be this many times smaller than a readable on-screen size gets the marker dot (the model itself is never enlarged). */
+const DOT_NEED = 3;
+const TAC_MODE = 'tactical';
 const MAX_ENTS = 900;
 
 export interface TacticalLayer {
@@ -171,6 +176,9 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
   // ------------------------------------------------------------ per-battle state
   /** Own base ground over the battle square (replaces the satellite photo there). */
   let baseLayer: Cesium.ImageryLayer | null = null;
+  let detailLayer: Cesium.ImageryLayer | null = null;
+  /** What the globe looked like before the battle: the detailed view draws and loads only its own 10 km field. */
+  let fieldLimit: { rect: Cesium.Rectangle | undefined; sse: number; lvl: number; bg: Cesium.Color } | null = null;
   let cur: { id: string; b: Battle; pool: ModelPool | null; ents: Map<number, E>; clat: number; clon: number; mPerLon: number } | null = null;
   let bills: Cesium.BillboardCollection, lines: Cesium.PolylineCollection, labels: Cesium.LabelCollection;
   const testLines: Cesium.Polyline[] = [];
@@ -253,6 +261,16 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     bills = scene.primitives.add(new Cesium.BillboardCollection({ scene })) as Cesium.BillboardCollection;
     lines = scene.primitives.add(new Cesium.PolylineCollection()) as Cesium.PolylineCollection;
     labels = scene.primitives.add(new Cesium.LabelCollection({ scene })) as Cesium.LabelCollection;
+    {
+      // Load only the combat field (10 x 10 km): the rest of the globe is not drawn, so it requests no terrain or imagery tiles; inside it the
+      // relief is one level finer (z14, ~25 m grid) and the error tolerance tighter, which the smaller area pays for.
+      const gl = scene.globe, h = b.map.sizeM / 2, [w0, s0] = ll(-h, -h), [e0, n0] = ll(h, h);
+      fieldLimit = { rect: gl.cartographicLimitRectangle, sse: gl.maximumScreenSpaceError, lvl: terrainMaxLevel(), bg: scene.backgroundColor.clone() };
+      setTerrainMaxLevel(14);
+      gl.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(w0, s0, e0, n0);
+      gl.maximumScreenSpaceError = Math.min(gl.maximumScreenSpaceError, 1.8);
+      scene.backgroundColor = C.fromCssColorString('#9db8d0');
+    }
     saved = { mode: globe.currentMapMode(), fill: globe.isLayerVisible('fill'), light: scene.light, roads: globe.isLayerVisible('roads') };
     // the stylised globe road layer draws wide misaligned stripes over the real roads (the orange band across the river)
     if (saved.roads) globe.setLayerVisible('roads', false);
@@ -262,21 +280,65 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
       scene.light = new Cesium.DirectionalLight({ direction: Cesium.Matrix4.multiplyByPointAsVector(m, new Cesium.Cartesian3(-0.45, 0.3, -0.85), new Cesium.Cartesian3()), intensity: 3 });
     }
     tcam = createTacCamera({ viewer, hAt: (x, y) => hAt(x, y), ll, resolve: resolveTarget, half: b.map.sizeM / 2 });
-    if (saved.mode !== 'satellite') globe.setMapMode('satellite');
+    // no satellite photo / shading under the battle (not even requested): own ground + the 3D city tiles' ground only
+    globe.registerMapMode(TAC_MODE, { label: 'Tático', base: 'none', available: () => mode.tactical });
+    globe.setMapMode(TAC_MODE);
     // own ground over the whole 10 km square (the satellite photo is not shown inside the battle); the 3D city tiles
     // near the camera paint the detailed ground (land cover, streets) over it
     void loadGroundTextures().then((tex) => {
       if (!tex || !cur || cur.id !== b.id) return;
-      const c = document.createElement('canvas'); c.width = c.height = 1024;
-      const g2 = c.getContext('2d')!, kind = baseGround(org[0], org[1]), pat = g2.createPattern(tex[kind], 'repeat')!;
-      const sc = (300 * (1024 / b.map.sizeM)) / tex[kind].width; pat.setTransform(new DOMMatrix([sc, 0, 0, sc, 0, 0]));
-      g2.fillStyle = pat; g2.fillRect(0, 0, 1024, 1024);
-      const [w0, s0] = ll(-b.map.sizeM / 2, -b.map.sizeM / 2), [e0, n0] = ll(b.map.sizeM / 2, b.map.sizeM / 2);
-      void Cesium.SingleTileImageryProvider.fromUrl(c.toDataURL('image/jpeg', 0.85), { rectangle: Cesium.Rectangle.fromDegrees(w0, s0, e0, n0) }).then((prov) => {
-        if (!cur || cur.id !== b.id) return;
-        baseLayer = viewer.imageryLayers.addImageryProvider(prov, 1);
-        scene.requestRender();
+      const kind = baseGround(org[0], org[1]), img = tex[kind], tiling = new Cesium.WebMercatorTilingScheme();
+      // Mip chain of the ground texture: a repeat is drawn from the mip closest to its size on screen, so it never shimmers when far
+      const mips: HTMLCanvasElement[] = [];
+      for (let w = img.width; w >= 32; w >>= 1) { const c = document.createElement('canvas'); c.width = c.height = w; const cg2 = c.getContext('2d')!; cg2.imageSmoothingQuality = 'high'; cg2.drawImage(img, 0, 0, w, w); mips.push(c); }
+      const half = b.map.sizeM / 2, [w0, s0] = ll(-half, -half), [e0, n0] = ll(half, half);
+      const mPerLon2 = cur.mPerLon, clon0 = cur.clon, clat0 = cur.clat;
+      // A pattern anchored to battle metres (so tiles line up): `rep` metres per repeat, texture rotated by `rot`
+      const layer = (g2: CanvasRenderingContext2D, mx0: number, my1: number, mpp: number, rep: number, rot: number, alpha: number, blend: GlobalCompositeOperation) => {
+        const want = rep / mpp; // px per repeat
+        if (want < 3) return; // below that the texture averages out to its mean colour
+        const mip = mips.find((m, i) => m.width <= want * 1.01 || i === mips.length - 1)!, s2 = want / mip.width, p = g2.createPattern(mip, 'repeat')!;
+        const m = new DOMMatrix().translate(-mx0 / mpp, my1 / mpp).rotate((rot * 180) / Math.PI).scale(s2, s2);
+        p.setTransform(m); g2.globalAlpha = alpha; g2.globalCompositeOperation = blend; g2.fillStyle = p; g2.fillRect(0, 0, g2.canvas.width, g2.canvas.height);
+      };
+      const mean = (() => { const c = document.createElement('canvas'); c.width = c.height = 1; const g3 = c.getContext('2d')!; g3.drawImage(mips[mips.length - 1], 0, 0, 1, 1); const d = g3.getImageData(0, 0, 1, 1).data; return `rgb(${d[0]},${d[1]},${d[2]})`; })();
+      const prov = createCanvasImagery({
+        size: 256, maxLevel: 19, rectangle: Cesium.Rectangle.fromDegrees(w0, s0, e0, n0),
+        draw: (g2, z, x, y, size) => {
+          const r = tiling.tileXYToRectangle(x, y, z), W = (r.west * 180) / Math.PI, E = (r.east * 180) / Math.PI, N = (r.north * 180) / Math.PI;
+          const mx0 = (W - clon0) * mPerLon2, my1 = (N - clat0) * M_PER_DEG, mpp = ((E - W) * mPerLon2) / size;
+          g2.fillStyle = mean; g2.fillRect(0, 0, size, size);
+          layer(g2, mx0, my1, mpp, 11, 0, 1, 'source-over');          // fine grain
+          layer(g2, mx0, my1, mpp, 83, 0.62, 0.42, 'overlay');       // broad patches (hides the repetition)
+          layer(g2, mx0, my1, mpp, 460, 1.9, 0.3, 'overlay');        // very broad variation
+          g2.globalAlpha = 1; g2.globalCompositeOperation = 'source-over';
+        },
       });
+      baseLayer = viewer.imageryLayers.addImageryProvider(prov, 1);
+      // Fine grain for the last metres: the 3D city tiles paint the ground at ~0.8 m per pixel, so close to the camera a second, translucent layer
+      // (light / dark specks taken from the same texture) is laid on top of everything, only at the finest imagery levels.
+      const dc = document.createElement('canvas'); dc.width = dc.height = 512;
+      { const d2 = dc.getContext('2d', { willReadFrequently: true })!; d2.drawImage(img, 0, 0, 512, 512); const id = d2.getImageData(0, 0, 512, 512), px = id.data; let sum = 0;
+        for (let i = 0; i < px.length; i += 4) sum += px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11;
+        const mu = sum / (px.length / 4);
+        for (let i = 0; i < px.length; i += 4) { const l = px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11 - mu, v = l > 0 ? 255 : 0; px[i] = px[i + 1] = px[i + 2] = v; px[i + 3] = Math.min(150, Math.abs(l) * 2.2); }
+        d2.putImageData(id, 0, 0); }
+      const dmips: HTMLCanvasElement[] = [];
+      for (let w = 512; w >= 16; w >>= 1) { const c = document.createElement('canvas'); c.width = c.height = w; const c2 = c.getContext('2d')!; c2.imageSmoothingQuality = 'high'; c2.drawImage(dc, 0, 0, w, w); dmips.push(c); }
+      const detail = createCanvasImagery({
+        size: 256, maxLevel: 22, minLevel: 18, rectangle: Cesium.Rectangle.fromDegrees(w0, s0, e0, n0),
+        draw: (g2, z, x, y, size) => {
+          const r = tiling.tileXYToRectangle(x, y, z), W = (r.west * 180) / Math.PI, E = (r.east * 180) / Math.PI, N = (r.north * 180) / Math.PI;
+          const mx0 = (W - clon0) * mPerLon2, my1 = (N - clat0) * M_PER_DEG, mpp = ((E - W) * mPerLon2) / size, rep = 2.4, want = rep / mpp;
+          if (want < 24) return false;
+          const mip = dmips.find((m, i) => m.width <= want * 1.01 || i === dmips.length - 1)!, s2 = want / mip.width, p = g2.createPattern(mip, 'repeat')!;
+          p.setTransform(new DOMMatrix().translate(-mx0 / mpp, my1 / mpp).scale(s2, s2)); g2.fillStyle = p; g2.fillRect(0, 0, size, size);
+        },
+      });
+      const dl = viewer.imageryLayers.addImageryProvider(detail); dl.alpha = 0.5;
+      const keepTop = () => { if (!cur || cur.id !== b.id) { scene.preUpdate.removeEventListener(keepTop); return; } const L = viewer.imageryLayers; if (L.get(L.length - 1) !== dl && !dl.isDestroyed()) L.raiseToTop(dl); };
+      scene.preUpdate.addEventListener(keepTop); detailLayer = dl;
+      scene.requestRender();
     });
     globe.setLayerVisible('fill', false);
     renderLock(globe, 'tac', true);
@@ -303,7 +365,13 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
     renderLock(globe, 'tac', false);
     tcam?.destroy(); tcam = null;
     if (baseLayer) { viewer.imageryLayers.remove(baseLayer, true); baseLayer = null; }
-    if (saved) { scene.light = saved.light; if (saved.mode !== 'satellite') globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); if (saved.roads) globe.setLayerVisible('roads', true); saved = null; }
+    if (detailLayer) { viewer.imageryLayers.remove(detailLayer, true); detailLayer = null; }
+    if (fieldLimit) {
+      const gl = scene.globe;
+      gl.cartographicLimitRectangle = fieldLimit.rect ?? Cesium.Rectangle.MAX_VALUE; gl.maximumScreenSpaceError = fieldLimit.sse; setTerrainMaxLevel(fieldLimit.lvl); scene.backgroundColor = fieldLimit.bg;
+      fieldLimit = null;
+    }
+    if (saved) { scene.light = saved.light; globe.setMapMode(saved.mode); globe.setLayerVisible('fill', saved.fill); if (saved.roads) globe.setLayerVisible('roads', true); saved = null; }
     mode.tactical = false;
     useTacSelection.getState().clear();
     globe.requestRender();
@@ -504,20 +572,21 @@ export function attachTacticalLayer(globe: Globe, getGame: () => Game | null): T
           for (const side of [-1, 1]) spawnFx(s.x - sx * bk + cx * side * nlen * 0.17, s.y - cx * bk - sx * side * nlen * 0.17, nlen * 0.45 * (s.mul ?? 1), 'dust', { grow: 2.4, life: 1.6, up: 0.5, vz: 0.9, alpha: 0.7 });
         } else { s.dustT = now + 260; spawnFx(s.x - Math.sin(e.h) * 3, s.y - Math.cos(e.h) * 3, 7 * mul, 'dust', { grow: 2.2, life: 1.5, up: 1.2 * mul, vz: 1.2 }); }
       }
-      // Exaggeration from the distance to the camera so every unit keeps a readable on-screen size (soldiers ~22 px, vehicles ~34 px).
+      // Real size at every zoom: the model is never enlarged. What the old exaggeration would have been (`need`, 1 = already readable) only
+      // decides when the screen-size marker (the dot) is drawn, so a unit too small to see from afar is still located.
       const gh = hAt(s.x, s.y), [slon, slat] = ll(s.x, s.y);
       const dist = Math.max(20, Cesium.Cartesian3.distance(camPos, Cesium.Cartesian3.fromDegrees(slon, slat, gh)));
       s.dist = dist;
       swapLod(s, pool);
       const info = pool.info(s.h.modelId), len = info?.lengthM ?? 3;
-      const want = clamp((soldier ? 46 : 70) / (len * (viewH / (2 * dist * tanH))), 1, soldier ? 70 : 90);
-      s.mul = s.mul === undefined ? want : s.mul + (want - s.mul) * k;
-      const m = s.mul;
+      const need = clamp((soldier ? 46 : 70) / (len * (viewH / (2 * dist * tanH))), 1, soldier ? 70 : 90);
+      s.mul = 1;
+      const m = 1;
       if (soldier && e.alive) animateSoldier(s, e, sq, now, pool);
       if (!soldier && s.near && e.alive) animateVehicle(s, e, b, now, dt, info, pool);
       if (!s.dot) { const [k, img] = markImg(e.side, e.kind, true); s.dot = bills.add({ position: Cesium.Cartesian3.ZERO, width: 15, height: 15, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, disableDepthTestDistance: INF }); s.dot.setImage(k, img); }
       const inside = soldier && sq.gar !== undefined;
-      s.dot.show = e.alive && !s.cl && (m > 6 || inside);
+      s.dot.show = e.alive && !s.cl && (need > DOT_NEED || inside);
       if (s.dot.show) s.dot.position = Cesium.Cartesian3.fromDegrees(slon, slat, gh + (inside ? (navB?.get(sq.gar!)?.h ?? 8) + 2 : len * m * 1.15));
       const mdl = s.h.model;
       if (mdl && !s.styled && e.alive) {

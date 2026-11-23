@@ -39,7 +39,7 @@ export function baseGround(lon: number, lat: number): GroundKind {
 }
 
 /** Metres covered by one repeat of a texture on the ground (big enough to read as natural variation at 1-2 m/px). */
-const REPEAT_M = 36;
+const REPEAT_M = 14;
 
 /**
  * Fills the tile canvas with the ground (call before water and roads). `k` = px per metre, `half` = tile half size (m).

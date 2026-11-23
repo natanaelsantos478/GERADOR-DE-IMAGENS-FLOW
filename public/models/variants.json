@@ -5767,1042 +5767,778 @@
   "default": "soldier",
   "byCountry": {
    "ABW": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "AFG": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "AGO": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "AIA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ALB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ALD": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "AND": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ARE": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "ARG": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ARM": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "ASM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ATA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ATC": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ATF": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ATG": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "AUS": [
-    "soldier_nato",
-    "soldier_nato_f",
-    "soldier_camo"
+    "soldier_nato"
    ],
    "AUT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "AZE": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "BDI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BEL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BEN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BFA": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "BGD": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "BGR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BHR": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "BHS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BIH": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BJN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BLM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BLR": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "BLZ": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BMU": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BOL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BRA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BRB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BRI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BRN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BRT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BTN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "BWA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CAF": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "CAN": [
-    "soldier_nato",
-    "soldier_nato_f",
-    "soldier_camo"
+    "soldier_nato"
    ],
    "CHE": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CHL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CHN": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "CIV": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CLP": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CMR": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "CNM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "COD": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "COG": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "COK": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "COL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "COM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CPV": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CRI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CSI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CUB": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "CUW": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CYM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CYN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CYP": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "CZE": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "DEU": [
-    "soldier_nato",
-    "soldier_nato_f",
-    "soldier_camo"
+    "soldier_nato"
    ],
    "DJI": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "DMA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "DNK": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "DOM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "DZA": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "ECU": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "EGY": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "ERI": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "ESB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ESP": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "EST": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "ETH": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "FIN": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "FJI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "FLK": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "FRA": [
-    "soldier_nato",
-    "soldier_nato_f",
-    "soldier_camo"
+    "soldier_nato"
    ],
    "FRO": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "FSM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GAB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GBR": [
-    "soldier_nato",
-    "soldier_nato_f",
-    "soldier_camo"
+    "soldier_nato"
    ],
    "GEO": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "GGY": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GHA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GIB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GIN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GMB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GNB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GNQ": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GRC": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GRD": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GRL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GTM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GUM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "GUY": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "HKG": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "HMD": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "HND": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "HRV": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "HTI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "HUN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "IDN": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "IMN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "IND": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "IOA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "IOT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "IRL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "IRN": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "IRQ": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "ISL": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "ISR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ITA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "JAM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "JEY": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "JOR": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "JPN": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "KAB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "KAS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "KAZ": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "KEN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "KGZ": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "KHM": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "KIR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "KNA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "KOR": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "KOS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "KWT": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "LAO": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "LBN": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "LBR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "LBY": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "LCA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "LIE": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "LKA": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "LSO": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "LTU": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "LUX": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "LVA": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "MAC": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MAF": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MAR": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "MCO": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MDA": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "MDG": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MDV": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MEX": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MHL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MKD": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MLI": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "MLT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MMR": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "MNE": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MNG": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "MNP": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MOZ": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "MRT": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "MSR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MUS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MWI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "MYS": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "NAM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NCL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NER": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "NFK": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NGA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NIC": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "NIU": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NLD": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NOR": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "NPL": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "NRU": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "NZL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "OMN": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "PAK": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "PAN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PCN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PER": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PGA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PHL": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "PLW": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PNG": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "POL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PRI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PRK": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "PRT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PRY": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PSX": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "PYF": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "QAT": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "ROU": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "RUS": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "RWA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SAH": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SAU": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "SCR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SDN": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "SDS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SEN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SER": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SGP": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "SGS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SHN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SLB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SLE": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SLV": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SMR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SOL": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SOM": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "SPI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SPM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SRB": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "STP": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SUR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SVK": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SVN": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SWE": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "SWZ": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SXM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SYC": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "SYR": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "TCA": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "TCD": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "TGO": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "THA": [
-    "soldier_cn",
-    "soldier_cn_f"
+    "soldier_cn"
    ],
    "TJK": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "TKM": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "TLS": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "TON": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "TTO": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "TUN": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "TUR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "TUV": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "TWN": [
-    "soldier_urban",
-    "soldier_urban_f"
+    "soldier_urban"
    ],
    "TZA": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "UGA": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "UKR": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "UMI": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "URY": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "USA": [
-    "soldier_nato",
-    "soldier_nato_f",
-    "soldier_camo"
+    "soldier_nato"
    ],
    "USG": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "UZB": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "VAT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "VCT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "VEN": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "VGB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "VIR": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "VNM": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "VUT": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "WLF": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "WSB": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "WSM": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "YEM": [
-    "soldier_desert",
-    "soldier_desert_f"
+    "soldier_desert"
    ],
    "ZAF": [
-    "soldier_nato",
-    "soldier_nato_f"
+    "soldier_nato"
    ],
    "ZMB": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ],
    "ZWE": [
-    "soldier_ru",
-    "soldier_ru_f"
+    "soldier_ru"
    ]
   }
  },
