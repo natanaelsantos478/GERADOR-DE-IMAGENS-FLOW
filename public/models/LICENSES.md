@@ -209,3 +209,8 @@ Built in Blender from a kit (tools/models/soldados/): ONE skinned mesh and ONE a
 
 Credit line (CC BY 4.0): "<name> by <author> (Sketchfab), CC BY 4.0".
 
+
+### Animation library of the Godot battle (`godot/assets/soldiers/anims.glb`)
+- 43 clips of the "Universal Animation Library" by Quaternius (CC0).
+- Rifle_Aim, Rifle_Aim_Crouch, Prone_Aim, Prone_Crawl made for MERIDIANO in Blender from those clips
+  (`tools/models/soldados/animacoes_extras.py`), CC0 like their source.
