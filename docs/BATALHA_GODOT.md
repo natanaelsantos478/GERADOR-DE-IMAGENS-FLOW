@@ -119,20 +119,22 @@ Cada fase termina com captura de tela revisada, commit e push. Nada passa para a
 
 ### Leitura das vias e calçadas por IA (pavimentadas)
 Objetivo: cada via pavimentada com as mesmas faixas, largura, calçadas, meio-fio, cores e placas do lugar real.
-1. **Recorte**: ao longo de cada via do OSM, baixar a foto aérea de alta resolução (Esri z19–20, 0,15–0,3 m) em
-   janelas pequenas (~40 × 40 m) alinhadas à via, com 25% de sobreposição entre janelas.
-2. **Análise por janela** (rede neural na GPU local, RTX 4060 8 GB):
-   - **segmentação** por pixel: pista, faixa branca contínua, tracejada, dupla, faixa de pedestre, seta, calçada,
-     meio-fio, vaga, canteiro, sombra/carro (ignorar). Base atual para isso: modelos de segmentação abertos
-     (SAM 2.1 / SegFormer / Mask2Former) ajustados com dados aéreos de marcação viária (SkyScapes, ~13 cm).
-   - **difusão** entra onde ela é a melhor ferramenta: completar o que a foto não mostra (faixa sob carro ou árvore,
-     trecho borrado), condicionada pela segmentação — "inpainting" do mapa de marcações, não da imagem final.
-3. **Junção**: as janelas são mescladas com peso maior no centro (sem emenda entre elas), vetorizadas em linhas
+1. **Recorte**: cada via do OSM vira uma **faixa endireitada** da foto aérea de alta resolução (Esri z19, ~0,2 m):
+   linhas ao longo do eixo, colunas atravessando a rua (pista + calçadas + 6 m de cada lado). Trechos inteiros de
+   rua (até ~150 m por vez, com sobreposição), não janelas minúsculas.
+2. **Análise do trecho** (só leitura — a IA **não gera imagem**; GPU local, RTX 4060 8 GB):
+   - um modelo de difusão treinado para **análise** (estilo Marigold: a difusão produz um *mapa* da foto, não uma
+     foto nova) ou um modelo de segmentação (SAM 2.1 / SegFormer) marca pixel a pixel: pista, faixa contínua,
+     tracejada, dupla, faixa de pedestre, seta, calçada, meio-fio, canteiro, vaga; carros e sombras são ignorados.
+   - O que a foto não mostra (faixa sob um carro) é completado pela continuidade do próprio trecho.
+3. **Construção por cima**: a foto fica por baixo e o sistema desenha as faixas, bordas e calçadas por cima, no
+   mesmo lugar em que foram vistas — essa sobreposição é também a conferência visual de cada rua.
+4. **Junção**: os trechos são mesclados com peso maior no centro (sem emenda entre eles), vetorizados em linhas
    ao longo do eixo da via (offset, tipo, período do tracejado, largura) e corrigidas por regras: tracejado com
    período constante, faixas paralelas ao eixo, continuidade nos cruzamentos. Resultado: **um modelo de via só**.
-4. **Placas**: posições do OSM (`traffic_sign`, `maxspeed`, `crossing`, `stop`, `give_way`) + detecção na foto;
+5. **Placas**: posições do OSM (`traffic_sign`, `maxspeed`, `crossing`, `stop`, `give_way`) + detecção na foto;
    desenho pelo padrão do país (Convenção de Viena na Bélgica/França, MUTCD nos EUA).
-5. **Calçadas**: largura, altura do meio-fio (0,12–0,18 m) e cor/material (concreto, lajota, pedra) medidos na foto.
+6. **Calçadas**: largura, altura do meio-fio (0,12–0,18 m) e cor/material (concreto, lajota, pedra) medidos na foto.
 
 ### Parâmetros salvos (não a cena)
 Tudo o que a análise mede vira **números por objeto**, guardados por região (tile z13) em `params/<z13>.json.gz`,
