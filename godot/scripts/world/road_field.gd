@@ -36,7 +36,7 @@ func build_all(world: Dictionary, t: Terrain3D) -> void:
 	var roads: Array = world.get("roads", [])
 	roads.sort_custom(func(a, b): return a.width < b.width)
 	for r in roads:
-		if r.tunnel or (r["class"] in ["footway", "path", "steps", "cycleway", "bridleway"] and r.width < 1.6):
+		if r.tunnel or r.bridge or (r["class"] in ["footway", "path", "steps", "cycleway", "bridleway"] and r.width < 1.6):  # bridges: BridgeField
 			continue
 		_road(r)
 	for n in world.get("nodes", []):

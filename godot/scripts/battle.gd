@@ -11,6 +11,7 @@ var rig: CameraRig
 var grass: GrassField
 var _shots_dir := ""
 var _start := Vector3.ZERO
+var _bridge_spot := []
 var _debug_flags: PackedStringArray = []  # --off grass,msaa,ssao,shadow,fog : profiling only
 
 
@@ -62,9 +63,23 @@ func _ready() -> void:
 	await _step(ls, "Estradas e construções", 0.62)
 	var world := pack.load_world()
 	if not _debug_flags.has("city"):
+		# bridges first: their embankments change the terrain that roads and houses sit on
+		var bridges := BridgeField.new()
+		add_child(bridges)
+		bridges.plan(world, terrain)
 		var roads := RoadField.new()
 		add_child(roads)
 		roads.build_all(world, terrain)
+		var bmat := ShaderMaterial.new()
+		bmat.shader = load("res://shaders/building.gdshader")
+		bmat.set_shader_parameter("alb", load("res://assets/buildings/building_alb.png"))
+		bmat.set_shader_parameter("nrm", load("res://assets/buildings/building_nrm.png"))
+		var rmat := ShaderMaterial.new()
+		rmat.shader = load("res://shaders/road.gdshader")
+		rmat.set_shader_parameter("alb", load("res://assets/buildings/road_alb.png"))
+		rmat.set_shader_parameter("nrm", load("res://assets/buildings/road_nrm.png"))
+		bridges.build(bmat, rmat)
+		_bridge_spot = bridges.view_spot()
 		var bld := BuildingField.new()
 		add_child(bld)
 		bld.build_all(world, terrain)
@@ -180,6 +195,9 @@ func _take_shots() -> void:
 	town.y = terrain.data.get_height(town)
 	var views := [["01_chao", _start, 35.0, 9.0, 0.05], ["02_perto", _start, 35.0, 30.0, 0.0], ["03_medio", _start, 120.0, 180.0, 0.0],
 		["04_alto", _start, 200.0, 1200.0, 0.0], ["05_rua", town, 60.0, 14.0, 0.05], ["06_cidade", town, 150.0, 350.0, 0.0]]
+	if not _bridge_spot.is_empty():
+		views.append(["08_ponte", _bridge_spot[0], 70.0, 45.0, 0.0])
+		views.append(["09_ponte_baixo", _bridge_spot[0], 160.0, 14.0, -0.08])
 	# a street corner with paint, a crossing and signs
 	for n in pack.load_world().get("nodes", []):
 		if n.k == "zebra":
