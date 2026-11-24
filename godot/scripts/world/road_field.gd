@@ -170,7 +170,7 @@ func _road(r: Dictionary) -> void:
 	if side != "none" and not r.bridge:
 		var sw: float = clampf(r.get("sidewalk_w", 1.8), 1.0, 4.0)
 		for s in ([-1.0, 1.0] if side == "both" else ([1.0] if side == "left" else [-1.0])):
-			var e := s * w * 0.5
+			var e: float = s * w * 0.5
 			_strip(line, e, e + s * sw, lift + CURB, 4, 0, 0.0)
 			_curb(line, e, lift, s)
 			sidewalks += 1
