@@ -25,6 +25,7 @@ void fragment() {
 	vec4 n = texture(nrm, t);
 	float tint = v_c.a;
 	vec3 col = a.rgb * mix(0.82, 1.12, tint);
+	if (v_layer > 8.5) col *= 0.62;   // flat roofs: bitumen/gravel, not white concrete
 	float rough = n.a;
 	float spec = 0.4;
 	vec3 nm = n.rgb;

@@ -12,6 +12,7 @@ const MAJOR := ["motorway", "trunk", "primary", "secondary", "tertiary"]
 var terrain: Terrain3D
 var count := 0
 var _cells := {}
+var _used := {}   # cells that received at least one quad
 
 
 func build_all(world: Dictionary, t: Terrain3D) -> void:
@@ -27,6 +28,8 @@ func build_all(world: Dictionary, t: Terrain3D) -> void:
 			continue
 		_road(r)
 	for c in _cells.keys():
+		if not _used.has(c):
+			continue
 		var st: SurfaceTool = _cells[c]
 		st.generate_tangents()
 		var mi := MeshInstance3D.new()
@@ -103,6 +106,7 @@ func _road(r: Dictionary) -> void:
 					st.set_uv2(Vector2(layer, flags))
 					st.set_color(Color(w / 20.0, 0, 0))
 					st.add_vertex(vs[tri[k]])
+					_used[c] = true
 		prev_l = L
 		prev_r = R
 		prev_v = along

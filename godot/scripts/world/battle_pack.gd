@@ -13,7 +13,7 @@ var cover: Image         # RGB8: base material, overlay material, blend
 var landcover: Image     # RGB8: class (see LandCover), confidence
 var tint: Image          # RGBA8: colour map (rgb <= 1, a = roughness 0.5 neutral)
 
-enum LandCover { UNKNOWN, MEADOW, CROP_GREEN, CROP_DRY, BARE, BROADLEAF, CONIFER, PAVED, ROOF, WATER, ROCK }
+enum LandCover { UNKNOWN, MEADOW, CROP_GREEN, CROP_DRY, BARE, BROADLEAF, CONIFER, BUILT_UP, ROOF, WATER, ROCK, ROAD }
 
 
 static func open(path: String) -> BattlePack:

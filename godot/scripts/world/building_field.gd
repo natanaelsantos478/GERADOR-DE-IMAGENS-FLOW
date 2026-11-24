@@ -91,15 +91,15 @@ func _building(b: Dictionary) -> void:
 	var dense: bool = _density.get(c, 0) > 70
 	var spec := _spec(b, area, dense, hash(Vector2i(int(centre.x * 10), int(centre.y * 10))))
 	var base := lo - 0.6
-	var eave := hi + spec.height
-	var found := hi - base
+	var eave: float = hi + float(spec.height)
+	var found: float = hi - base
 	var rect := _rectangle(pts) if pts.size() == 4 else 0.0
 	var roof: String = spec.roof
 	if roof == "gable" and rect < 0.88:
 		roof = "hip" if area < 320.0 else "flat"
 	if roof == "hip" and area >= 320.0:
 		roof = "flat"
-	var top := eave + (0.5 if roof == "flat" else 0.0)
+	var top: float = eave + (0.5 if roof == "flat" else 0.0)
 	var cell := _cell(c)
 	var st: SurfaceTool = cell.st
 	var col := Color(spec.floor_h / 10.0 if spec.windows else 0.0, found / 10.0, (eave - base) / 40.0, spec.tint)

@@ -30,6 +30,7 @@ const TONE := {
 	4: Color(0.40, 0.40, 0.24, 0.12),  # bare soil
 	0: Color(0.34, 0.42, 0.2, 0.4),    # unknown
 	5: Color(0.26, 0.36, 0.14, 0.2),   # broadleaf wood: sparse undergrowth
+	7: Color(0.32, 0.43, 0.17, 0.3),   # built-up: lawns and verges between houses
 }
 
 

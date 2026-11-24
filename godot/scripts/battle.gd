@@ -135,7 +135,7 @@ func _find_start() -> Vector3:
 				var cls := int(round(c.r * 255.0))
 				if cls == BattlePack.LandCover.MEADOW:
 					meadow += c.g
-				elif cls == BattlePack.LandCover.PAVED or cls == BattlePack.LandCover.ROOF:
+				elif cls == BattlePack.LandCover.BUILT_UP or cls == BattlePack.LandCover.ROOF or cls == BattlePack.LandCover.ROAD:
 					paved += 1.0
 				elif cls == BattlePack.LandCover.BROADLEAF or cls == BattlePack.LandCover.CONIFER:
 					wood += 1.0

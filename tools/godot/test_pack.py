@@ -63,13 +63,13 @@ def blur(a, r):
 
 
 # Land cover read from the satellite colour (vegetation type, paved, water...). landcover.png: R class, G confidence.
-LC_NAMES = ['unknown', 'meadow', 'crop_green', 'crop_dry', 'bare_soil', 'broadleaf', 'conifer', 'paved', 'roof', 'water', 'rock']
-UNKNOWN, MEADOW, CROP_GREEN, CROP_DRY, BARE, BROADLEAF, CONIFER, PAVED, ROOF, WATER, ROCKY = range(len(LC_NAMES))
+LC_NAMES = ['unknown', 'meadow', 'crop_green', 'crop_dry', 'bare_soil', 'broadleaf', 'conifer', 'built_up', 'roof', 'water', 'rock', 'road']
+UNKNOWN, MEADOW, CROP_GREEN, CROP_DRY, BARE, BROADLEAF, CONIFER, BUILTUP, ROOF, WATER, ROCKY, ROAD = range(len(LC_NAMES))
 # class -> (base material, overlay material, mean blend, blend noise amplitude)
 MATERIAL_OF = {
     UNKNOWN: (GRASS_DIRT, DIRT, 0.3, 0.6), MEADOW: (GRASS, GRASS_DIRT, 0.2, 0.8), CROP_GREEN: (GRASS, DIRT, 0.25, 0.3),
     CROP_DRY: (SAND, DIRT, 0.2, 0.4), BARE: (DIRT, FOREST, 0.2, 0.4), BROADLEAF: (FOREST, DIRT, 0.2, 0.5),
-    CONIFER: (FOREST, DIRT, 0.1, 0.3), PAVED: (ASPHALT, GRAVEL, 0.25, 0.5), ROOF: (GRAVEL, ASPHALT, 0.4, 0.4),
+    CONIFER: (FOREST, DIRT, 0.1, 0.3), BUILTUP: (GRASS_DIRT, GRAVEL, 0.2, 0.5), ROOF: (GRAVEL, ASPHALT, 0.4, 0.4), ROAD: (ASPHALT, GRAVEL, 0.25, 0.5),
     WATER: (SAND, GRAVEL, 0.3, 0.4), ROCKY: (ROCK, DIRT, 0.25, 0.5),
 }
 
@@ -95,7 +95,7 @@ def landcover(sat, slope, tex):
     sc[CROP_DRY] = ramp(-gr, -0.01, 0.02) * ramp(v, 0.31, 0.37) * (1 - ramp(tex, 0.035, 0.05)) * ramp(s, 0.15, 0.22)
     sc[BARE] = ramp(r - b, 0.04, 0.08) * ramp(-gr, -0.01, 0.02) * ramp(v, 0.16, 0.2) * (1 - ramp(v, 0.31, 0.37))
     # built-up only by its fine texture (roofs, streets, cars): grey field rims are not paved; roads come from OSM
-    sc[PAVED] = ramp(tex, 0.04, 0.06) * (1 - 0.7 * veg) * (1 - ramp(s, 0.22, 0.32))
+    sc[BUILTUP] = ramp(tex, 0.04, 0.06) * (1 - 0.7 * veg) * (1 - ramp(s, 0.22, 0.32))
     sc[ROOF] = ramp(r - g, 0.04, 0.08) * ramp(s, 0.25, 0.35) * ramp(tex, 0.03, 0.05)
     sc[WATER] = ramp(b - g, 0.0, 0.03) * ramp(b - r, 0.03, 0.06) * (1 - ramp(v, 0.3, 0.36)) * ramp(s, 0.28, 0.38)  # dark grey roofs are not water
     sc[ROCKY] = ramp(slope, 30, 38)
@@ -172,7 +172,7 @@ def cover(out, sat_file, H, span, road, bld, n=2048):
     k = road.shape[0] // n
     road_n = road.reshape(n, k, n, k).max(axis=(1, 3))
     bld_n = bld.reshape(n, k, n, k).max(axis=(1, 3))
-    lc[road_n > 0], conf[road_n > 0] = PAVED, 1.0
+    lc[road_n > 0], conf[road_n > 0] = ROAD, 1.0
     lc[bld_n > 0], conf[bld_n > 0] = ROOF, 1.0
     Image.fromarray(np.dstack([lc, (conf * 255).astype(np.uint8), np.zeros_like(lc)]), 'RGB').save(
         os.path.join(out, 'landcover.png'), optimize=True)

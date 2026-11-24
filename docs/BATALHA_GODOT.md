@@ -37,7 +37,7 @@ origem no centro, +X leste, +Z sul (convenção Godot), Y para cima.
 |---|---|---|
 | `battle.json` | versão, lat/lon do centro, `sizeM`, hora local, clima, estação, `TacticalBattleInput` completo (lados, esquadrões, objetivos) | < 1 MB |
 | `height.bin` | float32 LE, grade 2049×2049 cobrindo campo + borda (11 km, ≈5,4 m), Terrarium z14 bicúbico, picos falsos do dado removidos | 16,8 MB |
-| `landcover.png` | RGB 2048² (≈5,4 m): R = classe (0 indefinido, 1 pasto, 2 lavoura verde, 3 lavoura seca, 4 terra, 5 mata folhosa, 6 mata de coníferas, 7 pavimentado, 8 telhado, 9 água, 10 rocha), G = confiança 0–255. Decide grama e árvores | 3–4 MB |
+| `landcover.png` | RGB 2048² (≈5,4 m): R = classe (0 indefinido, 1 pasto, 2 lavoura verde, 3 lavoura seca, 4 terra, 5 mata folhosa, 6 mata de coníferas, 7 área construída, 8 prédio, 9 água, 10 rocha, 11 estrada), G = confiança 0–255. Decide grama e árvores | 3–4 MB |
 | `cover.png` | RGB 4096² (≈2,7 m): material base, material sobreposto, mistura 0–255 (ids de `godot/scripts/world/ground_materials.gd`), bordas suaves entre classes | 10–14 MB |
 | `tint.png` | RGBA 2048²: cor da foto relativa à média local (≤ 1), alfa 128 = rugosidade neutra | 7–8 MB |
 | `world.json` | casas (pegada, altura, andares, tipo, telhado), estradas (linha, classe, largura, ponte), água (polígonos), árvores (pontos ou polígonos de floresta), marcos | 1–20 MB |
