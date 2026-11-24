@@ -8,7 +8,7 @@ const CELL := 256.0
 const FAR := 6000.0
 
 enum Wall { STONE, SANDSTONE, BRICK, PLASTER, CONCRETE, CORRUGATED }
-enum Roof { SLATE = 6, TILES = 7, SHEET = 8, FLAT = 9 }
+enum Roof { SLATE = 6, TILES = 7, SHEET = 8, FLAT = 9, WHITE = 10, GREEN = 11 }
 
 var terrain: Terrain3D
 var count := 0
@@ -93,13 +93,18 @@ func _building(b: Dictionary) -> void:
 	var base := lo - 0.6
 	var eave: float = hi + float(spec.height)
 	var found: float = hi - base
-	var rect := _rectangle(pts) if pts.size() == 4 else 0.0
-	var roof: String = spec.roof
-	if roof == "gable" and rect < 0.88:
+	var rect := _rectangle(pts)
+	# roof shape and material from the site parameters (OSM tag or photo analysis), else the type rules
+	var roof: String = b.get("roof", spec.roof) if b.get("roof") != null else spec.roof
+	var framed := ["gable", "shed", "butterfly", "w", "barrel", "sawtooth", "mansard"]
+	if roof in framed and rect < 0.8:
 		roof = "hip" if area < 320.0 else "flat"
-	if roof == "hip" and area >= 320.0:
+	if roof in ["hip", "pyramid"] and area >= 450.0:
 		roof = "flat"
-	var top: float = eave + (0.5 if roof == "flat" else 0.0)
+	var mat: String = String(b.get("roof_mat", "")) if b.get("roof_mat") != null else ""
+	var layer: int = {"slate": Roof.SLATE, "tiles": Roof.TILES, "metal": Roof.SHEET, "flat_grey": Roof.FLAT,
+		"white": Roof.WHITE, "green": Roof.GREEN}.get(mat, spec.roof_layer)
+	var top: float = eave + (0.6 if roof == "flat" else 0.0)
 	var cell := _cell(c)
 	var st: SurfaceTool = cell.st
 	var col := Color(spec.floor_h / 10.0 if spec.windows else 0.0, found / 10.0, (eave - base) / 40.0, spec.tint)
@@ -115,77 +120,62 @@ func _building(b: Dictionary) -> void:
 		var B1 := Vector3(bb.x, top, bb.y)
 		_quad(st, [A0, B0, B1, A1], [Vector2(0, 0), Vector2(L, 0), Vector2(L, top - base), Vector2(0, top - base)], Vector2(spec.wall, L), col, n)
 		_occluder(cell, [A0, B0, B1, A1], area)
-	# roof
-	var rcol := Color(0, found / 10.0, (eave - base) / 40.0, spec.tint)
+	# roof colour seen on the photo (tints the texture), alpha 1 marks a known colour
+	var rc = b.get("roof_col")
+	var roof_col := Color(rc[0], rc[1], rc[2], 1.0) if rc != null and mat != "" else Color(0.5, 0.5, 0.5, 0.0)
+	var rb := RoofBuilder.new()
+	rb.bf = self
+	rb.st = st
+	rb.roof_layer = layer
+	rb.wall_layer = spec.wall
+	rb.roof_col = roof_col
+	rb.wall_col = Color(0, col.g, col.b, col.a)
+	rb.base = base
+	var f := RoofBuilder.frame(pts)
+	var pitch: float = spec.pitch
 	match roof:
 		"gable":
-			_gable(st, pts, eave, base, spec, col, rcol)
-		"hip":
-			var apex := Vector3(centre.x, eave + clampf(sqrt(area) * 0.35, 1.5, 6.0), centre.y)
-			for i in pts.size():
-				var a := pts[i]
-				var bb := pts[(i + 1) % pts.size()]
-				var A := Vector3(a.x, eave, a.y)
-				var B := Vector3(bb.x, eave, bb.y)
-				var nrm := (B - A).cross(apex - A).normalized()
-				if nrm.y < 0.0:
-					nrm = -nrm
-				var L := a.distance_to(bb)
-				_tri(st, [A, B, apex], [Vector2(0, 0), Vector2(L, 0), Vector2(L * 0.5, A.distance_to(apex))], Vector2(spec.roof_layer, L), rcol, nrm)
+			rb.gable(f, eave, pitch)
+		"shed":
+			rb.shed(f, eave, minf(pitch, 15.0))
+		"butterfly":
+			rb.butterfly(f, eave, 12.0, 1)
+		"w":
+			rb.butterfly(f, eave, 14.0, 2)
+		"barrel", "dome":
+			rb.barrel(f, eave)
+		"sawtooth":
+			rb.sawtooth(f, eave)
+		"mansard":
+			rb.mansard(f, eave)
+		"hip", "pyramid":
+			if rect >= 0.8:
+				rb.hip(f, eave, pitch)
+			else:
+				var apex := Vector3(centre.x, eave + clampf(sqrt(area) * 0.35, 1.5, 6.0), centre.y)
+				for i in pts.size():
+					var a := pts[i]
+					var bb := pts[(i + 1) % pts.size()]
+					var A := Vector3(a.x, eave, a.y)
+					var B := Vector3(bb.x, eave, bb.y)
+					var nrm := (B - A).cross(apex - A).normalized()
+					if nrm.y < 0.0:
+						nrm = -nrm
+					var L := a.distance_to(bb)
+					_tri(st, [A, B, apex], [Vector2(0, 0), Vector2(L, 0), Vector2(L * 0.5, A.distance_to(apex))], Vector2(layer, -1.0), roof_col, nrm)
 		_:
+			# flat (laje): white membrane / green / gravel-bitumen inside a 60 cm parapet
+			if layer in [Roof.SLATE, Roof.TILES]:
+				layer = Roof.FLAT
 			var poly := Geometry2D.triangulate_polygon(pts)
 			for k in range(0, poly.size(), 3):
-				var tri_p := [pts[poly[k]], pts[poly[k + 1]], pts[poly[k + 2]]]
 				var vs := []
 				var uvs := []
-				for p in tri_p:
-					vs.append(Vector3(p.x, eave + 0.1, p.y))
-					uvs.append(p)
-				_tri(st, vs, uvs, Vector2(Roof.FLAT if spec.roof_layer != Roof.SHEET else Roof.SHEET, 0), rcol, Vector3.UP)
+				for q in [pts[poly[k]], pts[poly[k + 1]], pts[poly[k + 2]]]:
+					vs.append(Vector3(q.x, eave + 0.05, q.y))
+					uvs.append(q)
+				_tri(st, vs, uvs, Vector2(layer, -1.0), roof_col, Vector3.UP)
 	count += 1
-
-
-## Gable roof on a near-rectangular footprint, ridge along the long side, 35 cm eave overhang.
-func _gable(st: SurfaceTool, p: PackedVector2Array, eave: float, base: float, spec: Dictionary, col: Color, rcol: Color) -> void:
-	var o := 0 if p[0].distance_to(p[1]) >= p[1].distance_to(p[2]) else 1
-	var A := p[o]
-	var B := p[(o + 1) % 4]
-	var C := p[(o + 2) % 4]
-	var D := p[(o + 3) % 4]
-	var half := B.distance_to(C) * 0.5
-	var rise := tan(deg_to_rad(spec.pitch)) * half
-	var Ra := (D + A) * 0.5
-	var Rb := (B + C) * 0.5
-	var ridge := eave + rise
-	var over := 0.35
-	var drop := tan(deg_to_rad(spec.pitch)) * over
-	for side in [[A, B, Ra, Rb], [C, D, Rb, Ra]]:
-		var e0: Vector2 = side[0]
-		var e1: Vector2 = side[1]
-		var r0: Vector2 = side[2]
-		var r1: Vector2 = side[3]
-		var out := ((e0 + e1) * 0.5 - (r0 + r1) * 0.5).normalized() * over
-		var E0 := Vector3(e0.x + out.x, eave - drop, e0.y + out.y)
-		var E1 := Vector3(e1.x + out.x, eave - drop, e1.y + out.y)
-		var R1 := Vector3(r1.x, ridge, r1.y)
-		var R0 := Vector3(r0.x, ridge, r0.y)
-		var nrm := (E1 - E0).cross(R0 - E0).normalized()
-		if nrm.y < 0.0:
-			nrm = -nrm
-		var L := e0.distance_to(e1)
-		var S := E0.distance_to(R0)
-		_quad(st, [E0, E1, R1, R0], [Vector2(0, 0), Vector2(L, 0), Vector2(L, S), Vector2(0, S)], Vector2(spec.roof_layer, L), rcol, nrm)
-	# gable ends (wall material, no windows above the eave)
-	var wcol := Color(0, col.g, col.b, col.a)
-	for end in [[B, C, Rb], [D, A, Ra]]:
-		var e0: Vector2 = end[0]
-		var e1: Vector2 = end[1]
-		var r: Vector2 = end[2]
-		var n := _outward(e0, e1, (A + B + C + D) * 0.25)
-		var L := e0.distance_to(e1)
-		var h0 := eave - base
-		_tri(st, [Vector3(e0.x, eave, e0.y), Vector3(e1.x, eave, e1.y), Vector3(r.x, ridge, r.y)],
-			[Vector2(0, h0), Vector2(L, h0), Vector2(L * 0.5, h0 + rise)], Vector2(spec.wall, L), wcol, n)
 
 
 ## Height, roof and materials from the OSM type, size and how dense the neighbourhood is.

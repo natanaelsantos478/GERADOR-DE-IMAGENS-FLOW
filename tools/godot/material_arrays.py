@@ -10,8 +10,10 @@ import numpy as np
 from PIL import Image
 
 BUILDING = ['Bricks075A', 'Bricks084', 'Bricks101', 'Plaster001', 'Concrete024', 'CorrugatedSteel009',   # walls 0-5
-            'RoofingTiles013A', 'RoofingTiles011A', 'CorrugatedSteel009', 'Concrete034']               # roofs 6-9
-ROAD = ['Asphalt026C', 'Gravel022', 'Ground054', 'Ground037']                                          # paved, gravel, dirt, grass
+            'RoofingTiles013A', 'RoofingTiles011A', 'CorrugatedSteel009', 'Concrete034',              # roofs 6-9
+            'Concrete034', 'Grass004']                                                                 # 10 white membrane, 11 green roof
+ROAD = ['Asphalt026C', 'Gravel022', 'Ground054', 'Ground037',                                         # paved, gravel, dirt, grass
+        'PavingStones136', 'Concrete024']                                                             # 4 sidewalk, 5 curb / runway concrete
 N = 1024
 
 IMPORT = """[remap]

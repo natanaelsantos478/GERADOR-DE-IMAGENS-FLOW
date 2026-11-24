@@ -7,6 +7,7 @@ Writes battle.json and height.bin (float32 LE, row-major, row 0 = north edge, +X
 import io, json, math, os, sys, urllib.request
 import numpy as np
 import osm_roads
+import world_builder
 from PIL import Image
 
 SIZE_M, BORDER_M, N, Z = 10000.0, 500.0, 2049, 14
@@ -242,7 +243,9 @@ def main(out, lat0, lon0, name):
     if not os.path.exists(sat):
         os.makedirs(os.path.dirname(sat), exist_ok=True)
         color(sat, lat0, lon0, span, m_lat, m_lon)
-    roads, buildings = osm_roads.build(out, sat, lat0, lon0, span, m_lat, m_lon, cache_dir=os.path.dirname(sat))
+    repo = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+    roads, buildings = world_builder.build(out, sat, lat0, lon0, span, m_lat, m_lon, cache_dir=os.path.dirname(sat),
+                                           store_dir=os.path.join(repo, 'public', 'data', 'sites'))
     road, bld = osm_roads.rasterize(roads, buildings, span)
     cover(out, sat, H, span, road, bld)
     meta = {

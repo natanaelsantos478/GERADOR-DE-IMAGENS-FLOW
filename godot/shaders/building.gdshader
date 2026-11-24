@@ -25,13 +25,25 @@ void fragment() {
 	vec4 n = texture(nrm, t);
 	float tint = v_c.a;
 	vec3 col = a.rgb * mix(0.82, 1.12, tint);
-	if (v_layer > 8.5) col *= 0.62;   // flat roofs: bitumen/gravel, not white concrete
+	bool roof = v_len < 0.0;
+	if (roof) {
+		if (v_layer > 8.5 && v_layer < 9.5) col *= 0.62;            // laje: gravel / bitumen
+		if (v_layer > 9.5 && v_layer < 10.5) col = min(a.rgb * 1.25, vec3(0.92));  // white membrane
+		if (v_layer > 10.5) col = a.rgb * vec3(0.7, 0.85, 0.55);    // green roof (sedum)
+		// colour measured on the photo of this very roof: keep the texture detail, take the real hue/brightness
+		if (v_c.a > 0.5) {
+			float lum = max(dot(a.rgb, vec3(0.3, 0.59, 0.11)), 0.04);
+			vec3 photo = v_c.rgb * 1.15;
+			col = mix(col, photo * (lum / 0.38), 0.55);
+		}
+		tint = 0.5;
+	}
 	float rough = n.a;
 	float spec = 0.4;
 	vec3 nm = n.rgb;
 	float ao = a.a;
 
-	float fh = v_c.r * 10.0;
+	float fh = roof ? 0.0 : v_c.r * 10.0;
 	if (fh > 0.5) {
 		float found = v_c.g * 10.0;
 		float eave = v_c.b * 40.0;

@@ -68,6 +68,9 @@ func _ready() -> void:
 		var bld := BuildingField.new()
 		add_child(bld)
 		bld.build_all(world, terrain)
+		var signs := SignField.new()
+		add_child(signs)
+		signs.build_all(world, terrain)
 	times.city = Time.get_ticks_msec() - t0
 
 	await _step(ls, "Vegetação", 0.7)
@@ -177,6 +180,13 @@ func _take_shots() -> void:
 	town.y = terrain.data.get_height(town)
 	var views := [["01_chao", _start, 35.0, 9.0, 0.05], ["02_perto", _start, 35.0, 30.0, 0.0], ["03_medio", _start, 120.0, 180.0, 0.0],
 		["04_alto", _start, 200.0, 1200.0, 0.0], ["05_rua", town, 60.0, 14.0, 0.05], ["06_cidade", town, 150.0, 350.0, 0.0]]
+	# a street corner with paint, a crossing and signs
+	for n in pack.load_world().get("nodes", []):
+		if n.k == "zebra":
+			var q := Vector3(n.p[0], 0, n.p[1])
+			q.y = terrain.data.get_height(q)
+			views.append(["07_cruzamento", q, 30.0, 16.0, 0.08])
+			break
 	for v in views:
 		rig.place(v[1], v[2], v[3], v[4])
 		for i in 90:
