@@ -36,14 +36,23 @@ origem no centro, +X leste, +Z sul (convenção Godot), Y para cima.
 | Arquivo | Conteúdo | Tamanho típico |
 |---|---|---|
 | `battle.json` | versão, lat/lon do centro, `sizeM`, hora local, clima, estação, `TacticalBattleInput` completo (lados, esquadrões, objetivos) | < 1 MB |
-| `height.bin` | float32 LE, grade 2049×2049 (≈4,9 m), do Terrarium z14 com interpolação bicúbica | 16,8 MB |
-| `cover.png` | 8 bits, 2048×2048 (≈4,9 m): classe de solo por célula (grama, mato, floresta, lavoura, terra, areia, rocha, neve, asfalto, calçada, água, urbano) | 1–3 MB |
+| `height.bin` | float32 LE, grade 2049×2049 cobrindo campo + borda (11 km, ≈5,4 m), Terrarium z14 bicúbico, picos falsos do dado removidos | 16,8 MB |
+| `landcover.png` | RGB 2048² (≈5,4 m): R = classe (0 indefinido, 1 pasto, 2 lavoura verde, 3 lavoura seca, 4 terra, 5 mata folhosa, 6 mata de coníferas, 7 pavimentado, 8 telhado, 9 água, 10 rocha), G = confiança 0–255. Decide grama e árvores | 3–4 MB |
+| `cover.png` | RGB 4096² (≈2,7 m): material base, material sobreposto, mistura 0–255 (ids de `godot/scripts/world/ground_materials.gd`), bordas suaves entre classes | 10–14 MB |
+| `tint.png` | RGBA 2048²: cor da foto relativa à média local (≤ 1), alfa 128 = rugosidade neutra | 7–8 MB |
 | `world.json` | casas (pegada, altura, andares, tipo, telhado), estradas (linha, classe, largura, ponte), água (polígonos), árvores (pontos ou polígonos de floresta), marcos | 1–20 MB |
 | `result.json` | escrito pelo Godot no fim: baixas, moral, vencedor, posições finais, dano por célula urbana | < 1 MB |
 
 Fontes (as mesmas que o jogo já usa e testa): Terrarium AWS (relevo), OpenFreeMap/OSM e Overture
 (casas, estradas, uso do solo, água) via `src/data/vector`, cor da foto de satélite como pista de vegetação
 (`src/render/city3d/vegetation.ts`). O construtor do pacote reaproveita os decodificadores de `src/render/city3d`.
+
+**Classificação pela cor do satélite** (`tools/godot/test_pack.py`, protótipo até F2): cada classe tem uma regra de
+cor medida em trechos conferidos a olho (pasto: brilho 0,26–0,35; mata: brilho 0,17–0,23 e vermelho < 0,16; lavoura seca:
+verde ≤ vermelho; cidade: saturação < 0,2 e textura fina > 0,05). Só vence a classe com nota ≥ 0,35 e à frente da segunda;
+o resto fica **indefinido** (solo neutro, pouca grama). Lavoura verde não se distingue de pasto pela cor: vem do OSM em F2,
+que também confirma mata, água e área urbana. Na Bastogne de teste: 50% pasto, 13% folhosa, 12% conífera, 10% pavimentado,
+6% lavoura seca, 8% indefinido; 75% com confiança alta.
 
 ## 4. Geração do mundo (tela de carregamento)
 

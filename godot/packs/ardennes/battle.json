@@ -1,0 +1,39 @@
+{
+ "version": 1,
+ "name": "Ardenas (Bastogne)",
+ "lat": 50.0,
+ "lon": 5.72,
+ "sizeM": 10000.0,
+ "borderM": 500.0,
+ "height": {
+  "file": "height.bin",
+  "n": 2049,
+  "spanM": 11000.0,
+  "min": 404.333740234375,
+  "max": 564.142822265625
+ },
+ "time": {
+  "hour": 15.5,
+  "dayOfYear": 250
+ },
+ "weather": {
+  "cloud": 0.35,
+  "fog": 0.15
+ },
+ "cover": {
+  "file": "cover.png",
+  "n": 4096
+ },
+ "landcover": {
+  "file": "landcover.png",
+  "n": 2048
+ },
+ "tint": {
+  "file": "tint.png",
+  "n": 2048
+ },
+ "sources": [
+  "Terrarium / Mapzen elevation on AWS Open Data (z14)",
+  "Esri World Imagery (z15)"
+ ]
+}

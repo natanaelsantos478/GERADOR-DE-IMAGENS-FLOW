@@ -11,3 +11,9 @@ tools/models/soldados/kit/*.jpg filter=lfs diff=lfs merge=lfs -text
 tools/models/soldados/kit/*.jpeg filter=lfs diff=lfs merge=lfs -text
 tools/models/soldados/kit/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
 tools/models/soldados/kit/**/*.bin filter=lfs diff=lfs merge=lfs -text
+godot/assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+godot/assets/**/*.glb filter=lfs diff=lfs merge=lfs -text
+godot/packs/**/*.bin filter=lfs diff=lfs merge=lfs -text
+godot/packs/**/*.png filter=lfs diff=lfs merge=lfs -text
+godot/addons/terrain_3d/bin/*.dll filter=lfs diff=lfs merge=lfs -text
+godot/addons/terrain_3d/bin/*.so filter=lfs diff=lfs merge=lfs -text
