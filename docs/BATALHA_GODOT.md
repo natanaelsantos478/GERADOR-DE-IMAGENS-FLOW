@@ -136,6 +136,28 @@ Objetivo: cada via pavimentada com as mesmas faixas, largura, calçadas, meio-fi
    desenho pelo padrão do país (Convenção de Viena na Bélgica/França, MUTCD nos EUA).
 6. **Calçadas**: largura, altura do meio-fio (0,12–0,18 m) e cor/material (concreto, lajota, pedra) medidos na foto.
 
+### A IA de vias (decisões depois dos primeiros testes, 24/11)
+- **Foto**: a mais nítida aberta de cada país; Esri World Imagery como reserva mundial. Testado em Bastogne:
+  Esri só chega a z19 (0,19 m — pintura borrada; z20/21 "Map data not yet available"); a ortofoto oficial da
+  Valônia (SPW `ORTHO_LAST`) mostra zebras, setas, hachuras e vagas nítidas (~0,1 m). Outras fontes abertas a ligar:
+  Flandres (7,5 cm), França IGN, Holanda PDOK (8 cm), Espanha PNOA, EUA NAIP. Leitor: `tools/godot/ortho.py`.
+- **Rede neural treinada, não limiar de contraste.** Segmentação semântica leve (U-Net com codificador estilo
+  MobileNet, ~1–3 M parâmetros, INT8 ≈ 1–3 MB) sobre a faixa endireitada a 10 cm, classes: pista, calçada, meio-fio,
+  linha contínua, tracejada, dupla, zebra, linha de parada, seta, hachura/chevron, vaga, área vermelha, amarela,
+  carro/sombra (ignorar).
+- **Treino**: (a) rótulos iniciais gerados pelo detector por contraste (`road_reader.paint_mask`, só para começar),
+  revisados e corrigidos; (b) ruas sintéticas renderizadas no próprio Godot com marcações conhecidas (rótulo
+  perfeito) e aumentação de luz, sombra, desgaste e carros; (c) detecções abertas do Mapillary quando houver.
+  Conjunto de teste fixo com ruas conferidas a olho; o modelo só entra no jogo se passar nele.
+- **Construção pelo padrão real**: o que a rede vê vira primitivas vetoriais (linha, tracejado com período,
+  zebra, seta por tipo, hachura) encaixadas nas **medidas oficiais do país** (Bélgica: zebra 0,5 m × 4 m,
+  linha 15 cm, tracejado 3/9 m etc.) — desenho limpo no tamanho real, não a mancha da foto.
+- **Foto torta em relação ao OSM**: a pista prevista pela rede é alinhada ao eixo do OSM por correlação trecho a
+  trecho (deslocamento e ângulo); as marcações acompanham esse alinhamento, sem se perder.
+- **Celular, < 1 min**: inferência em *compute shader* do Godot (Vulkan, roda em celular), sem rede no servidor.
+  Raio de 2 km em volta das tropas no carregamento (~2.300 imagens, ~15–20 s em 4G); o resto em segundo plano.
+  Tudo vira parâmetros salvos: na segunda vez no mesmo lugar não há download nem inferência.
+
 ### Parâmetros salvos (não a cena)
 Tudo o que a análise mede vira **números por objeto**, guardados por região (tile z13) em `params/<z13>.json.gz`,
 chaveados pelo id do OSM e por um hash da geometria (refaz só o que mudou no OSM). Exemplos:

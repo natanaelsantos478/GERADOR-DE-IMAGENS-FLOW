@@ -6,7 +6,7 @@ import json, math, os, time, urllib.parse, urllib.request
 import numpy as np
 from PIL import Image
 
-import hires, osm_roads, roofs, site_params
+import hires, osm_roads, road_reader, roofs, site_params
 
 OVERPASS = osm_roads.OVERPASS
 LANE_W = {'motorway': 3.6, 'trunk': 3.5, 'primary': 3.3, 'secondary': 3.1, 'tertiary': 3.0}
@@ -14,6 +14,9 @@ URBAN_SIDEWALK = {'primary', 'secondary', 'tertiary', 'residential', 'living_str
                   'secondary_link', 'tertiary_link'}
 MARKED = {'motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'motorway_link', 'trunk_link', 'primary_link',
           'secondary_link', 'tertiary_link', 'unclassified', 'residential'}
+# paved classes read in the z19 photo (paint, width, sidewalks)
+READ_CLASSES = {'motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'living_street',
+                'motorway_link', 'trunk_link', 'primary_link', 'secondary_link', 'tertiary_link'}
 AEROWAY_W = {'runway': 45.0, 'taxiway': 23.0, 'taxilane': 15.0, 'stopway': 45.0}
 
 
@@ -108,7 +111,7 @@ def markings(tiles, latlon, width):
     return {'centre': ctype, 'edge': bool(e > 0.45), 'painted': round(float(painted), 2), 'samples': n}
 
 
-def build(out, sat_file, lat0, lon0, span, m_lat, m_lon, cache_dir, store_dir, analyse=True):
+def build(out, sat_file, lat0, lon0, span, m_lat, m_lon, cache_dir, store_dir, analyse=True, read_radius=2000.0):
     half = span / 2
     s_, n_ = lat0 - half / m_lat, lat0 + half / m_lat
     w_, e_ = lon0 - half / m_lon, lon0 + half / m_lon
@@ -134,8 +137,33 @@ def build(out, sat_file, lat0, lon0, span, m_lat, m_lon, cache_dir, store_dir, a
         got = tiles.prefetch(keys)
         print(f'HIRES tiles {len(keys)} (downloaded {got}) {time.time() - t0:.0f}s')
 
+    # z19 photo reading of the paved roads within read_radius of the battle centre (parallel prefetch)
+    tiles19 = hires.Tiles(cache_dir, z=19)
+    to_ll = lambda X, Z: (lat0 - np.asarray(Z) / m_lat, lon0 + np.asarray(X) / m_lon)
+    if analyse:
+        keys = set()
+        for el in data['elements']:
+            t = el.get('tags', {})
+            if t.get('highway') not in READ_CLASSES or len(el.get('geometry', [])) < 2:
+                continue
+            pts = [loc(p['lat'], p['lon']) for p in el['geometry']]
+            if min(math.hypot(x, z) for x, z in pts) >= read_radius:
+                continue
+            for (x0, z0), (x1, z1) in zip(pts[:-1], pts[1:]):
+                n = max(1, int(math.hypot(x1 - x0, z1 - z0) / 10))
+                for k in range(n + 1):
+                    x, z = x0 + (x1 - x0) * k / n, z0 + (z1 - z0) * k / n
+                    for dx in (-12, 0, 12):
+                        for dz in (-12, 0, 12):
+                            la, lo = to_ll(x + dx, z + dz)
+                            gx = (lo + 180) / 360 * tiles19.n * 256
+                            gy = (1 - math.asinh(math.tan(math.radians(la))) / math.pi) / 2 * tiles19.n * 256
+                            keys.add((int(gx // 256), int(gy // 256)))
+        got = tiles19.prefetch(keys, workers=16)
+        print(f'READ tiles z19 {len(keys)} (downloaded {got}) {time.time() - t0:.0f}s')
+
     buildings, roads = [], []
-    stat = {'roof_src': {}, 'roof_shape': {}, 'roof_mat': {}, 'marking': {}, 'sidewalk': 0}
+    stat = {'roof_src': {}, 'roof_shape': {}, 'roof_mat': {}, 'marking': {}, 'sidewalk': 0, 'read': 0, 'read_used': 0}
     bump = lambda k, v: stat[k].__setitem__(v, stat[k].get(v, 0) + 1)
     # buildings ---------------------------------------------------------------
     centres = []
@@ -203,6 +231,28 @@ def build(out, sat_file, lat0, lon0, span, m_lat, m_lon, cache_dir, store_dir, a
                 mk = markings(tiles, ll, width)
             prm = {'surface': surface, 'src': src, 'w': round(width, 2), 'wsrc': wsrc, 'mk': mk}
             store.put('r', el['id'], ll[0][0], ll[0][1], h, prm)
+        # photo reading (z19) of paved roads near the battle centre: width, axis, paint lines, sidewalks
+        if (analyse and 'read' not in prm and prm['surface'] == 'paved' and hw in READ_CLASSES
+                and min(math.hypot(x, z) for x, z in pts) < read_radius):
+            rgb, a_, s_ = road_reader.strip(tiles19, pts, prm['w'], to_ll)
+            prm['read'] = road_reader.analyse(rgb, a_, prm['w']) if rgb is not None else None
+            store.put('r', el['id'], ll[0][0], ll[0][1], h, prm)
+            stat['read'] += 1
+        rd = prm.get('read')
+        if rd and rd.get('conf', 0) >= 0.5 and 0.6 * prm['w'] - 1 <= rd['w'] <= 1.6 * prm['w'] + 1:
+            # what the photo shows wins over the OSM rules
+            width_r = rd['w']
+            axis_r = rd['axis']
+            near = lambda o: [l for l in rd['lines'] if abs(l['o'] - o) < 0.9]
+            cl = near(rd['axis'])
+            centre_r = cl[0]['k'] if cl else 'none'
+            dash = (cl[0]['p'], cl[0]['d']) if cl and cl[0]['k'] == 'dashed' else None
+            edge_r = bool(near(rd['axis'] + rd['w'] / 2 - 0.4) or near(rd['axis'] - rd['w'] / 2 + 0.4))
+            swl = rd['side'].get('left', {}).get('w', 0.0)
+            swr = rd['side'].get('right', {}).get('w', 0.0)
+            stat['read_used'] += 1
+        else:
+            rd = None
         # sidewalks: OSM tag, otherwise urban streets in built-up areas
         sw = t.get('sidewalk') or t.get('sidewalk:both')
         mid = pts[len(pts) // 2]
@@ -218,12 +268,19 @@ def build(out, sat_file, lat0, lon0, span, m_lat, m_lon, cache_dir, store_dir, a
         centre = mk['centre'] if mk else ('dashed' if hw in ('primary', 'secondary', 'tertiary', 'trunk') and t.get('oneway') != 'yes' else 'none')
         if hw in ('motorway', 'trunk') and centre == 'none':
             centre = 'dashed'   # lane divider on every carriageway (Belgian code); paint too thin for the z18 photo
-        bump('marking', (mk['centre'] if mk else 'rule:' + centre))
-        roads.append({'id': el['id'], 'p': rnd(pts), 'class': hw, 'width': prm['w'], 'surface': prm['surface'],
-                      'source': prm['src'], 'lanes': num(t.get('lanes')), 'oneway': t.get('oneway') == 'yes',
-                      'sidewalk': side, 'sidewalk_w': num(t.get('sidewalk:width'), 1.8), 'centre': centre,
-                      'edge': (bool(mk['edge']) if mk else False) or hw in ('motorway', 'trunk', 'motorway_link', 'trunk_link'),
-                      'maxspeed': num(t.get('maxspeed')), 'bridge': t.get('bridge') == 'yes',
+        edge = (bool(mk['edge']) if mk else False) or hw in ('motorway', 'trunk', 'motorway_link', 'trunk_link')
+        width_out, axis_out, dash_out = prm['w'], 0.0, None
+        swl_out = swr_out = num(t.get('sidewalk:width'), 1.8)
+        if rd:
+            width_out, axis_out, centre, edge, dash_out = width_r, axis_r, centre_r, edge_r, dash
+            swl_out, swr_out = swl, swr
+            side = 'both' if swl and swr else ('left' if swl else ('right' if swr else 'none'))
+        bump('marking', ('photo:' + centre) if rd else ('rule:' + centre))
+        roads.append({'id': el['id'], 'p': rnd(pts), 'class': hw, 'width': width_out, 'axis': axis_out,
+                      'surface': prm['surface'], 'source': prm['src'], 'lanes': num(t.get('lanes')),
+                      'oneway': t.get('oneway') == 'yes', 'sidewalk': side, 'sidewalk_w': swl_out,
+                      'sidewalk_wl': swl_out, 'sidewalk_wr': swr_out, 'centre': centre, 'dash': dash_out,
+                      'edge': edge, 'read': bool(rd), 'maxspeed': num(t.get('maxspeed')), 'bridge': t.get('bridge') == 'yes',
                       'tunnel': t.get('tunnel') == 'yes', 'name': t.get('name')})
 
     # nodes: crossings, signals, signs ------------------------------------------
