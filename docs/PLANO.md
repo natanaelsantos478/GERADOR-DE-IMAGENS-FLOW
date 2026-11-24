@@ -17,7 +17,7 @@ impossível, faça a alternativa mais próxima e DIGA no relatório final.
 
 - Vite + TypeScript `strict` · Node 22 · ESM.
 - **CesiumJS** (npm `cesium`) = único motor 3D: globo, terreno, imagens de satélite, modelos glTF, partículas.
-  Não adicionar three.js/babylon.
+  Não adicionar three.js/babylon. Exceção: a batalha próxima roda em Godot 4.7 (ver `docs/BATALHA_GODOT.md`).
 - React 18 + zustand para a UI (HTML/CSS sobre o canvas). CSS puro com tokens em `src/ui/theme.css`.
 - Simulação = TypeScript puro, sem DOM, sem Cesium, determinística (RNG com seed do core), roda em Node.
 - Testes: vitest (sim) · Playwright (e2e; Chromium já instalado, NÃO rodar `playwright install`;
