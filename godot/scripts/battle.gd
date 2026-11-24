@@ -3,7 +3,6 @@ extends Node3D
 ## Usage: Godot --path godot -- --battle <pack dir> [--shots <dir>]
 ## Without --battle it opens the test pack res://packs/ardennes.
 
-const SOLDIERS := ["nsoldier", "nsoldier_ru", "nsoldier_des", "nsoldier_urb"]
 
 var pack: BattlePack
 var terrain: Terrain3D
@@ -12,6 +11,7 @@ var grass: GrassField
 var _shots_dir := ""
 var _start := Vector3.ZERO
 var _bridge_spot := []
+var combat: CombatSim
 var _debug_flags: PackedStringArray = []  # --off grass,msaa,ssao,shadow,fog : profiling only
 
 
@@ -108,7 +108,9 @@ func _ready() -> void:
 	times.trees = Time.get_ticks_msec() - t0
 
 	await _step(ls, "Tropas", 0.85)
-	_place_soldiers(_start)
+	combat = CombatSim.new()
+	add_child(combat)
+	combat.setup(terrain, rig, _start, _start + _open_direction(_start) * 300.0)
 
 	await _step(ls, "Preparando gráficos", 0.95)
 	for i in 30:
@@ -116,8 +118,28 @@ func _ready() -> void:
 	times.total = Time.get_ticks_msec() - t0
 	print("LOAD ms ", times)
 	ls.queue_free()
+	combat.start()
 	if _shots_dir != "":
 		_take_shots()
+
+
+## Direction from p with the most open meadow over 300 m (where the two squads meet).
+func _open_direction(p: Vector3) -> Vector3:
+	var best := Vector3.FORWARD
+	var bs := -INF
+	for k in 16:
+		var a := k * TAU / 16.0
+		var d := Vector3(sin(a), 0, -cos(a))
+		var s := 0.0
+		for i in range(1, 16):
+			var q := p + d * i * 20.0
+			var c := pack.landcover.get_pixelv(pack.map_px(pack.landcover, q.x, q.z))
+			var cls := int(round(c.r * 255.0))
+			s += 1.0 if cls == BattlePack.LandCover.MEADOW else (-2.0 if cls in [BattlePack.LandCover.ROAD, BattlePack.LandCover.ROOF, BattlePack.LandCover.BUILT_UP] else 0.0)
+		if s > bs:
+			bs = s
+			best = d
+	return best
 
 
 func _step(ls: LoadingScreen, text: String, p: float) -> void:
@@ -165,28 +187,6 @@ func _find_start() -> Vector3:
 	return best
 
 
-func _place_soldiers(at: Vector3) -> void:
-	# Godot drops the "_Loop" suffix of glTF clip names on import (and marks them looping)
-	var poses := [["Idle", 0.0], ["Crouch_Idle", 0.3], ["Pistol_Aim_Neutral", 0.6], ["Walk", 0.1], ["Idle", 0.8], ["Jog_Fwd", 0.2]]
-	for i in 6:
-		var scene: PackedScene = load("res://assets/soldiers/%s.glb" % SOLDIERS[i % 2])
-		var s := scene.instantiate() as Node3D
-		add_child(s)
-		var off := Vector3((i % 3) * 3.2 - 3.2, 0, (i / 3) * 4.0 - 2.0)
-		var p := at + off
-		p.y = terrain.data.get_height(p)
-		s.global_position = p
-		s.rotation.y = deg_to_rad(200.0 + i * 9.0)
-		var ap := s.find_children("*", "AnimationPlayer", true, false)
-		if ap.size() > 0:
-			var player := ap[0] as AnimationPlayer
-			var anim: String = poses[i][0]
-			if player.has_animation(anim):
-				player.get_animation(anim).loop_mode = Animation.LOOP_LINEAR
-				player.play(anim)
-				player.seek(poses[i][1] * player.current_animation_length, true)
-
-
 func _take_shots() -> void:
 	DirAccess.make_dir_recursive_absolute(_shots_dir)
 	var vp := get_viewport().get_viewport_rid()
@@ -205,9 +205,22 @@ func _take_shots() -> void:
 			q.y = terrain.data.get_height(q)
 			views.append(["07_cruzamento", q, 30.0, 16.0, 0.08])
 			break
+	# the fight first: close to the NATO squad, then from the side between the lines, then over the enemy
+	var only_combat: bool = _args().get("views", "") == "combat"
+	var c0 := combat.squads[0].centre()
+	var c1 := combat.squads[1].centre()
+	var yaw := rad_to_deg(atan2(-(c1 - c0).x, -(c1 - c0).z))
+	var mid := c0.lerp(c1, 0.5)
+	var combat_views := [["10_combate", c0, yaw, 16.0, 0.02, 360], ["11_tiroteio", mid, yaw + 90.0, 70.0, 0.0, 300],
+		["12_morteiro", c1, yaw + 180.0, 45.0, 0.0, 300]]
+	views = combat_views if only_combat else combat_views + views
 	for v in views:
+		if v[0] == "11_tiroteio":
+			v[1] = combat.squads[0].centre().lerp(combat.squads[1].centre(), 0.5)
+		elif v[0] == "12_morteiro":
+			v[1] = combat.squads[1].centre()
 		rig.place(v[1], v[2], v[3], v[4])
-		for i in 90:
+		for i in (v[5] if v.size() > 5 else 90):
 			await get_tree().process_frame
 		var gpu := 0.0
 		var cpu := 0.0
