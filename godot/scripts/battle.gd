@@ -215,7 +215,8 @@ func _take_shots() -> void:
 		["12_morteiro", c1, yaw + 180.0, 45.0, 0.0, 300],
 		["13_mira", c0, yaw, 7.0, 0.12, 120], ["14_caidos", c0, yaw + 40.0, 9.0, 0.3, 60]]
 	var only_rag: bool = _args().get("views", "") == "ragdoll"
-	views = [] if only_rag else (combat_views if only_combat else combat_views + views)
+	var only_ai: bool = _args().get("views", "") == "ai"
+	views = [] if (only_rag or only_ai) else (combat_views if only_combat else combat_views + views)
 	for v in views:
 		if v[0] == "11_tiroteio":
 			v[1] = combat.squads[0].centre().lerp(combat.squads[1].centre(), 0.5)
@@ -250,6 +251,8 @@ func _take_shots() -> void:
 			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME)])
 	if only_rag or _args().get("views", "") == "combat":
 		await _ragdoll_test()
+	if only_ai:
+		await _ai_test()
 	get_tree().quit()
 
 
@@ -286,3 +289,91 @@ func _ragdoll_test() -> void:
 			dead += 1
 			print("RAGDOLL bodies for soldier %d: %d" % [m.get_instance_id() % 1000, m._skeleton.find_children("PB_*", "PhysicalBone3D", true, false).size() if m._skeleton else -1])
 	print("RAGDOLL dead %d of %d" % [dead, mem.size()])
+
+
+## AI check (`--views ai`): the two squads fight by themselves, sped up. Prints a status line every 10 s of simulation
+## (mode, losses, morale, tasks, contacts, distance) and a summary; takes a picture the first time each tactic shows up.
+func _ai_test() -> void:
+	seed(20260524)
+	Engine.time_scale = 3.0
+	var snaps := {}
+	var t0: float = combat.time
+	var closest := 1e9
+	var first_contact := -1.0
+	var first_loss := -1.0
+	var last_print := -99.0
+	var limit := 240.0
+	# --dist N: start the fight with the squads N metres apart (tests the close tactics: flank, assault)
+	var dist_arg := float(_args().get("dist", 0.0))
+	if dist_arg > 0.0:
+		var a0: Squad = combat.squads[0]
+		var b0: Squad = combat.squads[1]
+		var dir0 := b0.centre() - a0.centre()
+		dir0.y = 0.0
+		var shift := dir0.length() - dist_arg
+		dir0 = dir0.normalized()
+		for m in b0.members:
+			var p0 := m.global_position - dir0 * shift
+			p0.y = terrain.data.get_height(p0)
+			m.global_position = p0
+	while combat.time - t0 < limit:
+		await get_tree().process_frame
+		var a: Squad = combat.squads[0]
+		var b: Squad = combat.squads[1]
+		if a.alive().is_empty() or b.alive().is_empty():
+			break
+		var dist := a.centre().distance_to(b.centre())
+		closest = minf(closest, dist)
+		var t: float = combat.time - t0
+		if first_contact < 0.0 and (a.has_contact() or b.has_contact()):
+			first_contact = t
+		if first_loss < 0.0 and (a.alive().size() < a.members.size() or b.alive().size() < b.members.size()):
+			first_loss = t
+		if t - last_print >= 10.0:
+			last_print = t
+			var line := "AI t=%3.0f dist=%4.0f" % [t, dist]
+			for s: Squad in [a, b]:
+				var tasks := {}
+				var cover := 0
+				var ammo := 0
+				for m in s.alive():
+					tasks[Soldier.Task.keys()[m.task]] = int(tasks.get(Soldier.Task.keys()[m.task], 0)) + 1
+					cover += 1 if m.in_cover else 0
+					ammo += m.mag + m.reserve
+				line += " | %s %d/%d %s moral %.2f cob %d mun %d %s" % [("OTAN" if s.side == 0 else "RUS"), s.alive().size(), s.members.size(), Squad.MODE_NAMES[s.mode], s.average("morale"), cover, ammo, str(tasks)]
+			print(line)
+		# one picture the first time each tactic appears
+		for s: Squad in [a, b]:
+			var bounding := false
+			var watching := false
+			for m in s.alive():
+				bounding = bounding or m.task == Soldier.Task.BOUND
+				watching = watching or m.task == Soldier.Task.OVERWATCH
+			var ev := ""
+			if bounding and watching and t > 9.0 and not snaps.has("bounds"):
+				ev = "bounds"
+			elif s.mode == Squad.Mode.FLANK and not snaps.has("flank"):
+				ev = "flank"
+			elif s.mode == Squad.Mode.WITHDRAW and not snaps.has("withdraw"):
+				ev = "withdraw"
+			if ev != "":
+				snaps[ev] = true
+				var other: Squad = b if s == a else a
+				var yaw := rad_to_deg(atan2(-(other.centre() - s.centre()).x, -(other.centre() - s.centre()).z))
+				rig.place(s.centre(), yaw + 90.0, 30.0, 0.25)
+				for i in 20:
+					await get_tree().process_frame
+				get_viewport().get_texture().get_image().save_png(_shots_dir.path_join("20_%s.png" % ev))
+				print("AI foto 20_%s t=%.0f squad=%s" % [ev, t, s.name])
+	Engine.time_scale = 1.0
+	var a2: Squad = combat.squads[0]
+	var b2: Squad = combat.squads[1]
+	var focus: Squad = a2 if not a2.alive().is_empty() else b2
+	rig.place(focus.centre(), 90.0, 28.0, 0.3)
+	for i in 30:
+		await get_tree().process_frame
+	get_viewport().get_texture().get_image().save_png(_shots_dir.path_join("20_fim.png"))
+	print("AI RESUMO duração=%.0f s primeiro contato=%.0f s primeira baixa=%.0f s menor distância=%.0f m" % [combat.time - t0, first_contact, first_loss, closest])
+	for s: Squad in [a2, b2]:
+		print("AI RESUMO %s vivos %d/%d moral %.2f modos %s stats %s" % [s.name, s.alive().size(), s.members.size(), s.average("morale"), str(s.modes_seen.keys()), str(s.stats)])
+	print("AI RESUMO morteiros restantes %s animações ausentes %s" % [str(combat.mortars), str(Soldier.missing.keys())])

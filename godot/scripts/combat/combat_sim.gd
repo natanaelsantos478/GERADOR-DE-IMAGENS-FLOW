@@ -5,7 +5,8 @@ extends Node3D
 ## Stand-in until the strategy game's tactical simulation drives the units (docs/BATALHA_GODOT.md, D2).
 
 const PER_SQUAD := 8
-const MORTAR_EVERY := Vector2(10.0, 20.0)
+const MORTAR_COOLDOWN := 30.0
+const MORTAR_ROUNDS := 6
 const MORTAR_RADIUS := 12.0
 
 var terrain: Terrain3D
@@ -13,7 +14,10 @@ var fx: CombatFx
 var rig: CameraRig
 var squads: Array[Squad] = []
 var selected: Squad
-var _mortar_t := 6.0
+var time := 0.0                    # simulation seconds (used by the AI for memory and timers)
+var mortars := [MORTAR_ROUNDS, MORTAR_ROUNDS]
+var _next_mortar := [8.0, 8.0]
+var _hud_t := 0.0
 var _hud: Label
 var _ring: MeshInstance3D
 var started := false
@@ -51,8 +55,8 @@ func setup(t: Terrain3D, camera_rig: CameraRig, start: Vector3, toward: Vector3)
 func start() -> void:
 	started = true
 	# both advance towards each other; they stop and fight when they see the enemy
-	squads[0].order_move(squads[1].centre().lerp(squads[0].centre(), 0.45), true)
-	squads[1].order_move(squads[0].centre().lerp(squads[1].centre(), 0.55), true)
+	squads[0].order_move(squads[1].centre().lerp(squads[0].centre(), 0.45), true, false)
+	squads[1].order_move(squads[0].centre().lerp(squads[1].centre(), 0.55), true, false)
 
 
 func _spawn(side: int, label: String, model: String, at: Vector3, facing: Vector3) -> Squad:
@@ -60,12 +64,17 @@ func _spawn(side: int, label: String, model: String, at: Vector3, facing: Vector
 	s.side = side
 	s.name = label
 	s.sim = self
+	s.home = at
 	var right := facing.cross(Vector3.UP).normalized()
 	for i in PER_SQUAD:
 		var u := Soldier.new()
 		add_child(u)
 		u.squad = s
 		u.setup(model, side, terrain, fx)
+		u.team = i % 2
+		u.role = Soldier.Role.LEADER if i == 0 else (Soldier.Role.GUNNER if i == 1 else Soldier.Role.RIFLE)
+		u.courage = randf_range(0.7, 1.0)
+		u.morale = u.courage
 		var p := at + right * ((i - (PER_SQUAD - 1) * 0.5) * 4.0) + facing * randf_range(-2.0, 2.0)
 		p.y = terrain.data.get_height(p)
 		u.global_position = p
@@ -96,20 +105,48 @@ func on_casualty(_s: Squad) -> void:
 	_update_hud()
 
 
+## Where the enemy probably is (a squad that knows nothing walks towards the other side's centre): INF if none.
+func enemy_guess(side: int) -> Vector3:
+	var c := Vector3.ZERO
+	var n := 0
+	for s in squads:
+		if s.side != side and not s.alive().is_empty():
+			c += s.centre()
+			n += 1
+	return c / n if n > 0 else Vector3.INF
+
+
+## Cover from trees and walls (the relief is handled by the soldier): hook for the vector map, 0 for now.
+func extra_cover(_p: Vector3, _dir: Vector3) -> float:
+	return 0.0
+
+
+## A squad asks for mortar fire on a spot: refused if no rounds, in cooldown, or own men are within 40 m of it.
+func request_fire(squad: Squad, pos: Vector3) -> bool:
+	var side := squad.side
+	if mortars[side] <= 0 or time < _next_mortar[side]:
+		return false
+	for m in squad.alive():
+		if m.global_position.distance_to(pos) < 40.0:
+			return false
+	mortars[side] -= 1
+	_next_mortar[side] = time + MORTAR_COOLDOWN
+	var p := pos + Vector3(randf_range(-12, 12), 0, randf_range(-12, 12))
+	p.y = terrain.data.get_height(p)
+	get_tree().create_timer(4.0).timeout.connect(_impact.bind(p))     # flight time
+	return true
+
+
 func _physics_process(dt: float) -> void:
 	if not started:
 		return
-	_mortar_t -= dt
-	if _mortar_t <= 0.0:
-		_mortar_t = randf_range(MORTAR_EVERY.x, MORTAR_EVERY.y)
-		var firing := squads[randi() % 2]
-		var targets := enemies_of(firing.side)
-		if not targets.is_empty():
-			var t: Soldier = targets[randi() % targets.size()]
-			var p := t.global_position + Vector3(randf_range(-25, 25), 0, randf_range(-25, 25))
-			p.y = terrain.data.get_height(p)
-			# flight time ~4 s
-			get_tree().create_timer(4.0).timeout.connect(_impact.bind(p))
+	time += dt
+	for sq in squads:
+		sq.think(dt)
+	_hud_t -= dt
+	if _hud_t <= 0.0:
+		_hud_t = 1.0
+		_update_hud()
 	if selected:
 		_ring.visible = not selected.alive().is_empty()
 		var c := selected.centre()
@@ -129,6 +166,9 @@ func _impact(p: Vector3) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and e.keycode == KEY_G and selected:
+		selected.release()
+		return
 	if not (e is InputEventMouseButton and e.pressed):
 		return
 	var hitp = _ground_under_mouse(e.position)
@@ -174,6 +214,6 @@ func _update_hud() -> void:
 		return
 	var t := ""
 	for s in squads:
-		t += "%s: %d/%d\n" % [s.name, s.alive().size(), s.members.size()]
-	t += "Clique: selecionar · Botão direito: mover (Shift = andando) · WASD/roda: câmera"
+		t += "%s: %d/%d · %s · moral %d%%\n" % [s.name, s.alive().size(), s.members.size(), Squad.MODE_NAMES[s.mode], int(s.average("morale") * 100.0)]
+	t += "Clique: selecionar · Botão direito: mover (Shift = andando) · G: devolver à IA · WASD/roda: câmera"
 	_hud.text = t

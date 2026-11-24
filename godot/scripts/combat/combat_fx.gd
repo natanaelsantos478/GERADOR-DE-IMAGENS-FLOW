@@ -86,6 +86,18 @@ func shot(shooter: Soldier, target: Soldier, rounds: int) -> void:
 	_sound(_rifle, muzzle, randf_range(0.9, 1.1), -4.0)
 
 
+## Suppressive burst at a spot (no visible target): flashes, one tracer, dust around the spot.
+func shot_area(shooter: Soldier, at: Vector3, rounds: int) -> void:
+	var muzzle := shooter.eye() + (at + Vector3(0, 1.0, 0) - shooter.eye()).normalized() * 0.7 - Vector3(0, 0.15, 0)
+	for k in rounds:
+		get_tree().create_timer(k * 0.09).timeout.connect(_flash.bind(muzzle))
+	_tracer(muzzle, at + Vector3(randf_range(-4, 4), randf_range(0.5, 1.5), randf_range(-4, 4)))
+	for k in rounds:
+		var miss := at + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5))
+		get_tree().create_timer(muzzle.distance_to(miss) / TRACER_SPEED + k * 0.09).timeout.connect(_dust.bind(miss, 0.35))
+	_sound(_rifle, muzzle, randf_range(0.85, 1.0), -3.0)
+
+
 func _flash(p: Vector3) -> void:
 	var l := _lights[_li]
 	_li = (_li + 1) % _lights.size()
