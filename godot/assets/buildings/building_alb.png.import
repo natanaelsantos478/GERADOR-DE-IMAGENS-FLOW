@@ -2,16 +2,25 @@
 
 importer="2d_array_texture"
 type="CompressedTexture2DArray"
+uid="uid://bfrs2dhltcauk"
+path.bptc="res://.godot/imported/building_alb.png-5e93036da994c79797ec094c95d35310.bptc.ctexarray"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
 
 [deps]
 
 source_file="res://assets/buildings/building_alb.png"
+dest_files=["res://.godot/imported/building_alb.png-5e93036da994c79797ec094c95d35310.bptc.ctexarray"]
 
 [params]
 
 compress/mode=2
 compress/high_quality=true
 compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/channel_pack=0
 mipmaps/generate=true

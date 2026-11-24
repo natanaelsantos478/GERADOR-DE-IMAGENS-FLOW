@@ -2,16 +2,25 @@
 
 importer="2d_array_texture"
 type="CompressedTexture2DArray"
+uid="uid://d1l86tkgjc67c"
+path.bptc="res://.godot/imported/building_nrm.png-59c4cade5f6ed021ffd42f73ef7d60f0.bptc.ctexarray"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
 
 [deps]
 
 source_file="res://assets/buildings/building_nrm.png"
+dest_files=["res://.godot/imported/building_nrm.png-59c4cade5f6ed021ffd42f73ef7d60f0.bptc.ctexarray"]
 
 [params]
 
 compress/mode=2
 compress/high_quality=true
 compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/channel_pack=0
 mipmaps/generate=true
