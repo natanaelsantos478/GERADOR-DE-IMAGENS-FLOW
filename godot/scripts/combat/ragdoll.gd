@@ -78,7 +78,8 @@ static func activate(skeleton: Skeleton3D, terrain: Terrain3D, impulse: Vector3,
 		var pb: PhysicalBone3D = bodies[k]
 		var w := 1.0 if k == at_bone else spread
 		pb.apply_central_impulse(impulse * w * pb.mass / 10.0)
-		pb.apply_torque_impulse(Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * impulse.length() * 0.02)
+		# spin: an off-centre push (PhysicalBone3D has no torque impulse), different for every body
+		pb.apply_impulse(Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * impulse.length() * 0.02 * pb.mass / 10.0, Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * 0.15)
 	return sim
 
 

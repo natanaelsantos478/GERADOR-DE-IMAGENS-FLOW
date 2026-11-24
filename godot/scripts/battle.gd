@@ -212,13 +212,25 @@ func _take_shots() -> void:
 	var yaw := rad_to_deg(atan2(-(c1 - c0).x, -(c1 - c0).z))
 	var mid := c0.lerp(c1, 0.5)
 	var combat_views := [["10_combate", c0, yaw, 16.0, 0.02, 360], ["11_tiroteio", mid, yaw + 90.0, 70.0, 0.0, 300],
-		["12_morteiro", c1, yaw + 180.0, 45.0, 0.0, 300]]
+		["12_morteiro", c1, yaw + 180.0, 45.0, 0.0, 300],
+		["13_mira", c0, yaw, 7.0, 0.12, 120], ["14_caidos", c0, yaw + 40.0, 9.0, 0.3, 60]]
 	views = combat_views if only_combat else combat_views + views
 	for v in views:
 		if v[0] == "11_tiroteio":
 			v[1] = combat.squads[0].centre().lerp(combat.squads[1].centre(), 0.5)
 		elif v[0] == "12_morteiro":
 			v[1] = combat.squads[1].centre()
+		elif v[0] == "13_mira":
+			v[1] = combat.squads[0].centre()
+		elif v[0] == "14_caidos":
+			# the first fallen soldier of either squad (ragdoll check); the centre of the NATO squad if nobody fell
+			var spot: Vector3 = combat.squads[0].centre()
+			for sq in combat.squads:
+				for m in sq.members:
+					if not m.alive():
+						spot = m.global_position
+						break
+			v[1] = spot
 		rig.place(v[1], v[2], v[3], v[4])
 		for i in (v[5] if v.size() > 5 else 90):
 			await get_tree().process_frame

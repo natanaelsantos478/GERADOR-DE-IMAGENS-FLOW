@@ -122,7 +122,10 @@ func _impact(p: Vector3) -> void:
 		for m in s.alive():
 			var d := m.global_position.distance_to(p)
 			if d < MORTAR_RADIUS:
-				m.hit(140.0 * (1.0 - d / MORTAR_RADIUS))
+				var k := 1.0 - d / MORTAR_RADIUS
+				# blast pushes away from the centre and a bit up: each body falls its own way
+				var dir := (m.global_position - p + Vector3(0.0, 0.6, 0.0)).normalized()
+				m.hit(140.0 * k, dir * (k * 400.0), true)
 
 
 func _unhandled_input(e: InputEvent) -> void:
