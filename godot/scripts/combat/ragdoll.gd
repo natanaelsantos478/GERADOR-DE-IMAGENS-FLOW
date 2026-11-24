@@ -22,7 +22,8 @@ const BONES := [
 const LAYER := 4          # ragdoll bodies collide with the ground patch (layer 3) and each other
 
 
-static func activate(skeleton: Skeleton3D, terrain: Terrain3D, impulse: Vector3, at_bone := "spine_02", spread := 0.3) -> PhysicalBoneSimulator3D:
+## `impulse` is momentum per 10 kg for a bullet (25-45 -> 2.5-4.5 m/s) and per 40 kg for a blast (400 at the centre -> 10 m/s).
+static func activate(skeleton: Skeleton3D, terrain: Terrain3D, impulse: Vector3, at_bone := "spine_02", spread := 0.3, blast := false) -> PhysicalBoneSimulator3D:
 	var sim := PhysicalBoneSimulator3D.new()
 	skeleton.add_child(sim)
 	var bodies := {}
@@ -74,19 +75,20 @@ static func activate(skeleton: Skeleton3D, terrain: Terrain3D, impulse: Vector3,
 	_ground_patch(skeleton, terrain)
 	sim.physical_bones_start_simulation()
 	# impulse: most on the hit bone, the rest spread over the body (explosions push everything)
+	var per := 40.0 if blast else 10.0
 	for k in bodies.keys():
 		var pb: PhysicalBone3D = bodies[k]
 		var w := 1.0 if k == at_bone else spread
-		pb.apply_central_impulse(impulse * w * pb.mass / 10.0)
+		pb.apply_central_impulse(impulse * w * pb.mass / per)
 		# spin: an off-centre push (PhysicalBone3D has no torque impulse), different for every body
-		pb.apply_impulse(Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * impulse.length() * 0.02 * pb.mass / 10.0, Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * 0.15)
+		pb.apply_impulse(Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * impulse.length() * 0.02 * pb.mass / per, Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * 0.15)
 	return sim
 
 
-## 16 x 16 m height field of the relief around the body, so it lands on the real ground.
+## 40 x 40 m height field of the relief around the body, so it lands on the real ground.
 static func _ground_patch(skeleton: Skeleton3D, terrain: Terrain3D) -> void:
 	var c := skeleton.global_position
-	var n := 17
+	var n := 41
 	var step := 1.0
 	var data := PackedFloat32Array()
 	data.resize(n * n)

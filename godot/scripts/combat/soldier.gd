@@ -112,7 +112,7 @@ func _die(push: Vector3, blast: bool) -> void:
 		_player.stop()
 		_player.active = false
 	if _skeleton:
-		Ragdoll.activate(_skeleton, terrain, push, "spine_02", 0.9 if blast else 0.25)
+		Ragdoll.activate(_skeleton, terrain, push, "spine_02", 0.9 if blast else 0.25, blast)
 
 
 func _physics_process(dt: float) -> void:

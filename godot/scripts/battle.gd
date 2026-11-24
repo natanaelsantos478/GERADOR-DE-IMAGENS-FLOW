@@ -214,7 +214,8 @@ func _take_shots() -> void:
 	var combat_views := [["10_combate", c0, yaw, 16.0, 0.02, 360], ["11_tiroteio", mid, yaw + 90.0, 70.0, 0.0, 300],
 		["12_morteiro", c1, yaw + 180.0, 45.0, 0.0, 300],
 		["13_mira", c0, yaw, 7.0, 0.12, 120], ["14_caidos", c0, yaw + 40.0, 9.0, 0.3, 60]]
-	views = combat_views if only_combat else combat_views + views
+	var only_rag: bool = _args().get("views", "") == "ragdoll"
+	views = [] if only_rag else (combat_views if only_combat else combat_views + views)
 	for v in views:
 		if v[0] == "11_tiroteio":
 			v[1] = combat.squads[0].centre().lerp(combat.squads[1].centre(), 0.5)
@@ -247,4 +248,41 @@ func _take_shots() -> void:
 		print("SHOT %s frame %.1f ms gpu %.1f ms render-cpu %.1f ms draws %d prims %d" % [v[0], frame_ms, gpu / 30.0, cpu / 30.0,
 			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
 			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME)])
+	if only_rag or _args().get("views", "") == "combat":
+		await _ragdoll_test()
 	get_tree().quit()
+
+
+## Ragdoll check: a mortar shell lands 3 m beside the NATO squad; pictures right after, at 1.2 s and at 3.5 s, and a report
+## of how many physical bodies each fallen soldier got and how far they moved (a body with 0 bodies just freezes).
+func _ragdoll_test() -> void:
+	var sq = combat.squads[0]
+	var mem: Array = sq.alive()
+	var centre: Vector3 = sq.centre()
+	var impact := centre + Vector3(3.0, 0.0, 0.0)
+	impact.y = terrain.data.get_height(impact)
+	rig.place(centre, 90.0, 16.0, 0.25)
+	for i in 30:
+		await get_tree().process_frame
+	combat._impact(impact)
+	var t0 := Time.get_ticks_msec()
+	var start := {}
+	for mk in [["15_ragdoll_a", 0.25], ["15_ragdoll_b", 1.2], ["15_ragdoll_c", 3.5]]:
+		while (Time.get_ticks_msec() - t0) / 1000.0 < mk[1]:
+			await get_tree().process_frame
+		get_viewport().get_texture().get_image().save_png(_shots_dir.path_join("%s.png" % mk[0]))
+		for m in mem:
+			if m.alive():
+				continue
+			var pelvis = m._skeleton.find_child("PB_pelvis", true, false) if m._skeleton else null
+			if pelvis == null:
+				continue
+			if not start.has(m):
+				start[m] = pelvis.global_position
+			print("RAGDOLL %s t=%.2f soldier %d pelvis %.2f %.2f %.2f moved %.2f m" % [mk[0], mk[1], m.get_instance_id() % 1000, pelvis.global_position.x - impact.x, pelvis.global_position.y - impact.y, pelvis.global_position.z - impact.z, pelvis.global_position.distance_to(start[m])])
+	var dead := 0
+	for m in mem:
+		if not m.alive():
+			dead += 1
+			print("RAGDOLL bodies for soldier %d: %d" % [m.get_instance_id() % 1000, m._skeleton.find_children("PB_*", "PhysicalBone3D", true, false).size() if m._skeleton else -1])
+	print("RAGDOLL dead %d of %d" % [dead, mem.size()])
