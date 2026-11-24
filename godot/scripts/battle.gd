@@ -59,6 +59,17 @@ func _ready() -> void:
 	_start = _find_start()
 	rig.place(_start, 35.0, 28.0)
 
+	await _step(ls, "Estradas e construções", 0.62)
+	var world := pack.load_world()
+	if not _debug_flags.has("city"):
+		var roads := RoadField.new()
+		add_child(roads)
+		roads.build_all(world, terrain)
+		var bld := BuildingField.new()
+		add_child(bld)
+		bld.build_all(world, terrain)
+	times.city = Time.get_ticks_msec() - t0
+
 	await _step(ls, "Vegetação", 0.7)
 	grass = GrassField.new()
 	add_child(grass)
@@ -162,9 +173,12 @@ func _take_shots() -> void:
 	DirAccess.make_dir_recursive_absolute(_shots_dir)
 	var vp := get_viewport().get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(vp, true)
-	var views := [["01_chao", 35.0, 9.0, 0.05], ["02_perto", 35.0, 30.0, 0.0], ["03_medio", 120.0, 180.0, 0.0], ["04_alto", 200.0, 1200.0, 0.0]]
+	var town := Vector3(0, 0, 0)
+	town.y = terrain.data.get_height(town)
+	var views := [["01_chao", _start, 35.0, 9.0, 0.05], ["02_perto", _start, 35.0, 30.0, 0.0], ["03_medio", _start, 120.0, 180.0, 0.0],
+		["04_alto", _start, 200.0, 1200.0, 0.0], ["05_rua", town, 60.0, 14.0, 0.05], ["06_cidade", town, 150.0, 350.0, 0.0]]
 	for v in views:
-		rig.place(_start, v[1], v[2], v[3])
+		rig.place(v[1], v[2], v[3], v[4])
 		for i in 90:
 			await get_tree().process_frame
 		var gpu := 0.0

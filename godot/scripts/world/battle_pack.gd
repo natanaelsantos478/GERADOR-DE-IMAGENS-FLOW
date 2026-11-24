@@ -37,6 +37,15 @@ func load_height() -> void:
 	height = Image.create_from_data(n, n, false, Image.FORMAT_RF, bytes)
 
 
+## Roads and buildings (OSM) — empty when the pack has none.
+func load_world() -> Dictionary:
+	var f := dir.path_join("world.json")
+	if not FileAccess.file_exists(f):
+		return {}
+	var d = JSON.parse_string(FileAccess.get_file_as_string(f))
+	return d if typeof(d) == TYPE_DICTIONARY else {}
+
+
 func load_maps() -> void:
 	cover = Image.load_from_file(dir.path_join(meta.cover.file))
 	landcover = Image.load_from_file(dir.path_join(meta.landcover.file))
