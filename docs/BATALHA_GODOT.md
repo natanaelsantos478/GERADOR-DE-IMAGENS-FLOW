@@ -54,6 +54,14 @@ o resto fica **indefinido** (solo neutro, pouca grama). Lavoura verde não se di
 que também confirma mata, água e área urbana. Na Bastogne de teste: 50% pasto, 13% folhosa, 12% conífera, 10% pavimentado,
 6% lavoura seca, 8% indefinido; 75% com confiança alta.
 
+**Estradas e construções** (`tools/godot/osm_roads.py` → `world.json`): vias e prédios do OSM. Superfície de cada via:
+tag `surface`/`tracktype` do OSM → senão a classe da via (rodovia, residencial = asfalto) → senão a foto ao longo da linha
+→ senão "terra" (confiança 0,3). Validação contra as tags em Bastogne: a foto de 3 m **separa pavimentado de não
+pavimentado** (asfalto 88%, terra 93%, cascalho 72%, trilha de grama 100% de acerto) mas **não separa cascalho de terra**
+(as trilhas de 3 m ficam sob árvores e bordas de mato). Resultado: 2.619 vias (1.705 com tag, 610 pela foto, 74 no
+chute), 7.684 prédios. Vias e prédios são pintados no `cover.png` e marcados no `landcover.png` (sem grama nem árvore
+em cima); malhas de estrada e casas 3D vêm em F3.
+
 ## 4. Geração do mundo (tela de carregamento)
 
 Etapas em threads (`WorkerThreadPool`), barra de progresso por etapa:

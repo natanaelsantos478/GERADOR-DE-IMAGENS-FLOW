@@ -29,4 +29,7 @@ static func build(assets: Terrain3DAssets) -> void:
 		t.detiling_shift = 0.25
 		t.normal_depth = 1.0
 		t.ao_strength = 0.6
+		if e[0] == "forest_floor":
+			# under the canopy: moss and shade, so gaps between crowns read as wood, not bare earth
+			t.albedo_color = Color(0.5, 0.62, 0.4)
 		assets.set_texture_asset(i, t)

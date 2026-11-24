@@ -17,3 +17,4 @@ godot/packs/**/*.bin filter=lfs diff=lfs merge=lfs -text
 godot/packs/**/*.png filter=lfs diff=lfs merge=lfs -text
 godot/addons/terrain_3d/bin/*.dll filter=lfs diff=lfs merge=lfs -text
 godot/addons/terrain_3d/bin/*.so filter=lfs diff=lfs merge=lfs -text
+godot/packs/**/*.json filter=lfs diff=lfs merge=lfs -text

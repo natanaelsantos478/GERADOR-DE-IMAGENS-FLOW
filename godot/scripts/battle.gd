@@ -69,6 +69,15 @@ func _ready() -> void:
 		grass.build_all()
 	times.grass = Time.get_ticks_msec() - t0
 
+	await _step(ls, "Matas e árvores", 0.78)
+	var trees := TreeField.new()
+	add_child(trees)
+	trees.setup(pack, terrain, rig)
+	if not _debug_flags.has("trees"):
+		trees.plant_all()
+		trees.build_near_now()
+	times.trees = Time.get_ticks_msec() - t0
+
 	await _step(ls, "Tropas", 0.85)
 	_place_soldiers(_start)
 

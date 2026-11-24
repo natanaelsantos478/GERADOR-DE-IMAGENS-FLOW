@@ -1,0 +1,128 @@
+{
+ "c_spruce_a": {
+  "species": "conifer",
+  "height": 26.0,
+  "width": 7.05,
+  "tris": 108,
+  "imp_w": 13.26,
+  "imp_h": 26.52,
+  "top_y": 0.608
+ },
+ "c_spruce_b": {
+  "species": "conifer",
+  "height": 25.0,
+  "width": 6.77,
+  "tris": 109,
+  "imp_w": 12.75,
+  "imp_h": 25.5,
+  "top_y": 0.608
+ },
+ "c_spruce_c": {
+  "species": "conifer",
+  "height": 24.0,
+  "width": 6.01,
+  "tris": 109,
+  "imp_w": 12.24,
+  "imp_h": 24.48,
+  "top_y": 0.608
+ },
+ "c_spruce_thin": {
+  "species": "conifer",
+  "height": 23.0,
+  "width": 5.44,
+  "tris": 113,
+  "imp_w": 11.73,
+  "imp_h": 23.46,
+  "top_y": 0.608
+ },
+ "c_pine_tall": {
+  "species": "conifer",
+  "height": 29.0,
+  "width": 7.73,
+  "tris": 109,
+  "imp_w": 14.790000000000001,
+  "imp_h": 29.580000000000002,
+  "top_y": 0.608
+ },
+ "c_spruce_young": {
+  "species": "conifer",
+  "height": 15.0,
+  "width": 6.12,
+  "tris": 36,
+  "imp_w": 7.65,
+  "imp_h": 15.3,
+  "top_y": 0.608
+ },
+ "c_pine_hero": {
+  "species": "conifer",
+  "height": 27.0,
+  "width": 21.01,
+  "tris": 1650,
+  "imp_w": 21.430200000000003,
+  "imp_h": 42.860400000000006,
+  "top_y": 0.391
+ },
+ "b_birch": {
+  "species": "broadleaf",
+  "height": 17.0,
+  "width": 10.98,
+  "tris": 285,
+  "imp_w": 11.1996,
+  "imp_h": 22.3992,
+  "top_y": 0.471
+ },
+ "b_poplar": {
+  "species": "broadleaf",
+  "height": 24.0,
+  "width": 9.35,
+  "tris": 101,
+  "imp_w": 12.24,
+  "imp_h": 24.48,
+  "top_y": 0.608
+ },
+ "b_round": {
+  "species": "broadleaf",
+  "height": 19.0,
+  "width": 8.83,
+  "tris": 109,
+  "imp_w": 9.69,
+  "imp_h": 19.38,
+  "top_y": 0.608
+ },
+ "b_beech": {
+  "species": "broadleaf",
+  "height": 22.0,
+  "width": 16.74,
+  "tris": 6017,
+  "imp_w": 17.0748,
+  "imp_h": 34.1496,
+  "top_y": 0.399
+ },
+ "u_bush": {
+  "species": "under",
+  "height": 2.2,
+  "width": 3.14,
+  "tris": 92,
+  "imp_w": 3.2028000000000003,
+  "imp_h": 6.405600000000001,
+  "top_y": 0.031
+ },
+ "u_shrub": {
+  "species": "under",
+  "height": 2.6,
+  "width": 3.17,
+  "tris": 67,
+  "imp_w": 3.2334,
+  "imp_h": 6.4668,
+  "top_y": 0.093
+ },
+ "u_sapling": {
+  "species": "under",
+  "height": 5.0,
+  "width": 3.28,
+  "tris": 40,
+  "imp_w": 3.3455999999999997,
+  "imp_h": 6.691199999999999,
+  "top_y": 0.448
+ }
+}
