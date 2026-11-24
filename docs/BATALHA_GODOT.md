@@ -115,6 +115,50 @@ Cada fase termina com captura de tela revisada, commit e push. Nada passa para a
   para C++/GDExtension se a carga passar de 30 s.
 - **D4 Escala** — 1 unidade Godot = 1 m. Soldado 1,8 m, veículos com medidas reais (ver `public/models/manifest.json`).
 
+## 7b. Próxima geração: leitura do local por IA, mundo destrutível, explosões
+
+### Leitura das vias e calçadas por IA (pavimentadas)
+Objetivo: cada via pavimentada com as mesmas faixas, largura, calçadas, meio-fio, cores e placas do lugar real.
+1. **Recorte**: ao longo de cada via do OSM, baixar a foto aérea de alta resolução (Esri z19–20, 0,15–0,3 m) em
+   janelas pequenas (~40 × 40 m) alinhadas à via, com 25% de sobreposição entre janelas.
+2. **Análise por janela** (rede neural na GPU local, RTX 4060 8 GB):
+   - **segmentação** por pixel: pista, faixa branca contínua, tracejada, dupla, faixa de pedestre, seta, calçada,
+     meio-fio, vaga, canteiro, sombra/carro (ignorar). Base atual para isso: modelos de segmentação abertos
+     (SAM 2.1 / SegFormer / Mask2Former) ajustados com dados aéreos de marcação viária (SkyScapes, ~13 cm).
+   - **difusão** entra onde ela é a melhor ferramenta: completar o que a foto não mostra (faixa sob carro ou árvore,
+     trecho borrado), condicionada pela segmentação — "inpainting" do mapa de marcações, não da imagem final.
+3. **Junção**: as janelas são mescladas com peso maior no centro (sem emenda entre elas), vetorizadas em linhas
+   ao longo do eixo da via (offset, tipo, período do tracejado, largura) e corrigidas por regras: tracejado com
+   período constante, faixas paralelas ao eixo, continuidade nos cruzamentos. Resultado: **um modelo de via só**.
+4. **Placas**: posições do OSM (`traffic_sign`, `maxspeed`, `crossing`, `stop`, `give_way`) + detecção na foto;
+   desenho pelo padrão do país (Convenção de Viena na Bélgica/França, MUTCD nos EUA).
+5. **Calçadas**: largura, altura do meio-fio (0,12–0,18 m) e cor/material (concreto, lajota, pedra) medidos na foto.
+
+### Parâmetros salvos (não a cena)
+Tudo o que a análise mede vira **números por objeto**, guardados por região (tile z13) em `params/<z13>.json.gz`,
+chaveados pelo id do OSM e por um hash da geometria (refaz só o que mudou no OSM). Exemplos:
+via `{largura, faixas, eixo:[offset,tipo,período], calçada:[larg,altura,material,cor], placas:[...], conf}`;
+prédio `{telhado:{forma,material,cor}, altura, andares, parede:{material,cor}}`. Algumas dezenas de bytes por objeto:
+a análise pesada roda uma vez; na próxima batalha no mesmo lugar a reconstrução lê os números e só gera malhas.
+
+### Mundo modificável e destrutível
+- Cada prédio, trecho de via, ponte e árvore é um **objeto de dados com estado** (íntegro, danificado, destruído,
+  cratera). As malhas são geradas por célula de 256 m a partir dos dados; um dano altera o dado e **refaz só a célula**.
+- **Prédios**: dano por andar/parede (buracos, fachada caída, telhado aberto), entulho que vira obstáculo.
+- **Vias e terreno**: crateras deformam o relevo (Terrain3D `set_height`) e cortam a malha da via; o raio e a
+  profundidade definem se passa infantaria, roda ou lagarta (mesma regra na simulação tática: `navGrid` atualizado).
+- O estado de dano volta no `result.json` para o jogo estratégico (cidade e estradas danificadas no mapa).
+
+### Explosões
+Clarão (luz curta), bola de fogo e fumaça em *flipbooks* renderizados no Blender, partículas GPU (terra, faíscas,
+estilhaços), onda de choque (distorção de tela), decalque de cratera, detritos com física e som com atraso pela
+distância. Tamanho e efeito pelo calibre (morteiro, artilharia 155 mm, bomba).
+
+### Ordem sugerida
+1. Dados destrutíveis + cache de parâmetros (base de tudo).  2. Telhados e calçadas por regras + OSM.
+3. Pipeline de IA das vias (recorte → segmentação → junção → parâmetros).  4. Crateras e dano de prédios.
+5. Explosões.  6. Placas por país.
+
 ## 8. Riscos conhecidos
 
 - **GLB comprimido**: o Godot 4.7 não lê `KHR_mesh_quantization`. Os soldados precisam de exportação sem
