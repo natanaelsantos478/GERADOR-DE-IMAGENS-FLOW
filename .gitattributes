@@ -1,0 +1,13 @@
+tools/models/soldados/kit/**/*.blend filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/*.blend filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/**/*.glb filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/*.glb filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/*.fbx filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/**/*.png filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/*.png filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/*.jpg filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/*.jpeg filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+tools/models/soldados/kit/**/*.bin filter=lfs diff=lfs merge=lfs -text
