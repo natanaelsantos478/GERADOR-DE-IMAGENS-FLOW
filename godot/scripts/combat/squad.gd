@@ -29,7 +29,7 @@ var mode := Mode.ADVANCE
 var player_order := false
 var contacts := {}          # enemy Soldier -> [position, time]
 var last_contact_t := -999.0
-var stats := {"bounds": 0, "flanks": 0, "assaults": 0, "withdraws": 0, "covers": 0, "suppress": 0, "reloads": 0, "fled": 0, "mortars": 0, "stuck": 0, "scavenged": 0}
+var stats := {"bounds": 0, "flanks": 0, "assaults": 0, "withdraws": 0, "covers": 0, "suppress": 0, "reloads": 0, "fled": 0, "mortars": 0, "stuck": 0, "scavenged": 0, "head": 0, "wounded": 0, "down": 0, "treated": 0, "dashes": 0}
 var modes_seen := {}
 var _think_t := 0.0
 var _bound_team := 1
@@ -140,6 +140,27 @@ func separation(s: Soldier) -> Vector3:
 		if l < 2.5 and l > 0.01:
 			v += d / l * (2.5 - l)
 	return v
+
+
+## Is another man of the squad already behind / heading to this spot?
+func occupied(p: Vector3, except: Soldier) -> bool:
+	for m in members:
+		if m != except and m.alive() and (m.global_position.distance_to(p) < 1.5 or (m.has_goal and m.goal.distance_to(p) < 1.5)):
+			return true
+	return false
+
+
+## The one man who goes to help a hurt friend: the nearest able one.
+func carer(hurt: Soldier, asking: Soldier) -> Soldier:
+	var best: Soldier = null
+	var bd := INF
+	for m in members:
+		if m != hurt and m.alive() and not m.down and not m.fleeing:
+			var d := m.global_position.distance_to(hurt.global_position)
+			if d < bd:
+				bd = d
+				best = m
+	return best if best else asking
 
 
 func on_death(s: Soldier) -> void:

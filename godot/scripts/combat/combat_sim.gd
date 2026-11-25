@@ -21,9 +21,19 @@ var _hud_t := 0.0
 var _hud: Label
 var _ring: MeshInstance3D
 var started := false
+var cover := CoverMap.new()
+var tanks: Array[Tank] = []
+var air: Array[Aircraft] = []
+var events: Array[String] = []
+var _next_heli := [25.0, 40.0]
+var _next_jet := [50.0, 70.0]
+# turn that puts each model's nose on +Z
+var yaw_fix := {"attack_heli": 0.0, "fighter_f16": 0.0, "fighter_su35": 0.0}
 
 
-func setup(t: Terrain3D, camera_rig: CameraRig, start: Vector3, toward: Vector3) -> void:
+func setup(t: Terrain3D, camera_rig: CameraRig, start: Vector3, toward: Vector3, world := {}, trees: TreeField = null) -> void:
+	cover.build(world, trees, start.lerp(toward, 0.5), 450.0)
+	print("COVER trees ", cover.trees, " houses ", cover._houses.size())
 	terrain = t
 	rig = camera_rig
 	fx = CombatFx.new()
@@ -32,11 +42,21 @@ func setup(t: Terrain3D, camera_rig: CameraRig, start: Vector3, toward: Vector3)
 	var dir := (toward - start)
 	dir.y = 0
 	dir = dir.normalized()
-	var enemy_pos := start + dir * 300.0
+	var enemy_pos := start + dir * 220.0
 	enemy_pos.y = terrain.data.get_height(enemy_pos)
 	squads.append(_spawn(0, "1º Pelotão OTAN", "res://assets/soldiers/nsoldier.glb", start - dir * 10.0, dir))
 	squads.append(_spawn(1, "Pelotão russo", "res://assets/soldiers/nsoldier_ru.glb", enemy_pos, -dir))
 	selected = squads[0]
+	for i in 2:
+		var tk := Tank.new()
+		add_child(tk)
+		tk.setup(i, self)
+		var f: Vector3 = dir if i == 0 else -dir
+		var at: Vector3 = (start if i == 0 else enemy_pos) + f.cross(Vector3.UP) * 24.0 - f * 10.0
+		at.y = terrain.data.get_height(at)
+		tk.global_position = at
+		tk.rotation.y = atan2(f.x, f.z)
+		tanks.append(tk)
 	_build_hud()
 	_ring = MeshInstance3D.new()
 	var tm := TorusMesh.new()
@@ -79,6 +99,8 @@ func _spawn(side: int, label: String, model: String, at: Vector3, facing: Vector
 		p.y = terrain.data.get_height(p)
 		u.global_position = p
 		u.rotation.y = atan2(facing.x, facing.z)
+		if i == 2 or i == 3:
+			u.rockets = 2
 		s.members.append(u)
 	return s
 
@@ -93,6 +115,8 @@ func enemies_of(side: int) -> Array[Soldier]:
 
 ## Line of sight over the relief (16 samples between the two eyes).
 func line_of_sight(a: Vector3, b: Vector3) -> bool:
+	if cover.house_between(a, b) and a.y < terrain.data.get_height(a) + 6.0:
+		return false
 	for k in range(1, 16):
 		var p := a.lerp(b, k / 16.0)
 		var h := terrain.data.get_height(p)
@@ -116,9 +140,131 @@ func enemy_guess(side: int) -> Vector3:
 	return c / n if n > 0 else Vector3.INF
 
 
-## Cover from trees and walls (the relief is handled by the soldier): hook for the vector map, 0 for now.
-func extra_cover(_p: Vector3, _dir: Vector3) -> float:
-	return 0.0
+func log_event(t: String) -> void:
+	events.append("%.0f s: %s" % [time, t])
+	print("EVENTO ", events[-1])
+
+
+## Damage to men around a burst (cover halves it).
+func blast(p: Vector3, radius: float, power: float) -> void:
+	for sq in squads:
+		for m in sq.alive():
+			var d := m.global_position.distance_to(p)
+			if d < radius:
+				var k := 1.0 - d / radius
+				if m.stance == Soldier.Stance.PRONE:
+					k *= 0.7
+				if cover.score(m.global_position, p - m.global_position) > 0.0:
+					k *= 0.4
+				var dir := (m.global_position - p + Vector3(0.0, 0.6, 0.0)).normalized()
+				m.hit(power * k, dir * (k * 400.0), true)
+
+
+## Tank cannon: against armour a direct hit or miss, against men a high-explosive burst.
+func shell(from: Tank, muzzle: Vector3, aim: Vector3, foe: Tank) -> void:
+	var p := aim + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4))
+	var hit_armour := foe != null and randf() < 0.5
+	if hit_armour:
+		p = foe.global_position
+	p.y = terrain.data.get_height(p)
+	fx._tracer(muzzle, p + Vector3(0, 1.0, 0))
+	get_tree().create_timer(muzzle.distance_to(p) / 500.0 + 0.15).timeout.connect(func():
+		fx.explosion(p + Vector3(0, 1.2 if hit_armour else 0.0, 0), 1.2)
+		if hit_armour:
+			foe.damage(randf_range(35.0, 55.0))
+		blast(p, 8.0, 110.0))
+
+
+## The anti-tank man fires at enemy armour or a hovering helicopter in range and in sight.
+func fire_rocket(u: Soldier) -> bool:
+	if time < 15.0 or randf() > 0.15:             # takes a moment to get the launcher on target
+		return false
+	var target: Node3D = null
+	for t in tanks:
+		if t.side != u.side and t.alive() and u.global_position.distance_to(t.global_position) < 230.0:
+			target = t
+	for a in air:
+		if is_instance_valid(a) and a.side != u.side and not a.jet and a.flying() and u.global_position.distance_to(a.global_position) < 230.0:
+			target = a
+	if target == null or not line_of_sight(u.eye() + Vector3(0, 0.5, 0), target.global_position + Vector3(0, 2.0, 0)):
+		return false
+	var from := u.eye()
+	var to := target.global_position + Vector3(0, 1.5, 0)
+	fx._flash(from)
+	fx._tracer(from, to)
+	var chance := 0.65 if target is Tank else 0.35
+	var delay := from.distance_to(to) / 150.0
+	get_tree().create_timer(delay).timeout.connect(func():
+		if not is_instance_valid(target):
+			return
+		if randf() < chance:
+			fx.explosion(target.global_position + Vector3(0, 1.5, 0), 1.1)
+			target.damage(randf_range(40.0, 65.0))
+		else:
+			var q := to + Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))
+			q.y = terrain.data.get_height(q)
+			fx.explosion(q, 0.7))
+	return true
+
+
+## What a helicopter shoots at: enemy tank, else the enemy infantry.
+func air_target(side: int) -> Vector3:
+	for t in tanks:
+		if t.side != side and t.alive():
+			return t.global_position
+	for s in squads:
+		if s.side != side and not s.alive().is_empty():
+			return s.alive().pick_random().global_position
+	return Vector3.INF
+
+
+func air_rocket(from: Aircraft, muzzle: Vector3, aim: Vector3) -> void:
+	var p := aim + Vector3(randf_range(-7, 7), 0, randf_range(-7, 7))
+	p.y = terrain.data.get_height(p)
+	fx._tracer(muzzle, p)
+	get_tree().create_timer(muzzle.distance_to(p) / 200.0).timeout.connect(func():
+		fx.explosion(p, 1.1)
+		for t in tanks:
+			if t.side != from.side and t.alive() and t.global_position.distance_to(p) < 7.0:
+				t.damage(randf_range(25.0, 45.0))
+		blast(p, 8.0, 90.0))
+
+
+func bomb(p: Vector3) -> void:
+	fx.explosion(p, 3.0)
+	for t in tanks:
+		if t.alive() and t.global_position.distance_to(p) < 14.0:
+			t.damage(100.0)
+	blast(p, 20.0, 160.0)
+	log_event("bomba")
+
+
+## Sorties, and rifle / machine-gun fire at helicopters.
+func _air_war() -> void:
+	air = air.filter(func(a): return is_instance_valid(a))
+	for side in 2:
+		var own := squads[side]
+		var foe := squads[1 - side]
+		if own.alive().is_empty() or foe.alive().is_empty():
+			continue
+		var back := own.home - foe.home
+		back.y = 0
+		if time >= _next_heli[side]:
+			_next_heli[side] = time + 75.0
+			_launch(side, false, foe.centre(), back)
+		if time >= _next_jet[side]:
+			_next_jet[side] = time + 60.0
+			var d := own.centre().distance_to(foe.centre())
+			if d > 60.0:                              # not on top of the own men
+				_launch(side, true, foe.centre(), back)
+
+
+func _launch(side: int, jet: bool, target: Vector3, from: Vector3) -> void:
+	var a := Aircraft.new()
+	add_child(a)
+	a.setup(side, self, jet, target, from)
+	air.append(a)
+	log_event("%s da %s" % ["caça" if jet else "helicóptero", "OTAN" if side == 0 else "Rússia"])
 
 
 ## A squad asks for mortar fire on a spot: refused if no rounds, in cooldown, or own men are within 40 m of it.
@@ -143,6 +289,14 @@ func _physics_process(dt: float) -> void:
 	time += dt
 	for sq in squads:
 		sq.think(dt)
+	_air_war()
+	for a in air:
+		if not is_instance_valid(a) or a.jet or not a.flying():
+			continue
+		for e in enemies_of(a.side):
+			if e.global_position.distance_to(a.global_position) < 250.0 and randf() < dt * 0.04:
+				fx._tracer(e.eye(), a.global_position)
+				a.damage(randf_range(4.0, 12.0))
 	_hud_t -= dt
 	if _hud_t <= 0.0:
 		_hud_t = 1.0
@@ -155,14 +309,11 @@ func _physics_process(dt: float) -> void:
 
 func _impact(p: Vector3) -> void:
 	fx.explosion(p, 1.0)
-	for s in squads:
-		for m in s.alive():
-			var d := m.global_position.distance_to(p)
-			if d < MORTAR_RADIUS:
-				var k := 1.0 - d / MORTAR_RADIUS
-				# blast pushes away from the centre and a bit up: each body falls its own way
-				var dir := (m.global_position - p + Vector3(0.0, 0.6, 0.0)).normalized()
-				m.hit(140.0 * k, dir * (k * 400.0), true)
+	for t in tanks:
+		if t.alive() and t.global_position.distance_to(p) < 5.0:
+			t.damage(35.0)
+	blast(p, MORTAR_RADIUS, 140.0)
+	cover.add(p, 2.0, 0.5)                          # the crater
 
 
 func _unhandled_input(e: InputEvent) -> void:

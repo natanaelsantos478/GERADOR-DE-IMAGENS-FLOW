@@ -110,7 +110,8 @@ func _ready() -> void:
 	await _step(ls, "Tropas", 0.85)
 	combat = CombatSim.new()
 	add_child(combat)
-	combat.setup(terrain, rig, _start, _start + _open_direction(_start) * 300.0)
+	var site := _battle_site(world, trees)
+	combat.setup(terrain, rig, site[0], site[0] + site[1] * 220.0, world, trees)
 
 	await _step(ls, "Preparando gráficos", 0.95)
 	for i in 30:
@@ -121,6 +122,34 @@ func _ready() -> void:
 	combat.start()
 	if _shots_dir != "":
 		_take_shots()
+
+
+## Where to fight: two start points 220 m apart over open ground, with woods and houses between and around them so the
+## men have something to hide behind. Returns [start, direction].
+func _battle_site(world: Dictionary, trees: TreeField) -> Array:
+	var probe := CoverMap.new()
+	probe.build(world, trees, _start, 1300.0)
+	var best := [_start, _open_direction(_start)]
+	var bs := -INF
+	for i in range(-6, 7):
+		for j in range(-6, 7):
+			var p := _start + Vector3(i * 90.0, 0, j * 90.0)
+			if probe.inside_house(p):
+				continue
+			var d := _open_direction(p)
+			var score := 0.0
+			for k in range(0, 12):
+				var q := p + d * (k * 20.0)
+				var n := probe.near(q, 30.0).size()
+				score += minf(n, 8.0) - maxf(0.0, n - 30.0) * 0.5    # some cover, not a thicket
+				if probe.inside_house(q):
+					score -= 3.0
+			score -= p.distance_to(_start) * 0.005
+			if score > bs and not is_nan(terrain.data.get_height(p)):
+				bs = score
+				best = [Vector3(p.x, terrain.data.get_height(p), p.z), d]
+	print("SITE score ", bs, " at ", best[0])
+	return best
 
 
 ## Direction from p with the most open meadow over 300 m (where the two squads meet).
@@ -216,7 +245,8 @@ func _take_shots() -> void:
 		["13_mira", c0, yaw, 7.0, 0.12, 120], ["14_caidos", c0, yaw + 40.0, 9.0, 0.3, 60]]
 	var only_rag: bool = _args().get("views", "") == "ragdoll"
 	var only_ai: bool = _args().get("views", "") == "ai"
-	views = [] if (only_rag or only_ai) else (combat_views if only_combat else combat_views + views)
+	var only_film: bool = _args().get("views", "") in ["film", "tour", "action"]
+	views = [] if (only_rag or only_ai or only_film) else (combat_views if only_combat else combat_views + views)
 	for v in views:
 		if v[0] == "11_tiroteio":
 			v[1] = combat.squads[0].centre().lerp(combat.squads[1].centre(), 0.5)
@@ -253,6 +283,12 @@ func _take_shots() -> void:
 		await _ragdoll_test()
 	if only_ai:
 		await _ai_test()
+	if _args().get("views", "") == "tour":
+		await _tour()
+	elif _args().get("views", "") == "action":
+		await _action()
+	elif only_film:
+		await _film()
 	get_tree().quit()
 
 
@@ -377,3 +413,153 @@ func _ai_test() -> void:
 	for s: Squad in [a2, b2]:
 		print("AI RESUMO %s vivos %d/%d moral %.2f modos %s stats %s" % [s.name, s.alive().size(), s.members.size(), s.average("morale"), str(s.modes_seen.keys()), str(s.stats)])
 	print("AI RESUMO morteiros restantes %s animações ausentes %s" % [str(combat.mortars), str(Soldier.missing.keys())])
+
+
+## Recording (`--views film` with `--write-movie file.avi --fixed-fps 30`): the squads fight in real time while the camera
+## follows the middle of the action, orbiting slowly. `--dist N` sets the starting distance, `--secs N` the length.
+func _film() -> void:
+	seed(20260524)
+	var dist_arg := float(_args().get("dist", 160.0))
+	var a0: Squad = combat.squads[0]
+	var b0: Squad = combat.squads[1]
+	var dir0 := b0.centre() - a0.centre()
+	dir0.y = 0.0
+	var shift := dir0.length() - dist_arg
+	dir0 = dir0.normalized()
+	for m in b0.members:
+		var p0 := m.global_position - dir0 * shift
+		p0.y = terrain.data.get_height(p0)
+		m.global_position = p0
+	var secs := float(_args().get("secs", 60.0))
+	var t0: float = combat.time
+	var yaw := rad_to_deg(atan2(-dir0.x, -dir0.z)) + 90.0
+	while combat.time - t0 < secs:
+		await get_tree().process_frame
+		var t: float = combat.time - t0
+		# the camera swings slowly from one squad to the other, close to the men, seen from the side
+		var k := 0.5 - 0.42 * cos(t * 0.1)
+		var mid := combat.squads[0].centre().lerp(combat.squads[1].centre(), k)
+		rig.place(mid, yaw + 15.0 * sin(t * 0.08), 26.0, 0.1)
+
+
+## Map tour (`--views tour` with `--write-movie`): the camera glides at eye level from the start meadow through the town,
+## past the crossing and the bridge. `--secs N` is the length of each leg.
+func _tour() -> void:
+	var pts: Array[Vector3] = [_start]
+	pts.append(Vector3(0, 0, 0))
+	for n in pack.load_world().get("nodes", []):
+		if n.k == "zebra":
+			pts.append(Vector3(n.p[0], 0, n.p[1]))
+			break
+	if not _bridge_spot.is_empty():
+		pts.append(_bridge_spot[0])
+	pts.append(_start + Vector3(120, 0, -80))
+	var leg := float(_args().get("secs", 12.0))
+	for i in pts.size() - 1:
+		var a := pts[i]
+		var b := pts[i + 1]
+		var h := b - a
+		h.y = 0.0
+		var yaw := rad_to_deg(atan2(-h.x, -h.z))
+		var t := 0.0
+		while t < leg:
+			await get_tree().process_frame
+			t += get_process_delta_time()
+			var k := smoothstep(0.0, 1.0, t / leg)
+			rig.place(a.lerp(b, k), yaw, 14.0 + 10.0 * sin(k * PI), 0.06)
+
+
+## Action recording (`--views action [--epic 1] [--secs N]`): the camera "director". With --epic it starts high over the
+## map and dives; then it cuts between the two squads, the tanks and whatever flies.
+func _action() -> void:
+	seed(int(_args().get("seed", 20260524)))
+	var secs := float(_args().get("secs", 75.0))
+	var epic: bool = String(_args().get("epic", "")) != ""
+	var lead := 20.0 if epic else 0.0
+	var a0: Squad = combat.squads[0]
+	var b0: Squad = combat.squads[1]
+	var dir0 := b0.centre() - a0.centre()
+	var yaw := rad_to_deg(atan2(-dir0.x, -dir0.z)) + 75.0
+	if epic:
+		combat.process_mode = Node.PROCESS_MODE_DISABLED
+	# clean picture: no HUD, no selection ring, and the camera is only moved from here
+	combat._hud.visible = false
+	combat.selected = null
+	combat._ring.visible = false
+	rig.set_process(false)
+	var air_t := 0.0
+	var clk := 0.0
+	var focus := a0.centre()
+	var d := 30.0
+	var shot := -1
+	var last_a := focus
+	var last_b := b0.centre()
+	while clk < secs:
+		await get_tree().process_frame
+		clk += get_process_delta_time()
+		if not a0.alive().is_empty():
+			last_a = a0.centre()
+		if not b0.alive().is_empty():
+			last_b = b0.centre()
+		var mid := last_a.lerp(last_b, 0.5)
+		if epic and clk < lead:
+			var d0 := 1750.0 if clk < lead - 8.0 else exp(lerpf(log(1750.0), log(70.0), smoothstep(lead - 8.0, lead, clk)))
+			rig.place((mid + Vector3(900, 0, -600)).lerp(mid, smoothstep(0.0, lead, clk)), yaw - 50.0 + clk * 2.5, d0, 0.0)
+			continue
+		combat.process_mode = Node.PROCESS_MODE_INHERIT
+		var t := clk - lead
+		# 7 s per shot: squad, squad, tank, between the lines, other tank, aircraft overhead...
+		var n := int(t / 7.0)
+		var kind := n % 6
+		var target := mid
+		var want := 40.0
+		var turn := yaw
+		var tilt := 0.06
+		match kind:
+			0:
+				target = last_a
+				want = 22.0
+			1:
+				target = last_b
+				want = 22.0
+				turn = yaw + 40.0
+			2:
+				target = combat.tanks[0].global_position
+				want = 28.0
+				turn = yaw - 40.0
+			3:
+				target = mid
+				want = 110.0
+				tilt = 0.1
+			4:
+				target = combat.tanks[1].global_position
+				want = 30.0
+				turn = yaw + 120.0
+			5:
+				target = last_a.lerp(last_b, 0.3)
+				want = 75.0
+				tilt = -0.12
+		for air in combat.air:                          # a helicopter on station steals the shot
+			if is_instance_valid(air) and not air.jet and kind == 5 and air.global_position.distance_to(mid) < 300.0:
+				target = Vector3(air.global_position.x, 0, air.global_position.z)
+				want = 90.0
+		if n != shot:
+			shot = n
+			focus = target
+			d = want * 1.25
+		focus = focus.lerp(target, 0.04)
+		d = lerpf(d, want, 0.015)
+		rig.place(focus, turn + fmod(t, 7.0) * 2.0, d, tilt)
+		# aircraft take the picture while they are close: seen from beside and a little below
+		var flyer: Aircraft = null
+		for air in combat.air:
+			if is_instance_valid(air) and air.global_position.distance_to(mid) < 330.0:
+				if flyer == null or air.jet:
+					flyer = air
+		air_t = air_t + get_process_delta_time() if flyer else 0.0
+		if flyer and air_t < 6.0:
+			var ap := flyer.global_position
+			var side_v := flyer.global_transform.basis.x.normalized()
+			var eye := ap + side_v * 28.0 + flyer.global_transform.basis.z.normalized() * 14.0 + Vector3(0, 4.0, 0)
+			rig.cam.global_position = eye
+			rig.cam.look_at(ap + Vector3(0, 1.0, 0))

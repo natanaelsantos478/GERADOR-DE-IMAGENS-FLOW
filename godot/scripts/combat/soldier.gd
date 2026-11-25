@@ -45,6 +45,12 @@ var has_goal := false
 var goal := Vector3.ZERO
 var route: Array[Vector3] = []
 var in_cover := false
+var wounded := false               # hurt but alive: limps or crawls, shoots worse, bleeds until treated
+var down := false                  # badly hurt: lies there, cannot fight, dies unless a friend treats him
+var bleeding := 0.0                # hp per second
+var rockets := 0                   # anti-tank launcher shots
+var _stay_t := 0.0                 # how long before he changes position
+var _treat_t := 0.0
 var fleeing := false               # broken: running for the rear until morale comes back
 var visible_enemies: Array[Soldier] = []
 var _shooter: Soldier              # who shot at me last
@@ -161,18 +167,48 @@ func assault(p: Vector3) -> void:
 # --------------------------------------------------------------------------- damage and fear
 
 ## damage, and the push of what hit him (bullet direction, or blast) for the fall; `src` = who shot.
+## A bullet lands on the head (fatal), the body (serious) or a limb (light): not every hit kills.
 func hit(damage: float, push: Vector3, blast := false, src: Soldier = null) -> void:
 	if not alive():
 		return
+	if not blast:
+		var where := randf()
+		if where < 0.10:
+			damage = 200.0
+			squad.stats["head"] += 1
+		elif where < 0.50:
+			damage = randf_range(35.0, 75.0)
+			bleeding += randf_range(0.4, 1.2)
+		else:
+			damage = randf_range(15.0, 32.0)
+			bleeding += randf_range(0.0, 0.4)
+	else:
+		bleeding += damage * 0.01
 	hp -= damage
 	_noticed(src)
 	if hp <= 0.0:
 		_die(push, blast)
-	else:
-		_busy = 0.5
-		_play(LIB + "/Hit_Chest", 0.05)
-		suppression += 0.5
-		morale -= 0.08
+		return
+	if hp < 55.0 and not wounded:
+		wounded = true
+		squad.stats["wounded"] += 1
+	if hp < 25.0 and not down:
+		down = true
+		has_goal = false
+		squad.stats["down"] += 1
+	_busy = 0.5
+	_play(LIB + "/Hit_Chest", 0.05)
+	suppression += 0.5
+	morale -= 0.08
+
+
+## A friend stops the bleeding.
+func treat() -> void:
+	bleeding = 0.0
+	if down:
+		down = false
+		hp = maxf(hp, 30.0)
+	squad.stats["treated"] += 1
 
 
 func near_miss(src: Soldier = null, weight := 0.25) -> void:
@@ -210,6 +246,22 @@ func _physics_process(dt: float) -> void:
 	_cover_t -= dt
 	_suppress_t -= dt
 	suppression = maxf(0.0, suppression - dt * 0.2)
+	_stay_t -= dt
+	if bleeding > 0.0:
+		hp -= bleeding * dt * 0.5
+		bleeding = maxf(0.0, bleeding - dt * 0.02)       # small wounds clot
+		if hp <= 0.0:
+			_die(Vector3.ZERO, false)
+			return
+		if hp < 25.0 and not down:
+			down = true
+			has_goal = false
+			squad.stats["down"] += 1
+	if down:
+		stance = Stance.PRONE
+		state = State.IDLE
+		_play(LIB + "/Prone_Aim")
+		return
 	# fear: fire wears morale down; calm, friends and the leader nearby bring it back
 	morale -= suppression * 0.006 * dt
 	if suppression < 0.3:
@@ -290,6 +342,11 @@ func _act(dt: float) -> void:
 
 func _gait() -> Gait:
 	var contact := squad.has_contact()
+	if wounded:
+		return Gait.CRAWL if hp < 40.0 else Gait.TACTICAL
+	if contact and task != Task.PLAYER:
+		# under fire in the open one runs; pinned down but still able, crawls
+		return Gait.CRAWL if suppression > 1.0 else (Gait.SPRINT if suppression > 0.25 else Gait.JOG)
 	match task:
 		Task.WITHDRAW:
 			return Gait.SPRINT
@@ -336,6 +393,10 @@ func _move_step(dt: float, g: Gait) -> void:
 	var speed: float = SPEED[g] * (0.6 if hp < 40.0 else 1.0)
 	var dir := (to.normalized() + squad.separation(self) * 0.6).normalized()
 	var p := global_position + dir * speed * dt
+	if squad.sim.cover.inside_house(p):                  # slide along the wall
+		p = global_position + dir.rotated(Vector3.UP, 1.4) * speed * dt
+		if squad.sim.cover.inside_house(p):
+			p = global_position + dir.rotated(Vector3.UP, -1.4) * speed * dt
 	p.y = _ground(p)
 	global_position = p
 	state = State.MOVE
@@ -345,31 +406,93 @@ func _move_step(dt: float, g: Gait) -> void:
 	else:
 		_face(dir, dt)
 	_play(LIB + "/" + GAIT_ANIM[g])
-	if task == Task.ASSAULT and enemy and _cool <= 0.0 and mag > 0:
-		_fire(0.5)
+	if enemy and _cool <= 0.0 and mag > 0 and g != Gait.CRAWL \
+			and (task == Task.ASSAULT or global_position.distance_to(enemy.global_position) < 70.0):
+		_fire(0.35)                                      # shooting on the run: close range, poor aim
 
 
-## Standing still: look for cover when the enemy is known, shoot, or suppress the spot where he was seen.
+## In contact: get behind something, else lie down and change place often; close to the enemy, rush him from cover
+## to cover. Wounded friends nearby get help; the anti-tank man looks for armour.
 func _hold(dt: float) -> void:
 	if mag + reserve <= 0 and _scavenge():
 		return
+	if suppression < 0.7 and _help(dt):
+		return
+	if rockets > 0 and _cool <= 0.0 and squad.sim.fire_rocket(self):
+		rockets -= 1
+		_cool = 6.0
+		_busy = 1.2
+		_play(LIB + "/Rifle_Aim_Crouch")
+		return
 	var threatened := squad.has_contact()
 	if threatened and _cover_t <= 0.0:
-		_cover_t = randf_range(1.5, 3.0)
+		_cover_t = randf_range(0.8, 1.6)
 		var threat := squad.contact_centre()
 		in_cover = _cover_score(global_position, threat) >= 0.6
-		if not in_cover and (enemy != null or suppression > 0.3 or task == Task.OVERWATCH):
-			var c := _find_cover(threat)
-			if c != Vector3.INF:
-				goal = c
-				route.clear()
-				has_goal = true
-				squad.stats["covers"] += 1
-				return
+		var close := enemy != null and global_position.distance_to(enemy.global_position) < 60.0
+		var c := Vector3.INF
+		if not in_cover:
+			c = _find_cover(threat)
+			if c == Vector3.INF and _stay_t <= 0.0:
+				c = _dash_point(threat)                  # open ground: never stay long in one place
+		elif _stay_t <= 0.0 and (close or randf() < 0.25):
+			c = _find_cover(threat, close)               # leapfrog to the next one
+		if c != Vector3.INF:
+			goal = c
+			route.clear()
+			has_goal = true
+			_stay_t = randf_range(3.0, 8.0) if not close else randf_range(1.5, 4.0)
+			squad.stats["covers" if _cover_score(c, threat) >= 0.6 else "dashes"] += 1
+			return
 	if enemy:
+		# hide while the bullets are coming in, then pop up and shoot
+		if in_cover and suppression > 0.9:
+			stance = Stance.PRONE
+			_play(LIB + "/Prone_Aim")
+			return
 		_shoot(dt)
 	else:
 		_idle(dt)
+
+
+## A short rush to another patch of ground, mostly sideways.
+func _dash_point(threat: Vector3) -> Vector3:
+	var to := (threat - global_position)
+	to.y = 0
+	to = to.normalized()
+	var side_v := to.cross(Vector3.UP) * (1.0 if randf() < 0.5 else -1.0)
+	var p := global_position + side_v * randf_range(5.0, 12.0) + to * randf_range(-2.0, 6.0)
+	if squad.sim.cover.inside_house(p):
+		return Vector3.INF
+	p.y = _ground(p)
+	return p
+
+
+## Go to a badly hurt or bleeding friend nearby and stop the bleeding.
+func _help(dt: float) -> bool:
+	var best: Soldier = null
+	var bd := 25.0
+	for m in squad.members:
+		if m != self and m.alive() and (m.down or m.bleeding > 0.6):
+			var d := global_position.distance_to(m.global_position)
+			if d < bd:
+				bd = d
+				best = m
+	if best == null or squad.carer(best, self) != self:
+		_treat_t = 0.0
+		return false
+	if bd > 1.6:
+		goal = best.global_position
+		route.clear()
+		has_goal = true
+		return true
+	stance = Stance.CROUCH
+	_play(LIB + "/Interact")
+	_treat_t += dt
+	if _treat_t > 4.0:
+		_treat_t = 0.0
+		best.treat()
+	return true
 
 
 ## Out of ammunition: take what a fallen friend carried (walk to him, then pick it up).
@@ -460,15 +583,18 @@ func _fire(accuracy: float) -> void:
 	if d > EFFECTIVE:
 		_cool *= 1.6                                     # fire discipline at long range
 	fx.shot(self, enemy, rounds)
-	var exposure: float = {Stance.STAND: 1.0, Stance.CROUCH: 0.55, Stance.PRONE: 0.25}[enemy.stance]
+	var exposure: float = {Stance.STAND: 1.0, Stance.CROUCH: 0.65, Stance.PRONE: 0.4}[enemy.stance]
 	var cover := 0.45 if enemy.in_cover else 1.0
 	var moving := 0.6 if enemy.state == State.MOVE else 1.0
 	var shaky := 0.5 if suppression > 0.9 else (0.8 if suppression > 0.4 else 1.0)
-	var p_hit := 0.5 * clampf(1.0 - d / (RANGE * 1.2), 0.05, 1.0) * exposure * 0.35 * accuracy * cover * moving * shaky
+	if wounded:
+		shaky *= 0.6
+	var tree := 0.5 if squad.sim.cover.score(enemy.global_position, -to) > 0.0 else 1.0
+	var p_hit := 0.5 * clampf(1.0 - d / (RANGE * 1.2), 0.05, 1.0) * exposure * 0.45 * accuracy * cover * moving * shaky * tree
 	var dir := to.normalized()
 	for k in rounds:
 		if randf() < p_hit:
-			enemy.hit(randf_range(25.0, 60.0), (dir + Vector3(0, 0.15, 0)) * randf_range(25.0, 45.0), false, self)
+			enemy.hit(0.0, (dir + Vector3(0, 0.15, 0)) * randf_range(25.0, 45.0), false, self)
 		else:
 			enemy.near_miss(self, (0.1 + 0.1 * (1.0 - d / RANGE)) * (1.3 if gunner else 1.0))
 
@@ -496,24 +622,39 @@ func _cover_score(p: Vector3, threat: Vector3) -> float:
 	var g := _ground(p)
 	var th := Vector3(threat.x, _ground(threat) + 1.5, threat.z)
 	if not _blocked(th, Vector3(p.x, g + 0.35, p.z)):
-		return squad.sim.extra_cover(p, (threat - p).normalized())
+		return squad.sim.cover.score(p, threat - p)
 	return 1.0 if not _blocked(Vector3(p.x, g + 1.0, p.z), th) else 0.6
 
 
-## A better spot within 20 m, or Vector3.INF.
-func _find_cover(threat: Vector3) -> Vector3:
+## A better spot: behind a tree, wall, wreck or crater within 30 m, else a fold in the ground; Vector3.INF if none.
+## `forward`: prefer the ones that get him closer to the enemy.
+func _find_cover(threat: Vector3, forward := false) -> Vector3:
 	var best := Vector3.INF
-	var bs := _cover_score(global_position, threat) + 0.2
+	var bs := 0.2
 	var here := global_position.distance_to(threat)
+	for e in squad.sim.cover.spots(global_position, threat, 30.0):
+		var p: Vector3 = e[0]
+		p.y = _ground(p)
+		var d := global_position.distance_to(p)
+		if d < 2.0 or squad.occupied(p, self):
+			continue
+		var sc: float = e[1] - d * 0.015
+		var gain := here - p.distance_to(threat)
+		sc += gain * 0.03 if forward else (-0.4 if p.distance_to(threat) < here * 0.7 else 0.0)
+		if sc > bs:
+			bs = sc
+			best = p
+	if best != Vector3.INF:
+		return best
 	for k in 10:
 		var a := randf() * TAU
 		var r := randf_range(4.0, 20.0)
 		var p := global_position + Vector3(cos(a), 0, sin(a)) * r
 		p.y = _ground(p)
 		var sc := _cover_score(p, threat) - r * 0.012
-		if p.distance_to(threat) < here * 0.7:
+		if p.distance_to(threat) < here * 0.7 and not forward:
 			sc -= 0.5                                    # not towards the enemy
-		if sc > bs:
+		if sc > bs and not squad.sim.cover.inside_house(p):
 			bs = sc
 			best = p
 	return best
